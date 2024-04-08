@@ -18,7 +18,7 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // main
 
-// I suggest simply : hosts 1 by 1 (vs. tangled hosts), at least for now
+
 
 // parsing
     // hosts list
@@ -26,41 +26,44 @@
     // scans list
     // threads nb
 
-// init_main_socket()
-    // socket()
-    // setsockopt()
-    // bind_socket_to_src_port()
-        // init sockaddr with src_port
-        // bind()
-// signal(SIGINT, handle_sigint);
+// each host                    // I suggest to simply handle hosts 1 by 1 (vs. tangled hosts), at least for now
+    // resolve_domain()
+    // resolve_address()
+    // check reachability()
 
-// create_workers()
-    // pthread_t workers[threads_nb];
-    // for (int i = 0; i < threads_nb; i++)
-    //      pthread_create(&workers[i], NULL, scanner, NULL);
-// init_socket_listener()
-    // struct pollfd fds[SOCKETS_NB];
-    // add_main_socket()
-    // add_other_sockets() [UNSURE]
+    // init_main_socket()
+        // socket()
+        // setsockopt()
+        // bind_socket_to_src_port()
+            // init sockaddr with src_port
+            // bind()
 
-// listen_loop()
-    // while(1)
-        // poll(fds, SOCKETS_NB, -1)
-        // for (int i = 0; i < SOCKETS_NB; i++)
-        //    if (fds[i].revents & POLLIN)
-        //        enqueue_task();
+    // create_workers()
+        // pthread_t workers[threads_nb];
+        // each thread
+        //      pthread_create(&workers[i], ..., scanner, ...)
+    // init_socket_listener()
+        // struct pollfd fds[SOCKETS_NB];                       // how to pick SOCKETS_NB?
+        // add_main_socket()
+        // add_other_sockets()                                  // [UNSURE]
 
-// wait_workers_end()
-    // for (int i = 0; i < threads_nb; i++)
-    //      pthread_join(workers[i], NULL);
+    // craft_scans_tasks()
+        // while(1)
+            // poll(fds, SOCKETS_NB, timeout)
+            // for (int i = 0; i < SOCKETS_NB; i++)
+            //    if available fd (fds[i].revents & POLLIN)
+            //        task = create_task()
+            //        enqueue_task(task)
 
-// - - - - - - -
-// scanner()
-    // while(1)
-        // task = dequeue_task()
-        // execute_task(task)
+    // wait_workers_end()
+        // each thread
+        //      pthread_join(workers[i], NULL)
 
-
+    // - - - - - - -
+    // scanner()
+        // while(1)
+            // task = dequeue_task()
+            // execute_scan_task(task)
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
