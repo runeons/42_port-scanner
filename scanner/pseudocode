@@ -1,0 +1,46 @@
+// pseudocode
+
+// each host
+    // domain resolution
+    // check reachability (online or not)
+// each port                            // aggregate all scans results in 1 host-port struct
+    // service discovery                // last minute before print?
+    // run each scan
+        // send packet
+        // receive packet
+        // analyse result
+    // conclusion
+
+// resolve_domain()
+// resolve_ip()
+// resolve_service()
+// run_syn_scan()
+// run_ack_scan()
+// run_fin_scan()
+// run_null_scan()
+// run_udp_scan()
+// run_xmas_scan()
+// port_conclusion()
+
+// host struct
+    // ip
+    // domain
+    // ports
+    // scan_types
+
+// host-port struct
+    // host
+    // port
+    // service
+    // scan_types
+    // scan_syn          // define ACTIVATED / NON-ACTIVATED then RESULTS
+    // scan_ack
+    // scan_fin
+    // scan_null
+    // scan_udp
+    // scan_xmas
+    // conclusion
+
+// scan struct
+    // name
+    //
