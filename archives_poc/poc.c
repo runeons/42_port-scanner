@@ -1,4 +1,4 @@
-// clang poc.c && sudo ./a.out -h 1.1.1.1
+// clang poc.c && sudo ./a.out -h 1.1.1.1 -t 3
 
 #include <pthread.h>
 #include <stdio.h>
