@@ -1,17 +1,69 @@
 // pseudocode
 
+// 1 thread / port or 1 thread / port-scan
+
 // each host
-    // resolve_domain()
-    // resolve_ip()
-    // check reachability (online or not)
+    // resolve_domain() [BONUS]
+    // resolve_address() [CORE]
+    // check reachability / host discovery [BONUS]
     // each port                            // aggregate all scans results in 1 host-port struct
-        // resolve_service()
-        // run each scan
+        // resolve_service() [CORE] + version [BONUS]
+        // run each scan [CORE]
             // send packets
             // receive packets
             // analyse result
-        // port_conclusion()
+        // port_conclusion() [CORE]
+    // OS detection [BONUS]
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// main
+
+// I suggest simply : hosts 1 by 1 (vs. tangled hosts), at least for now
+
+// parsing
+    // hosts list
+    // ports list
+    // scans list
+    // threads nb
+
+// init_main_socket()
+    // socket()
+    // setsockopt()
+    // bind_socket_to_src_port()
+        // init sockaddr with src_port
+        // bind()
+// signal(SIGINT, handle_sigint);
+
+// create_workers()
+    // pthread_t workers[threads_nb];
+    // for (int i = 0; i < threads_nb; i++)
+    //      pthread_create(&workers[i], NULL, scanner, NULL);
+// init_socket_listener()
+    // struct pollfd fds[SOCKETS_NB];
+    // add_main_socket()
+    // add_other_sockets() [UNSURE]
+
+// listen_loop()
+    // while(1)
+        // poll(fds, SOCKETS_NB, -1)
+        // for (int i = 0; i < SOCKETS_NB; i++)
+        //    if (fds[i].revents & POLLIN)
+        //        enqueue_task();
+
+// wait_workers_end()
+    // for (int i = 0; i < threads_nb; i++)
+    //      pthread_join(workers[i], NULL);
+
+// - - - - - - -
+// scanner()
+    // while(1)
+        // task = dequeue_task()
+        // execute_task(task)
+
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // scans functions
     // initial_handshake()
         // send
@@ -57,9 +109,9 @@
             // else
         // analyse
 
-
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // host struct
-    // ip
+    // address
     // domain
     // ports
     // scan_types

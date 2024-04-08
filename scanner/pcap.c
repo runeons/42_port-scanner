@@ -41,6 +41,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     }
     payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
 	printf("Jacked a packet with length of [%d]\n", header->len);
+	// printf("Header [%s]\n", header); // need to print as hex
 
 }
 //packet = points to the first byte of the actual packet sniffed
