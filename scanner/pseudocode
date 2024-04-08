@@ -4,21 +4,24 @@
     // resolve_domain()
     // resolve_ip()
     // check reachability (online or not)
-// each port                            // aggregate all scans results in 1 host-port struct
-    // resolve_service()
-    // run each scan
-        // send packets
-        // receive packets
-        // analyse result
-    // port_conclusion()
+    // each port                            // aggregate all scans results in 1 host-port struct
+        // resolve_service()
+        // run each scan
+            // send packets
+            // receive packets
+            // analyse result
+        // port_conclusion()
 
 // scans functions
     // initial_handshake()
-        // send ICMP (ping)
-        // send TCP SYN
-        // send TCP ACK
-        // recv TCP RST
-        // recv ICMP reply
+        // send
+            // ICMP (ECHO request)
+            // TCP SYN
+            // TCP ACK
+        // recv
+            // TCP RST
+            // ICMP (ECHO reply)
+            // TCP SYN ACK
     // run_syn_scan()
         // initial_handshake()
         // send TCP SYN ACK
@@ -26,6 +29,7 @@
             // TCP RST
             // TCP SYN ACK
             // rien
+        // analyse
     // run_ack_scan()
         // initial_handshake()
         // send TCP ACK only
@@ -33,6 +37,7 @@
             // TCP SYN
             // ICMP
             // else
+        // analyse
     // run_fin_scan()
     // run_null_scan()
     // run_xmas_scan()
@@ -42,6 +47,7 @@
             // TCP RST
             // ICMP
             // else
+        // analyse
     // run_udp_scan()
         // initial_handshake()
         // send UDP
@@ -49,6 +55,7 @@
             // UDP (rare)
             // ICMP
             // else
+        // analyse
 
 
 // host struct
@@ -70,41 +77,16 @@
     // scan_xmas
     // conclusion
 
-// packets struct needed            // headers only?
-    // tcp_packet struct
-        // SYN
+// packets structs (inc. bits to read) needed
+    // tcp_header
+        // URG
         // ACK
+        // PSH
         // RST
-        // F/N/X
-    // udp_packet struct
-    // icmp_packet struct
+        // SYN
+        // FIN
+    // udp_header
+    // icmp_header
         // TYPE
         // CODE
 
-
-
-// ARCHIVES
-
-// FROM NMAP PROJECT
-    // run_syn_scan()
-        // send TCP
-            // if recv TCP
-                // RST or SYN_ACK
-            // else
-    // run_ack_scan()
-        // send TCP ACK only
-            // if recv TCP SYN
-            // if recv ICMP
-            // else
-    // run_fin_scan()
-        // send TCP F/N/X
-            // if recv TCP RST
-            // if recv ICMP
-            // else
-    // run_null_scan()
-    // run_xmas_scan()
-    // run_udp_scan()
-        // send UDP
-            // if recv UDP (rare)
-            // if recv ICMP
-            // else
