@@ -11,35 +11,35 @@
         // run each scan [CORE]
             // send packets
             // receive packets
-            // analyse result
-        // port_conclusion() [CORE]
-    // OS detection [BONUS]
+                // analyse result
+            // port_conclusion() [CORE]
+        // OS detection [BONUS]
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// main
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    // main
 
 
 
-// parsing
-    // hosts list
-    // ports list
-    // scans list
-    // threads nb
+    // parsing
+        // hosts list
+        // ports list
+        // scans list
+        // threads nb
 
-// each host                    // I suggest to simply handle hosts 1 by 1 (vs. tangled hosts), at least for now
-    // resolve_domain()
-    // resolve_address()
-    // check reachability()
+    // each host                    // I suggest to simply handle hosts 1 by 1 (vs. tangled hosts), at least for now
+        // resolve_domain()
+        // resolve_address()
+        // check reachability()
 
-    // init_main_socket()
-        // socket()
-        // setsockopt()
-        // bind_socket_to_src_port()
-            // init sockaddr with src_port
-            // bind()
+        // init_main_socket()
+            // socket()
+            // setsockopt()
+            // bind_socket_to_src_port()
+                // init sockaddr with src_port
+                // bind()
 
-    // create_workers()
-        // pthread_t workers[threads_nb];
+        // create_workers()
+            // pthread_t workers[threads_nb];
         // each thread
         //      pthread_create(&workers[i], ..., scanner, ...)
     // init_socket_listener()
