@@ -61,6 +61,13 @@ static void    initialise_data(t_data *dt)
     resolve_hostname(dt);
 }
 
+
+void    close_connection(char *msg, int *close_conn)
+{
+    warning_error(msg);
+    *close_conn = TRUE;
+}
+
 int main(int ac, char **av)
 {
     t_data          dt;
@@ -110,7 +117,7 @@ int main(int ac, char **av)
             else
             {
                 print_info("New fd is readable");
-                // ... Receive all incoming 
+                // Receive all incoming data
                 close_conn = FALSE;
                 while (TRUE) // recv until EWOULDBLOCK
                 {
@@ -118,16 +125,12 @@ int main(int ac, char **av)
                     if (rc < 0)
                     {
                         if (errno != EWOULDBLOCK)
-                        {
-                            warning_error("Recv failure.");
-                            close_conn = TRUE;
-                        }
+                            close_connection("Recv failure.", &close_conn);
                         break;
                     }
                     if (rc == 0)
                     {
-                        print_info("Connection closed by client");
-                        close_conn = TRUE;
+                        close_connection("Connection closed by client.", &close_conn);
                         break;
                     }
                     len = rc;
@@ -135,8 +138,7 @@ int main(int ac, char **av)
                     rc = send(fds[i].fd, buffer, len, 0); // echo data back to the client
                     if (rc < 0)
                     {
-                        warning_error("Send failure.");
-                        close_conn = TRUE;
+                        close_connection("Send failure.", &close_conn);
                         break;
                     }
                 }
