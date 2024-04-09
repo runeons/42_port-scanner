@@ -1,6 +1,6 @@
 #include <libft.h>
 
-void warning_error(const char *msg, ...)
+void warning_error_args(const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);

@@ -1,6 +1,6 @@
 #include <libft.h>
 
-void exit_error(const char *msg, ...)
+void exit_error_args(const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);

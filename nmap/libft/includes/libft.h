@@ -44,9 +44,9 @@ int				mfree(void **to_free);
 int				m_free(void *ptr);
 
 // error_fct
-void			exit_error(const char *msg, ...);
+void			exit_error_args(const char *msg, ...);
 void			exit_error_close(int socket, const char *msg, ...);
-void			warning_error(const char *msg, ...);
+void			warning_error_args(const char *msg, ...);
 
 // tab_fct
 int				ft_tablen(char **t);
