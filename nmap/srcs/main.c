@@ -1,5 +1,7 @@
 #include "nmap.h"
 
+int g_end_server       = FALSE;
+
 void exit_error(char *msg)
 {
     printf(C_G_RED"[ERROR]"C_RES" %s\n", msg);
@@ -127,56 +129,64 @@ void debug_icmp_packet(t_packet packet)
     printf("    packet.h.un.echo.sequence: %d\n", packet.h.un.echo.sequence);
 }
 
+void    send_packet(t_data *dt)
+{
+    int r = 0;
+
+    print_info("Main socket is readable");
+    if ((r = sendto(dt->socket, &dt->packet, sizeof(dt->packet), 0, (struct sockaddr*)&dt->target_address, sizeof(dt->target_address))) < 0)
+    {
+        warning_error("Packet sending failure.");
+        return;
+    }
+    print_info_int("Packet sent (bytes):", sizeof(dt->packet));
+    debug_icmp_packet(dt->packet);
+    g_end_server = TRUE;
+}
+
+void    craft_and_send_packet(t_data *dt)
+{
+    craft_packet(dt);
+    send_packet(dt);
+}
+
 int main(int ac, char **av)
 {
     t_data          dt;
+    int             r = 0;
 
     (void)ac;
     (void)av;
     initialise_data(&dt);
     open_main_socket(&dt);
     debug_sockaddr_in(&dt.target_address);
-    craft_packet(&dt);
 
     struct pollfd fds[SOCKETS_NB];
     ft_memset(fds, 0 , sizeof(fds));
     fds[0].fd               = dt.socket;
     fds[0].events           = POLLOUT;
-    int     timeout         = (5 * 60 * 1000);
-    int     r               = 0;
-    int     end_server      = FALSE;
-
-    while (end_server == FALSE)
+    
+    while (g_end_server == FALSE)
     {
         printf("Waiting on poll()...\n");
-        r = poll(fds, NFDS, timeout);
+        r = poll(fds, NFDS, POLL_TIMEOUT);
         if (r < 0)
             exit_error("Poll failure.");
         if (r == 0)
             exit_error("Poll timed out.");
         for (int i = 0; i < NFDS; i++)
         {
-            if (fds[i].revents == 0)        // unavailable fds
-                continue;        
+            if (fds[i].revents == 0)
+            {
+                printf(C_B_RED"[SHOULD NOT APPEAR] No revent / unavailable yet"C_RES"\n");
+                continue;
+            }
             if (fds[i].revents != POLLOUT)
                 exit_error_close_socket("Poll unexpected result", dt.socket);
             if (fds[i].fd == dt.socket)
-            {
-                print_info("Main socket is readable");
-                if ((r = sendto(dt.socket, &dt.packet, sizeof(dt.packet), 0, (struct sockaddr*)&dt.target_address, sizeof(dt.target_address))) < 0)
-                {
-                    warning_error("Packet sending failure.");
-                    break;
-                }
-                print_info_int("Packet sent (bytes):", sizeof(dt.packet));
-                debug_icmp_packet(dt.packet);
-                end_server = TRUE;
-            }
+                craft_and_send_packet(&dt);
             else
-            {
-                warning_error("Unknown fd is readable");
-                break;
-            }
+                warning_error("Unknown fd is readable.");
         }
     }
     close(dt.socket);

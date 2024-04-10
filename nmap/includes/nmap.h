@@ -18,11 +18,14 @@
 # include <libft.h>
 
 # define MAX_HOSTNAME_LEN       128
-# define SOCKETS_NB             200
-# define FALSE                  0
+# define SOCKETS_NB             1 // e.g. 200
 # define TRUE                   1
+# define FALSE                  0
 # define ICMP_PAYLOAD_LEN       56
 # define NFDS                   1
+# define POLL_TIMEOUT           5 * 60 * 1000 // 5 minutes
+
+extern int g_end_server;
 
 typedef struct  s_packet
 {
