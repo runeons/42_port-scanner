@@ -81,4 +81,6 @@ void    open_main_socket(t_data *dt)
     if (setsockopt(dt->socket, IPPROTO_IP, IP_TTL, &optval, sizeof(optval)) < 0)
         exit_error_close(dt->socket, "nmap: socket error in setting option: Exiting program.%s\n");
     bind_socket_to_src_port(dt, dt->src_port);
+    dt->fds[0].fd = dt->socket;
+
 }

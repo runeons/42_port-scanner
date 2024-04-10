@@ -1,53 +1,12 @@
 #include "nmap.h"
 
 int g_end_server       = FALSE;
+int g_sequence         = 0;
+int g_max_send         = 2;
 
-void exit_error(char *msg)
-{
-    printf(C_G_RED"[ERROR]"C_RES" %s\n", msg);
-    exit(1);
-}
-
-// void    close_poll_fds(int nfds, struct pollfd fds[SOCKETS_NB])
-// {
-//     for (int i = 0; i < nfds; i++)
-//     {
-//         if (fds[i].fd >= 0)
-//             close(fds[i].fd);
-//     }
-// }
-
-// void exit_error_close_fds(char *msg, int socket, int nfds, struct pollfd fds[SOCKETS_NB])
-// {
-//     printf(C_G_RED"[ERROR]"C_RES" %s\n", msg);
-//     close(socket);
-//     close_poll_fds(nfds, fds);
-//     free_all_malloc();
-//     exit(1);
-// }
-
-void exit_error_close_socket(char *msg, int socket)
-{
-    printf(C_G_RED"[ERROR]"C_RES" %s\n", msg);
-    close(socket);
-    free_all_malloc();
-    exit(1);
-}
-
-void warning_error(char *msg)
-{
-    printf(C_G_MAGENTA"[WARNING]"C_RES" %s\n", msg);
-}
-
-void print_info(char *msg)
-{
-    printf(C_G_BLUE"[INFO]"C_RES" %s\n", msg);
-}
-
-void print_info_int(char *msg, int n)
-{
-    printf(C_G_BLUE"[INFO]"C_RES" %s %d\n", msg, n);
-}
+const struct iphdr          *ip_h;
+const struct icmphdr        *icmp_h;
+const char                  *icmp_payload;
 
 void init_data(t_data *dt)
 {
@@ -59,11 +18,13 @@ void init_data(t_data *dt)
     dt->src_port            = 45555;
     dt->threads_nb          = 2;
     dt->sequence            = 0;
-    ft_memset(&(dt->local_address), 0, sizeof(struct sockaddr_in));
+    ft_memset(&(dt->local_address),  0, sizeof(struct sockaddr_in));
     ft_memset(&(dt->target_address), 0, sizeof(struct sockaddr_in));
-    dt->target_address.sin_family = AF_INET;
-    dt->target_address.sin_port = 0;
-    dt->target_address.sin_addr.s_addr = INADDR_ANY;
+    dt->target_address.sin_family       = AF_INET;
+    dt->target_address.sin_port         = 0;
+    dt->target_address.sin_addr.s_addr  = INADDR_ANY;
+    ft_memset(dt->fds, 0, sizeof(dt->fds));
+    dt->fds[0].events       = POLLOUT;
 }
 
 static void    initialise_data(t_data *dt)
@@ -73,121 +34,100 @@ static void    initialise_data(t_data *dt)
     resolve_hostname(dt);
 }
 
-unsigned short checksum(void *packet, int len)
+void    send_when_available(t_data *dt)
 {
-    unsigned short  *tmp;
-	unsigned int    checksum;
+    for (g_sequence = 0; g_sequence < g_max_send; g_sequence++)
+        for (int i = 0; i < NFDS; i++) // only one for now
+        {
+            if (dt->fds[i].revents == 0)
+            {
+                printf(C_B_RED"[SHOULD NOT APPEAR] No revent / unavailable yet"C_RES"\n");
+                continue;
+            }
+            if (dt->fds[i].revents != POLLOUT)
+                exit_error_close_socket("Poll unexpected result", dt->socket);
+            if (dt->fds[i].fd == dt->socket)
+                craft_and_send_packet(dt);
+            else
+                warning("Unknown fd is readable.");
+        }
+}
 
-    tmp = packet;
-    checksum = 0;
-    while (len > 1)
+void    retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
+{
+    (void)args;
+    ip_h            = (struct iphdr *)          (packet + ETH_H_LEN);                           // packet + 14
+    icmp_h          = (struct icmphdr *)        (packet + ETH_H_LEN + IP_H_LEN);                // packet + 14 + 20
+    icmp_payload    = (char *)                  (packet + ETH_H_LEN + IP_H_LEN + ICMP_H_LEN);   // packet + 14 + 20 + 8
+    // printf(C_G_RED"[QUICK DEBUG] icmp_h->type: %hhu"C_RES"\n", icmp_h->type);
+    if (icmp_h->type != ICMP_ECHO_REPLY)
+        warning_int("Invalid ICMP type: (bytes)", icmp_h->type);
+    else
     {
-        checksum += *tmp++;
-        len -= sizeof(unsigned short);
+        printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet of size "C_G_GREEN"[%d]"C_RES" with type-code "C_G_GREEN"[%d]"C_RES" and code "C_G_GREEN"[%d]"C_RES"\n", header->len, icmp_h->type, icmp_h->code);
+	    printf("       PAYLOAD [%s]\n", icmp_payload); // need to print as hex
     }
-	if (len == 1)
-		checksum += *(unsigned char*)tmp;
-	checksum = (checksum >> 16) + (checksum & 0xFFFF);
-	checksum += (checksum >> 16);
-	checksum = (unsigned short)(~checksum);
-	return checksum;
+
 }
 
-void craft_icmp_payload(t_data *dt)
+void    prepare_sniffer(pcap_t **handle)
 {
-    int i;
+    pcap_if_t           *interfaces;
+    char                device[] = "enp0s3";
+    char                filter[] = "src host 1.1.1.1";
+    struct bpf_program  compiled_filter;
+    char                err_buf[PCAP_ERRBUF_SIZE];          // 256 from pcap.h
+    bpf_u_int32         dev_mask;		                    // The netmask of our sniffing device
+    bpf_u_int32         net_mask;		                    // The IP of our sniffing device   
 
-    i = 0;
-    ft_bzero(&dt->packet, sizeof(dt->packet));
-    while (i < ICMP_PAYLOAD_LEN)
+    if (pcap_lookupnet(device, &net_mask, &dev_mask, err_buf) == -1) // get network mask needed for the filter
     {
-		dt->packet.payload[i] = 'A';
-        i++;
+        warning_str("No network mask for device:", device);
+        net_mask = 0;
+        dev_mask = 0;
     }
-    dt->packet.payload[ICMP_PAYLOAD_LEN - 1] = '\0';
-    dt->sequence++;
+    // debug_net_mask(net_mask, dev_mask);
+    if (pcap_findalldevs(&interfaces, err_buf) == -1)
+        exit_error_str("Finding devices", err_buf);
+    // debug_interfaces(interfaces);
+    if ((*handle = pcap_open_live(device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
+        exit_error_str("Opening device:", err_buf);
+    if (pcap_compile(*handle, &compiled_filter, filter, 0, net_mask) == -1)
+        exit_error_str("Parsing filter:", pcap_geterr(*handle));
+    if (pcap_setfilter(*handle, &compiled_filter) == -1)
+        exit_error_str("Compiling filter:", pcap_geterr(*handle));
 }
 
-void    craft_packet(t_data *dt)
+void    sniff_packets(pcap_t *handle)
 {
-    craft_icmp_payload(dt);
-    dt->packet.h.type = ICMP_ECHO;
-    dt->packet.h.un.echo.id = getpid();
-    dt->packet.h.un.echo.sequence = dt->sequence;
-    dt->packet.h.checksum = checksum(&dt->packet, sizeof(dt->packet));
+    printf(C_G_YELLOW"[INFO]"C_RES" Ready to sniff...\n");
+    pcap_dispatch(handle, 10, retrieve_packet, NULL);
+	print_info("Capture completed");
+	pcap_close(handle);
 }
 
-void debug_icmp_packet(t_packet packet)
-{
-    printf("    sizeof(packet): %lu\n", sizeof(packet));
-    printf("    packet.payload: %s\n", packet.payload);
-    printf("    sizeof(packet.payload): %lu\n", sizeof(packet.payload));
-    printf("    packet.h.type: %d\n", packet.h.type);
-    printf("    packet.h.code: %d\n", packet.h.code);
-    printf("    packet.h.checksum: %d\n", packet.h.checksum);
-    printf("    packet.h.un.echo.id: %d\n", packet.h.un.echo.id);
-    printf("    packet.h.un.echo.sequence: %d\n", packet.h.un.echo.sequence);
-}
-
-void    send_packet(t_data *dt)
-{
-    int r = 0;
-
-    print_info("Main socket is readable");
-    if ((r = sendto(dt->socket, &dt->packet, sizeof(dt->packet), 0, (struct sockaddr*)&dt->target_address, sizeof(dt->target_address))) < 0)
-    {
-        warning_error("Packet sending failure.");
-        return;
-    }
-    print_info_int("Packet sent (bytes):", sizeof(dt->packet));
-    debug_icmp_packet(dt->packet);
-    g_end_server = TRUE;
-}
-
-void    craft_and_send_packet(t_data *dt)
-{
-    craft_packet(dt);
-    send_packet(dt);
-}
-
-int main(int ac, char **av)
+int     main(int ac, char **av)
 {
     t_data          dt;
     int             r = 0;
+    pcap_t          *handle;
 
     (void)ac;
     (void)av;
     initialise_data(&dt);
     open_main_socket(&dt);
-    debug_sockaddr_in(&dt.target_address);
-
-    struct pollfd fds[SOCKETS_NB];
-    ft_memset(fds, 0 , sizeof(fds));
-    fds[0].fd               = dt.socket;
-    fds[0].events           = POLLOUT;
-    
+    // debug_sockaddr_in(&dt.target_address);
+    prepare_sniffer(&handle);
     while (g_end_server == FALSE)
     {
-        printf("Waiting on poll()...\n");
-        r = poll(fds, NFDS, POLL_TIMEOUT);
+        printf(C_G_YELLOW"[INFO]"C_RES" Waiting on poll()...\n");
+        r = poll(dt.fds, NFDS, POLL_TIMEOUT);
         if (r < 0)
             exit_error("Poll failure.");
         if (r == 0)
             exit_error("Poll timed out.");
-        for (int i = 0; i < NFDS; i++)
-        {
-            if (fds[i].revents == 0)
-            {
-                printf(C_B_RED"[SHOULD NOT APPEAR] No revent / unavailable yet"C_RES"\n");
-                continue;
-            }
-            if (fds[i].revents != POLLOUT)
-                exit_error_close_socket("Poll unexpected result", dt.socket);
-            if (fds[i].fd == dt.socket)
-                craft_and_send_packet(&dt);
-            else
-                warning_error("Unknown fd is readable.");
-        }
+        send_when_available(&dt);
+        sniff_packets(handle);
     }
     close(dt.socket);
     free_all_malloc();

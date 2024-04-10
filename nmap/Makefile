@@ -15,7 +15,7 @@ CFLAGS					= 	-I includes/ \
 							-Wall -Wextra -Werror 
 
 INC_LIB						= 	-I libft
-LIB							= 	-L libft -lft
+LIB							= 	-L libft -lft -lpcap
 
 
 
@@ -39,7 +39,11 @@ SRCS_DIR					=	./srcs/
 
 SRCS_LIST					=	\
 							main.c \
+							packet.c \
 							socket.c \
+							utils_debug.c \
+							utils_error.c \
+							utils_print.c \
 
 SRCS					=	$(addprefix $(SRCS_DIR), $(SRCS_LIST))
 

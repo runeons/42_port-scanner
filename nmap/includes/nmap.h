@@ -16,21 +16,34 @@
 // # include <netinet/udp.h>       // struct udphdr
 # include <utils_colors.h>
 # include <libft.h>
+# include <pcap.h>
 
-# define MAX_HOSTNAME_LEN       128
-# define SOCKETS_NB             1 // e.g. 200
+// GENERAL
 # define TRUE                   1
 # define FALSE                  0
-# define ICMP_PAYLOAD_LEN       56
+# define MAX_HOSTNAME_LEN       128
+# define SOCKETS_NB             1               // e.g. 200
+// POLL
 # define NFDS                   1
-# define POLL_TIMEOUT           5 * 60 * 1000 // 5 minutes
+# define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
+// PCAP
+# define PROMISCUOUS            1
+// PACKETS SIZES
+# define ETH_H_LEN              14
+# define IP_H_LEN               20  // sizeof(struct iphdr)
+# define ICMP_H_LEN             8   // sizeof(struct icmphdr)
+# define ICMP_P_LEN             56
+// PACKETS FLAGS
+# define ICMP_ECHO_REPLY        0
 
 extern int g_end_server;
+extern int g_sequence;
+extern int g_max_send;
 
 typedef struct  s_packet
 {
 	struct icmphdr  h;
-	char            payload[ICMP_PAYLOAD_LEN];
+	char            payload[ICMP_P_LEN];
 }               t_packet;
 
 typedef struct  s_data
@@ -46,6 +59,7 @@ typedef struct  s_data
     int                 threads_nb;
     int                 sequence;
     t_packet            packet;
+    struct pollfd       fds[SOCKETS_NB];
 }					t_data;
 
 //  socket.c
@@ -56,10 +70,25 @@ void            open_main_socket(t_data *dt);
 void            debug_addrinfo(struct addrinfo *ai);
 void            debug_sockaddr_in(struct sockaddr_in *addr);
 
-//  main.c
-void            exit_error(char *msg);
-void            warning_error(char *msg);
+// packet.c
+void            craft_and_send_packet(t_data *dt);
+
+// utils_debug.c
+void            debug_icmp_packet(t_packet packet);
+void            debug_interfaces(pcap_if_t *interfaces);
+void            debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask);
+
+// utils_print.c
 void            print_info(char *msg);
 void            print_info_int(char *msg, int n);
+
+// utils_error.c
+void            exit_error(char *msg);
+void            exit_error_str(char *msg, char *error);
+void            exit_error_close_socket(char *msg, int socket);
+void            warning(char *msg);
+void            warning_str(char *msg, char *error);
+void            warning_int(char *msg, int nb);
+
 
 #endif
