@@ -6,17 +6,30 @@
 #include <pcap.h>
 #include "colors.h"
 #include "structs.h"
+#include <netinet/ip_icmp.h>   // struct icmphdr
+#include <strings.h>
 
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14
+#define IP_H_LEN               20  // sizeof(struct iphdr)
+#define ICMP_H_LEN             8   // sizeof(struct icmphdr)
+#define TRUE                   1
+#define FALSE                  0
+#define ICMP_ECHO_REPLY        0
 
 const struct sniff_ethernet *ethernet;  /* The ethernet header */
 const struct sniff_ip       *ip;        /* The IP header */
 const struct sniff_tcp      *tcp;       /* The TCP header */
+const struct sniff_icmp     *icmp;      /* The ICMP header */
 const u_char                *payload;   /* Packet payload */
+
+const struct iphdr          *ip_h;                /* The IP header */
+const struct icmphdr        *icmp_h;              /* The ICMP header */
+const char                  *icmp_payload;      /* Packet payload */
 
 u_int size_ip;
 u_int size_tcp;
+u_int size_icmp;
 
 // struct pcap_pkthdr
 // {
@@ -65,7 +78,34 @@ void debug_net_mask(bpf_u_int32 net, bpf_u_int32 mask)
     printf("\n");
 }
 
-// callback function format
+void    init_buf(struct msghdr *msg)
+{
+    struct icmphdr  *icmp_control;
+    struct iovec    *iov;
+    char            *buffer;
+
+    if (!(buffer = malloc(sizeof(char) * 1024))) // mmalloc
+        exit_error("Malloc error (buffer)", "");
+    bzero(buffer, 1024); // ft_bzero
+    if (!(iov = (struct iovec *)malloc(sizeof(struct iovec)))) // mmalloc
+        exit_error("Malloc error (iov)", "");
+    bzero(iov, sizeof(*iov)); // ft_bzero
+    if (!(icmp_control = (struct icmphdr *)malloc(sizeof(struct icmphdr)))) // mmalloc
+        exit_error("Malloc error (icmp_control)", "");
+    bzero(icmp_control, sizeof(*icmp_control)); // ft_bzero
+    icmp_control->type = 4;
+    iov->iov_base = buffer;
+    iov->iov_len = sizeof(buffer);
+    msg->msg_name = NULL;
+    msg->msg_namelen = 0;
+    msg->msg_iov = iov;
+    msg->msg_iovlen = 1;
+    msg->msg_control = icmp_control;
+    msg->msg_controllen = sizeof(*icmp_control);
+    msg->msg_flags = 4;
+}
+
+// // callback function format // from tutorial 
 void retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
     ethernet    = (struct sniff_ethernet*)(packet);
@@ -78,6 +118,8 @@ void retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_cha
     }
     tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
     size_tcp = TH_OFF(tcp) * 4;
+    printf(C_G_RED"[QUICK DEBUG] size_ip: %u"C_RES"\n", size_ip);
+    printf(C_G_RED"[QUICK DEBUG] size_tcp: %u"C_RES"\n", size_tcp);
     if (size_tcp < 20)
     {
         warning_int("Invalid TCP header length: (bytes)", size_tcp);
@@ -85,16 +127,33 @@ void retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_cha
     }
     payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
     printf(C_G_GREEN"[%d] "C_RES"Retrieved packet\n", header->len);
-	printf("PAYLOAD [%s]\n", payload); // need to print as hex
+}
+// packet = points to the first byte of the actual packet sniffed
+
+void sniff_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
+{
+    // ethernet        = (struct sniff_ethernet*)  (packet);
+    ip_h            = (struct iphdr *)          (packet + SIZE_ETHERNET);                           // packet + 14
+    icmp_h          = (struct icmphdr *)        (packet + SIZE_ETHERNET + IP_H_LEN);                // packet + 14 + 20
+    icmp_payload    = (char *)                  (packet + SIZE_ETHERNET + IP_H_LEN + ICMP_H_LEN);   // packet + 14 + 20 + 8
+    printf(C_G_RED"[QUICK DEBUG] icmp_h->type: %ld"C_RES"\n", icmp_h->type);
+    if (icmp_h->type != ICMP_ECHO_REPLY)
+    {
+        warning_int("Invalid ICMP type: (bytes)", size_icmp);
+        return;
+    }
+    printf(C_G_BLUE"[INFO]"C_RES" Retrieved packet of size "C_G_GREEN"[%d]"C_RES" with type-code "C_G_GREEN"[%d]"C_RES" and code "C_G_GREEN"[%d]"C_RES"\n", header->len, icmp_h->type, icmp_h->code);
+	printf("       PAYLOAD [%s]\n", icmp_payload); // need to print as hex
 
 }
 // packet = points to the first byte of the actual packet sniffed
+
 
 int main(int argc,char **argv)
 {
     pcap_if_t           *interfaces;
     char                device[] = "enp0s3";
-    char                filter[] = "host 1.1.1.1";	    // filter expression
+    char                filter[] = "src host 1.1.1.1";	    // filter expression
     struct bpf_program  fp;		                        // compiled filter expression
     char                err_buf[PCAP_ERRBUF_SIZE];
     bpf_u_int32         mask;		                    // The netmask of our sniffing device
@@ -120,7 +179,7 @@ int main(int argc,char **argv)
         exit_error("Parsing filter:", pcap_geterr(handle));
     if (pcap_setfilter(handle, &fp) == -1)
         exit_error("Compiling filter:", pcap_geterr(handle));
-	pcap_dispatch(handle, 10, retrieve_packet, NULL);
+	pcap_dispatch(handle, 10, sniff_packet, NULL);
 	print_info("Capture completed");
 	pcap_close(handle);
     return 0;
