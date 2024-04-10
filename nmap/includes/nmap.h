@@ -12,7 +12,7 @@
 # include <netdb.h>             // addrinfo
 # include <sys/poll.h>
 # include <errno.h>
-// # include <netinet/ip_icmp.h>   // struct icmphdr
+# include <netinet/ip_icmp.h>   // struct icmphdr
 // # include <netinet/udp.h>       // struct udphdr
 # include <utils_colors.h>
 # include <libft.h>
@@ -21,6 +21,14 @@
 # define SOCKETS_NB             200
 # define FALSE                  0
 # define TRUE                   1
+# define ICMP_PAYLOAD_LEN       56
+# define NFDS                   1
+
+typedef struct  s_packet
+{
+	struct icmphdr  h;
+	char            payload[ICMP_PAYLOAD_LEN];
+}               t_packet;
 
 typedef struct  s_data
 {
@@ -33,6 +41,8 @@ typedef struct  s_data
     int                 dst_port;
     int                 src_port;
     int                 threads_nb;
+    int                 sequence;
+    t_packet            packet;
 }					t_data;
 
 //  socket.c
