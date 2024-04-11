@@ -55,7 +55,7 @@ static void    send_packet(t_data *dt)
         return;
     }
     print_info_int("Packet sent (bytes):", sizeof(dt->packet));
-    debug_icmp_packet(dt->packet);
+    // debug_icmp_packet(dt->packet);
     g_end_server = TRUE;
 }
 

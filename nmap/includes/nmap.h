@@ -17,12 +17,15 @@
 # include <utils_colors.h>
 # include <libft.h>
 # include <pcap.h>
+# include <pthread.h>
 
 // GENERAL
 # define TRUE                   1
 # define FALSE                  0
 # define MAX_HOSTNAME_LEN       128
 # define SOCKETS_NB             1               // e.g. 200
+// THREADS
+# define THREADS_NB             4
 // POLL
 # define NFDS                   1
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
@@ -39,6 +42,7 @@
 extern int g_end_server;
 extern int g_sequence;
 extern int g_max_send;
+extern int g_task_id;
 
 typedef struct  s_packet
 {
@@ -81,6 +85,7 @@ void            debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask);
 // utils_print.c
 void            print_info(char *msg);
 void            print_info_int(char *msg, int n);
+void            print_info_task(char *msg, int n);
 
 // utils_error.c
 void            exit_error(char *msg);
