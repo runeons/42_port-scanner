@@ -2,16 +2,15 @@
 
 int g_end_server       = FALSE;
 int g_sequence         = 0;
-int g_max_send         = 220;
+int g_max_send         = 20;
 int g_task_id          = 0;
-int g_retrieve         = 0;
 
 const struct iphdr          *ip_h;
 const struct icmphdr        *icmp_h;
 const char                  *icmp_payload;
 
 pthread_mutex_t     mutex       = PTHREAD_MUTEX_INITIALIZER;
-t_scan_task         task_queue[1028];
+t_scan_task         task_queue[THREADS_NB];
 int                 queue_front = 0;
 int                 queue_rear  = 0;
 
@@ -23,6 +22,8 @@ void init_data(t_data *dt)
     dt->socket              = 0;
     dt->dst_port            = 80;
     dt->src_port            = 45555;
+    dt->threads_nb          = 2;
+    dt->sequence            = 0;
     ft_memset(&(dt->local_address),  0, sizeof(struct sockaddr_in));
     ft_memset(&(dt->target_address), 0, sizeof(struct sockaddr_in));
     dt->target_address.sin_family       = AF_INET;
@@ -79,36 +80,38 @@ t_scan_task dequeue_task()
     pthread_mutex_lock(&mutex);
     t_scan_task task = task_queue[queue_front++];
     pthread_mutex_unlock(&mutex);
-    if (queue_rear == (queue_front + 1))
-        g_end_server = TRUE;
     return task;
 };
 
-void    send_icmp(t_data *dt, t_scan_task *task)
+
+void    send_when_available(t_data *dt)
 {
-    for (int i = 0; i < NFDS; i++) // only one for now
-    {
-        if (dt->fds[i].revents == 0)
+    for (g_sequence = 0; g_sequence < g_max_send; g_sequence++)
+        for (int i = 0; i < NFDS; i++) // only one for now
         {
-            printf(C_B_RED"[NEED TO RESEND] No revent / unavailable yet"C_RES"\n");
-            continue;
+            if (dt->fds[i].revents == 0)
+            {
+                printf(C_B_RED"[SHOULD NOT APPEAR] No revent / unavailable yet"C_RES"\n");
+                continue;
+            }
+            if (dt->fds[i].revents != POLLOUT)
+                exit_error_close_socket("Poll unexpected result", dt->socket);
+            if (dt->fds[i].fd == dt->socket)
+            {
+                craft_and_send_packet(dt);
+                t_scan_task task;
+                task.id = g_task_id++;
+                enqueue_task(task);
+                print_info_task("Enqueued task", task.id);
+            }
+            else
+                warning("Unknown fd is readable.");
         }
-        if (dt->fds[i].revents != POLLOUT)
-            exit_error_close_socket("Poll unexpected result", dt->socket);
-        if (dt->fds[i].fd == dt->socket)
-        {
-            t_packet packet;
-            craft_and_send_icmp(dt->socket, &packet, task);
-        }
-        else
-            warning("Unknown fd is readable.");
-    }
 }
 
 void    retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
     (void)args;
-    (void)header;
     ip_h            = (struct iphdr *)          (packet + ETH_H_LEN);                           // packet + 14
     icmp_h          = (struct icmphdr *)        (packet + ETH_H_LEN + IP_H_LEN);                // packet + 14 + 20
     icmp_payload    = (char *)                  (packet + ETH_H_LEN + IP_H_LEN + ICMP_H_LEN);   // packet + 14 + 20 + 8
@@ -117,54 +120,36 @@ void    retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_
         warning_int("Invalid ICMP type: (bytes)", icmp_h->type);
     else
     {
-        printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet "C_G_GREEN"[%d]"C_RES"\n", g_retrieve);
-        // printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet of size "C_G_GREEN"[%d]"C_RES" with type "C_G_GREEN"[%d]"C_RES" and code "C_G_GREEN"[%d]"C_RES"\n", header->len, icmp_h->type, icmp_h->code);
-        // printf(C_G_MAGENTA"[INFO]"C_RES"PAYLOAD [%s]\n", icmp_payload);
-        g_retrieve++;
+        printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet of size "C_G_GREEN"[%d]"C_RES" with type-code "C_G_GREEN"[%d]"C_RES" and code "C_G_GREEN"[%d]"C_RES"\n", header->len, icmp_h->type, icmp_h->code);
+	    printf("       PAYLOAD [%s]\n", icmp_payload); // need to print as hex
     }
+
 }
 
 void    sniff_packets(pcap_t *handle)
 {
     printf(C_G_YELLOW"[INFO]"C_RES" Ready to sniff...\n");
-    pcap_dispatch(handle, 0, retrieve_packet, NULL);
+    pcap_dispatch(handle, 10, retrieve_packet, NULL);
 	print_info("Capture completed");
 	pcap_close(handle);
 }
 
 void* worker_function(void *dt)
 {
+    t_data *tmp = (t_data *)dt;
     printf(C_B_YELLOW"[NEW THREAD]"C_RES"\n");
-    while (g_end_server == FALSE)
-    {
-        t_scan_task task = dequeue_task();
-        print_info_task("Dequeued task", task.id);
-        if (task.task_type == SEND)
-        {
-            if (task.scan_type == ICMP)
-            {
-                send_icmp((t_data *)dt, &task);
-            }
-        }
-    }
+    printf(C_G_RED"[QUICK DEBUG] dt->input_dest: %s"C_RES"\n", tmp->input_dest);
+    t_scan_task task = dequeue_task();
+
+    print_info_task("Dequeued task", task.id);
+        // Effectuer le scan TCP/UDP et gérer la réponse
     return NULL;
 }
 
-void    init_queue(t_data *dt)
-{
-    for (int i = 0; i <= g_max_send; i++)
-    {
-        t_scan_task task;
+// void    init_queue()
+// {
 
-        task.id              = g_task_id++;
-        task.task_type       = SEND;
-        task.scan_type       = ICMP;
-        task.target_address  = dt->target_address;
-        task.dst_port        = dt->dst_port + i;
-        enqueue_task(task);
-        print_info_task("Enqueued task", task.id);
-    }
-}
+// }
 
 int     main(int ac, char **av)
 {
@@ -184,7 +169,7 @@ int     main(int ac, char **av)
         pthread_create(&workers[i], NULL, worker_function, &dt);
     }
     printf(C_B_YELLOW"[MAIN THREAD - START - PRINT NMAP START]"C_RES"\n");
-    init_queue(&dt);
+    // init_queue()
     while (g_end_server == FALSE)
     {
         printf(C_G_YELLOW"[INFO]"C_RES" Waiting on poll()...\n");
@@ -193,6 +178,7 @@ int     main(int ac, char **av)
             exit_error("Poll failure.");
         if (r == 0)
             exit_error("Poll timed out.");
+        send_when_available(&dt);
         sniff_packets(handle);
     }
     for (int i = 0; i < THREADS_NB; i++)
@@ -200,7 +186,7 @@ int     main(int ac, char **av)
         print_info_task("END THREAD", i);
         pthread_join(workers[i], NULL);
     }
-    printf(C_B_YELLOW"[MAIN THREAD - END - RETRIEVED %d]"C_RES"\n", g_retrieve);
+    printf(C_B_YELLOW"[MAIN THREAD - END - PRINT NMAP RESULTS]"C_RES"\n");
     close(dt.socket);
     // free_all_malloc();
     return (0);

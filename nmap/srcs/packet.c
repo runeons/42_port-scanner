@@ -20,47 +20,47 @@ static unsigned short checksum(void *packet, int len)
 	return checksum;
 }
 
-static void    craft_icmp_payload(t_data *dt)
+static void    craft_icmp_payload(t_packet *packet)
 {
     int i;
 
     i = 0;
-    ft_bzero(&dt->packet, sizeof(dt->packet));
+    ft_bzero(packet, sizeof(*packet));
     while (i < ICMP_P_LEN)
     {
-		dt->packet.payload[i] = 'A' + g_sequence;
+		packet->payload[i] = 'A';
         i++;
     }
-    dt->packet.payload[ICMP_P_LEN - 1] = '\0';
-    dt->sequence++;
+    packet->payload[ICMP_P_LEN - 1] = '\0';
+    g_sequence++;
 }
 
-static void    craft_packet(t_data *dt)
+static void    craft_icmp_packet(t_packet *packet, t_scan_task *task)
 {
-    craft_icmp_payload(dt);
-    dt->packet.h.type = ICMP_ECHO;
-    dt->packet.h.un.echo.id = getpid();
-    dt->packet.h.un.echo.sequence = dt->sequence;
-    dt->packet.h.checksum = checksum(&dt->packet, sizeof(dt->packet));
+    (void) task;
+    craft_icmp_payload(packet);
+    packet->h.type = ICMP_ECHO;
+    packet->h.un.echo.id = getpid();
+    packet->h.un.echo.sequence = g_sequence;
+    packet->h.checksum = checksum(packet, sizeof(*packet));
 }
 
-static void    send_packet(t_data *dt)
+static void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address)
 {
     int r = 0;
 
     print_info("Main socket is readable");
-    if ((r = sendto(dt->socket, &dt->packet, sizeof(dt->packet), 0, (struct sockaddr*)&dt->target_address, sizeof(dt->target_address))) < 0)
+    if ((r = sendto(socket, packet, sizeof(*packet), 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
     {
         warning("Packet sending failure.");
         return;
     }
-    print_info_int("Packet sent (bytes):", sizeof(dt->packet));
-    // debug_icmp_packet(dt->packet);
-    g_end_server = TRUE;
+    print_info_int("Packet sent (bytes):", sizeof(*packet));
+    // debug_icmp_packet(*packet);
 }
 
-void            craft_and_send_packet(t_data *dt)
+void            craft_and_send_icmp(int socket, t_packet *packet, t_scan_task *task)
 {
-    craft_packet(dt);
-    send_packet(dt);
+    craft_icmp_packet(packet, task);
+    send_packet(socket, packet, &task->target_address);
 }

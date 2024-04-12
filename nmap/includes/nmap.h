@@ -38,6 +38,10 @@
 # define ICMP_P_LEN             56
 // PACKETS FLAGS
 # define ICMP_ECHO_REPLY        0
+// TASKS
+# define SEND                   1
+# define ICMP                   1
+
 
 extern int g_end_server;
 extern int g_sequence;
@@ -50,6 +54,16 @@ typedef struct  s_packet
 	char            payload[ICMP_P_LEN];
 }               t_packet;
 
+typedef struct  s_scan_task
+{
+    int                 id;
+    int                 task_type; // SEND, RECV
+    int                 scan_type; // ICMP, TCP, UDP
+    struct sockaddr_in  target_address;
+    int                 dst_port;
+}               t_scan_task;
+
+
 typedef struct  s_data
 {
     char                *input_dest;
@@ -60,11 +74,9 @@ typedef struct  s_data
     struct sockaddr_in  target_address;
     int                 dst_port;
     int                 src_port;
-    int                 threads_nb;
-    int                 sequence;
     t_packet            packet;
     struct pollfd       fds[SOCKETS_NB];
-}					t_data;
+}				t_data;
 
 //  socket.c
 void            resolve_hostname(t_data *dt);
@@ -75,7 +87,7 @@ void            debug_addrinfo(struct addrinfo *ai);
 void            debug_sockaddr_in(struct sockaddr_in *addr);
 
 // packet.c
-void            craft_and_send_packet(t_data *dt);
+void            craft_and_send_icmp(int socket, t_packet *packet, t_scan_task *task);
 
 // utils_debug.c
 void            debug_icmp_packet(t_packet packet);
