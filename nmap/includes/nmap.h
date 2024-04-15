@@ -38,15 +38,20 @@
 # define ICMP_P_LEN             56
 // PACKETS FLAGS
 # define ICMP_ECHO_REPLY        0
-// TASKS
-# define SEND                   1
-# define ICMP                   1
+// TASKS & SCANS
+# define T_EMPTY                  0
+# define T_SEND                   1
+# define S_EMPTY                  0
+# define S_ICMP                   1
 
 
 extern int g_end_server;
 extern int g_sequence;
 extern int g_max_send;
 extern int g_task_id;
+extern int g_retrieve;
+extern int g_sent;
+extern int g_queued;
 
 typedef struct  s_packet
 {
@@ -74,8 +79,8 @@ typedef struct  s_data
     struct sockaddr_in  target_address;
     int                 dst_port;
     int                 src_port;
-    t_packet            packet;
     struct pollfd       fds[SOCKETS_NB];
+    t_lst               *queue;
 }				t_data;
 
 //  socket.c

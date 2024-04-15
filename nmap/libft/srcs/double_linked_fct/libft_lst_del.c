@@ -48,6 +48,31 @@ void	ft_lst_del_node(t_lst **alst, t_lst *to_del, void (*del)(void **))
 	}
 }
 
+void	ft_lst_remove_node(t_lst **alst, t_lst *to_remove)
+{
+	t_lst	*tmp;
+
+	if (to_remove)
+	{
+		tmp = *alst;
+		if (tmp == to_remove)
+		{
+			if (tmp->next)
+			{
+				tmp->next->prev = NULL;
+				*alst = tmp->next;
+			}
+		}
+		else
+		{
+			if (to_remove->next)
+				to_remove->next->prev = to_remove->prev;
+			if (to_remove->prev)
+				to_remove->prev->next = to_remove->next;
+		}
+	}
+}
+
 void	ft_lst_del_node_at_index(t_lst **alst, int index)
 {
 	t_lst	*to_del;

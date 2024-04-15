@@ -5,15 +5,14 @@ int g_sequence         = 0;
 int g_max_send         = 220;
 int g_task_id          = 0;
 int g_retrieve         = 0;
+int g_sent             = 0;
+int g_queued             = 0;
 
 const struct iphdr          *ip_h;
 const struct icmphdr        *icmp_h;
 const char                  *icmp_payload;
 
-pthread_mutex_t     mutex       = PTHREAD_MUTEX_INITIALIZER;
-t_scan_task         task_queue[1028];
-int                 queue_front = 0;
-int                 queue_rear  = 0;
+pthread_mutex_t mutex  = PTHREAD_MUTEX_INITIALIZER;
 
 void init_data(t_data *dt)
 {
@@ -30,6 +29,7 @@ void init_data(t_data *dt)
     dt->target_address.sin_addr.s_addr  = INADDR_ANY;
     ft_memset(dt->fds, 0, sizeof(dt->fds));
     dt->fds[0].events       = POLLOUT;
+    dt->queue               = NULL;
 }
 
 static void    initialise_data(t_data *dt)
@@ -67,20 +67,32 @@ void    prepare_sniffer(pcap_t **handle)
         exit_error_str("Compiling filter:", pcap_geterr(*handle));
 }
 
-void    enqueue_task(t_scan_task task)
+void    enqueue_task(t_data *dt, t_scan_task *task)
 {
     pthread_mutex_lock(&mutex);
-    task_queue[queue_rear++] = task;
+    ft_lst_add_node_back(&dt->queue, ft_lst_create_node(task));
+    print_info_task("Enqueued task", task->id);
+    g_queued++;
     pthread_mutex_unlock(&mutex);
 }
 
-t_scan_task dequeue_task()
+t_scan_task *dequeue_task(t_data *dt)
 {
     pthread_mutex_lock(&mutex);
-    t_scan_task task = task_queue[queue_front++];
+    t_lst       *first_node = NULL;
+    t_scan_task *task = NULL;
+
+    if (dt->queue == NULL || ft_lst_size(dt->queue) == 1)
+        return NULL;
+    first_node = ft_lst_get_first_node(&dt->queue);
+    if (first_node)
+    {
+        task = first_node->content;
+        ft_lst_remove_node(&dt->queue, first_node);
+    }
+    else
+        return NULL;  
     pthread_mutex_unlock(&mutex);
-    if (queue_rear == (queue_front + 1))
-        g_end_server = TRUE;
     return task;
 };
 
@@ -90,7 +102,8 @@ void    send_icmp(t_data *dt, t_scan_task *task)
     {
         if (dt->fds[i].revents == 0)
         {
-            printf(C_B_RED"[NEED TO RESEND] No revent / unavailable yet"C_RES"\n");
+            enqueue_task(dt, task);
+            printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->id);
             continue;
         }
         if (dt->fds[i].revents != POLLOUT)
@@ -134,35 +147,53 @@ void    sniff_packets(pcap_t *handle)
 
 void* worker_function(void *dt)
 {
+    (void)dt;
     printf(C_B_YELLOW"[NEW THREAD]"C_RES"\n");
     while (g_end_server == FALSE)
     {
-        t_scan_task task = dequeue_task();
-        print_info_task("Dequeued task", task.id);
-        if (task.task_type == SEND)
+        t_scan_task *task = dequeue_task(dt);
+        if (task == NULL)
         {
-            if (task.scan_type == ICMP)
+            g_end_server = TRUE;
+            return NULL;         
+        }
+        print_info_task("Dequeued task", task->id);
+        if (task->task_type == T_SEND)
+        {
+            if (task->scan_type == S_ICMP)
             {
-                send_icmp((t_data *)dt, &task);
+                send_icmp((t_data *)dt, task);
             }
         }
     }
     return NULL;
 }
 
+t_scan_task    *create_task(int socket, struct sockaddr_in target_address, int dst_port)
+{
+    t_scan_task *task = NULL;
+
+    task = mmalloc(sizeof(t_scan_task));
+    if (task == NULL)
+        exit_error_close_socket("nmap: malloc failure.", socket);
+    task->id                = g_task_id++;
+    task->task_type         = T_SEND;
+    task->scan_type         = S_ICMP;
+    task->dst_port          = dst_port;
+    ft_memset(&(task->target_address), 0, sizeof(struct sockaddr_in));
+    task->target_address    = target_address;
+
+    return task;
+}
+
 void    init_queue(t_data *dt)
 {
     for (int i = 0; i <= g_max_send; i++)
     {
-        t_scan_task task;
+        t_scan_task *task;
 
-        task.id              = g_task_id++;
-        task.task_type       = SEND;
-        task.scan_type       = ICMP;
-        task.target_address  = dt->target_address;
-        task.dst_port        = dt->dst_port + i;
-        enqueue_task(task);
-        print_info_task("Enqueued task", task.id);
+        task = create_task(dt->socket, dt->target_address, dt->dst_port + i);
+        enqueue_task(dt, task);
     }
 }
 
@@ -200,7 +231,7 @@ int     main(int ac, char **av)
         print_info_task("END THREAD", i);
         pthread_join(workers[i], NULL);
     }
-    printf(C_B_YELLOW"[MAIN THREAD - END - RETRIEVED %d]"C_RES"\n", g_retrieve);
+    printf(C_B_YELLOW"[MAIN THREAD - END - RETRIEVED %d / %d (%d)]"C_RES"\n", g_retrieve, g_sent, g_queued);
     close(dt.socket);
     // free_all_malloc();
     return (0);

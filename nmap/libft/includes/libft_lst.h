@@ -47,6 +47,7 @@ t_lst	*ft_lst_get_node_at_index(t_lst **alst, int index);
 t_lst	*ft_lst_get_previous_node(t_lst *current);
 t_lst	*ft_lst_get_next_node(t_lst *current);
 t_lst	*ft_lst_get_last_node(t_lst **alst);
+t_lst	*ft_lst_get_first_node(t_lst **alst);
 t_lst	*ft_lst_get_node_before_last(t_lst **alst);
 
 void	ft_del(void **to_del);
@@ -54,5 +55,5 @@ void	ft_lst_del_node(t_lst **alst, t_lst *to_del, void (*del)(void **));
 void	ft_lst_del_node_at_index(t_lst **alst, int index);
 void	ft_lst_del_first_node(t_lst **alst);
 void	ft_lst_del_last_node(t_lst **alst);
-
+void	ft_lst_remove_node(t_lst **alst, t_lst *to_remove);
 #endif

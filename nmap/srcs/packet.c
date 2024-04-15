@@ -45,22 +45,23 @@ static void    craft_icmp_packet(t_packet *packet, t_scan_task *task)
     packet->h.checksum = checksum(packet, sizeof(*packet));
 }
 
-static void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address)
+static void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
 {
     int r = 0;
 
-    print_info("Main socket is readable");
+    // print_info("Main socket is readable");
     if ((r = sendto(socket, packet, sizeof(*packet), 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
     {
-        warning("Packet sending failure.");
+        warning_int("Packet sending failure.", task_id);
         return;
     }
-    print_info_int("Packet sent (bytes):", sizeof(*packet));
+    // print_info_int("Packet sent (bytes):", sizeof(*packet));
+    g_sent++;
     // debug_icmp_packet(*packet);
 }
 
 void            craft_and_send_icmp(int socket, t_packet *packet, t_scan_task *task)
 {
     craft_icmp_packet(packet, task);
-    send_packet(socket, packet, &task->target_address);
+    send_packet(socket, packet, &task->target_address, task->id);
 }

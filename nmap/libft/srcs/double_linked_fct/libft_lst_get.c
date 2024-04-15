@@ -50,6 +50,16 @@ t_lst	*ft_lst_get_last_node(t_lst **alst)
 	return (tmp);
 }
 
+t_lst	*ft_lst_get_first_node(t_lst **alst)
+{
+	t_lst	*tmp;
+
+	tmp = NULL;
+	if (alst && *alst)
+		tmp = ft_lst_get_node_at_index(alst, 0);
+	return (tmp);
+}
+
 t_lst	*ft_lst_get_node_before_last(t_lst **alst)
 {
 	t_lst	*tmp;
