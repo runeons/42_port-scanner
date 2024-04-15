@@ -1,16 +1,19 @@
-#include "nmap.h"
+#include "ft_nmap.h"
 
 void print_info(char *msg)
 {
-    printf(C_G_BLUE"[INFO]"C_RES" %s\n", msg);
+    if (g_verbose == ON)
+        printf(C_G_BLUE"[INFO]"C_RES" %s\n", msg);
 }
 
 void print_info_int(char *msg, int n)
 {
-    printf(C_G_BLUE"[INFO]"C_RES" %s %d\n", msg, n);
+    if (g_verbose == ON)
+        printf(C_G_BLUE"[INFO]"C_RES" %s %d\n", msg, n);
 }
 
 void print_info_task(char *msg, int n)
 {
-    printf(C_G_GREEN"[INFO]"C_RES" %s %d\n", msg, n);
+    if (g_verbose == ON)
+        printf(C_G_GREEN"[INFO]"C_RES" %s %d\n", msg, n);
 }

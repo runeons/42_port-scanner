@@ -2,7 +2,7 @@
 
 # *** NAME - CC - FLAGS ****************************************************** #
 
-NAME					= 	nmap
+NAME					= 	ft_nmap
 
 CC						= 	clang -g3
 
@@ -29,8 +29,9 @@ HEADER_DIR				=	\
 							./includes/
 
 HEADER					=	\
-							nmap.h \
+							ft_nmap.h \
 							utils_colors.h \
+							utils_options.h \
 
 
 # *** SRCS ******************************************************************* #
@@ -38,11 +39,16 @@ HEADER					=	\
 SRCS_DIR					=	./srcs/
 
 SRCS_LIST					=	\
+							init_data.c \
+							init_options.c \
 							main.c \
 							packet.c \
+							sniffer.c \
 							socket.c \
+							tasks.c \
 							utils_debug.c \
 							utils_error.c \
+							utils_options.c \
 							utils_print.c \
 
 SRCS					=	$(addprefix $(SRCS_DIR), $(SRCS_LIST))

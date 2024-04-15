@@ -1,4 +1,4 @@
-#include "nmap.h"
+#include "ft_nmap.h"
 
 static unsigned short checksum(void *packet, int len)
 {

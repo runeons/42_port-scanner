@@ -1,5 +1,5 @@
-#ifndef NMAP_H
-# define NMAP_H
+#ifndef FT_NMAP_H
+# define FT_NMAP_H
 
 # include <unistd.h>
 # include <stdlib.h>
@@ -15,6 +15,7 @@
 # include <netinet/ip_icmp.h>   // struct icmphdr
 // # include <netinet/udp.h>       // struct udphdr
 # include <utils_colors.h>
+# include <utils_options.h>
 # include <libft.h>
 # include <pcap.h>
 # include <pthread.h>
@@ -24,7 +25,9 @@
 # define FALSE                  0
 # define MAX_HOSTNAME_LEN       128
 # define SOCKETS_NB             1               // e.g. 200
-// THREADS
+# define MAX_SCANS              6
+# define MAX_PORTS              1024
+// DEFAULTS OPTIONS VALUES
 # define THREADS_NB             4
 // POLL
 # define NFDS                   1
@@ -76,16 +79,7 @@ extern int g_task_id;
 extern int g_retrieve;
 extern int g_sent;
 extern int g_queued;
-
-// t_scan all_scans[] =
-// {
-//     {SYN,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-//     {ACK,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-//     {UDP,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-//     {FIN,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-//     {NUL,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-//     {XMAS, OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-// };
+extern int g_verbose;
 
 typedef struct  s_packet
 {
@@ -104,7 +98,6 @@ typedef struct  s_task
 
 typedef struct s_scan
 {
-    int     id;
     int     name;
     int     required;
     int     response;
@@ -130,6 +123,7 @@ typedef struct  s_host
 typedef struct  s_data
 {
     char                *input_dest;
+    t_lst               *act_options;
     char                *resolved_address;
     char                *resolved_hostname;
     int                 socket;
@@ -139,8 +133,15 @@ typedef struct  s_data
     int                 src_port;
     struct pollfd       fds[SOCKETS_NB];
     t_lst               *queue;
+    // OPTIONS
+
+    int threads;
+    int verbose;
+
 }				t_data;
 
+//  options.c
+void            init_options_params(t_data *dt);
 //  socket.c
 void            resolve_hostname(t_data *dt);
 void            resolve_address(t_data *dt);
@@ -169,6 +170,22 @@ void            exit_error_close_socket(char *msg, int socket);
 void            warning(char *msg);
 void            warning_str(char *msg, char *error);
 void            warning_int(char *msg, int nb);
+
+// sniffer.c
+void            prepare_sniffer(pcap_t **handle);
+void            retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+void            sniff_packets(pcap_t *handle);
+
+// init_data.c
+void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
+void            add_destination(t_data *dt, char *curr_arg);
+void            initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd);
+
+// tasks.c
+void            enqueue_task(t_data *dt, t_task *task);
+t_task          *dequeue_task(t_data *dt);
+t_task          *create_task(int socket, struct sockaddr_in target_address, int dst_port);
+void            init_queue(t_data *dt);
 
 
 #endif

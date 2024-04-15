@@ -1,4 +1,4 @@
-#include "nmap.h"
+#include "ft_nmap.h"
 
 void exit_error(char *msg)
 {

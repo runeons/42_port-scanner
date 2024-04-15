@@ -1,4 +1,4 @@
-#include "nmap.h"
+#include "ft_nmap.h"
 
 void    debug_addrinfo(struct addrinfo *ai)
 {
@@ -30,7 +30,7 @@ void resolve_address(t_data *dt) // check that dest exists and resolve address i
     struct addrinfo     *tmp;
 
     if (getaddrinfo(dt->input_dest, NULL, NULL, &resolved_add) != 0)
-        exit_error("nmap: unknown host\n");
+        exit_error("ft_nmap: unknown host\n");
     // debug_addrinfo(resolved_add);
     tmp = resolved_add;
     while (tmp != NULL)
@@ -38,7 +38,7 @@ void resolve_address(t_data *dt) // check that dest exists and resolve address i
         if ((struct sockaddr_in *)tmp->ai_addr)
             dt->resolved_address = ft_strdup(inet_ntoa(((struct sockaddr_in *)tmp->ai_addr)->sin_addr));
         if (dt->resolved_address == NULL)
-            exit_error("nmap: malloc failure.\n");
+            exit_error("ft_nmap: malloc failure.\n");
         tmp = tmp->ai_next;
         break; // useful if many
     }
@@ -51,14 +51,14 @@ void resolve_hostname(t_data *dt) // useful only when input_dest is ip address (
 
     ft_bzero(host, MAX_HOSTNAME_LEN);
     if (inet_pton(AF_INET, dt->resolved_address, &(dt->target_address.sin_addr)) <= 0)
-        exit_error("nmap: address error: Invalid IPv4 address.\n");
+        exit_error("ft_nmap: address error: Invalid IPv4 address.\n");
     if (getnameinfo((struct sockaddr*)&(dt->target_address), sizeof(dt->target_address), host, sizeof(host), NULL, 0, 0) != 0)
-        exit_error("nmap: address error: The hostname could not be resolved.\n");
+        exit_error("ft_nmap: address error: The hostname could not be resolved.\n");
     else
     {
         dt->resolved_hostname = ft_strdup(host);
         if (dt->resolved_hostname == NULL)
-            exit_error("nmap: malloc failure.\n");
+            exit_error("ft_nmap: malloc failure.\n");
     }
 }
 
@@ -77,9 +77,9 @@ void    open_main_socket(t_data *dt)
 
     dt->socket = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (dt->socket < 0)
-        exit_error("nmap: socket error: Check that you have the correct rights.\n");
+        exit_error("ft_nmap: socket error: Check that you have the correct rights.\n");
     if (setsockopt(dt->socket, IPPROTO_IP, IP_TTL, &optval, sizeof(optval)) < 0)
-        exit_error_close(dt->socket, "nmap: socket error in setting option: Exiting program.%s\n");
+        exit_error_close(dt->socket, "ft_nmap: socket error in setting option: Exiting program.%s\n");
     bind_socket_to_src_port(dt, dt->src_port);
     dt->fds[0].fd = dt->socket;
 
