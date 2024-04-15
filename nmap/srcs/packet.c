@@ -35,7 +35,7 @@ static void    craft_icmp_payload(t_packet *packet)
     g_sequence++;
 }
 
-static void    craft_icmp_packet(t_packet *packet, t_scan_task *task)
+static void    craft_icmp_packet(t_packet *packet, t_task *task)
 {
     (void) task;
     craft_icmp_payload(packet);
@@ -60,7 +60,7 @@ static void    send_packet(int socket, t_packet *packet, struct sockaddr_in *tar
     // debug_icmp_packet(*packet);
 }
 
-void            craft_and_send_icmp(int socket, t_packet *packet, t_scan_task *task)
+void            craft_and_send_icmp(int socket, t_packet *packet, t_task *task)
 {
     craft_icmp_packet(packet, task);
     send_packet(socket, packet, &task->target_address, task->id);

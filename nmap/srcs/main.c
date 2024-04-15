@@ -67,7 +67,7 @@ void    prepare_sniffer(pcap_t **handle)
         exit_error_str("Compiling filter:", pcap_geterr(*handle));
 }
 
-void    enqueue_task(t_data *dt, t_scan_task *task)
+void    enqueue_task(t_data *dt, t_task *task)
 {
     pthread_mutex_lock(&mutex);
     ft_lst_add_node_back(&dt->queue, ft_lst_create_node(task));
@@ -76,11 +76,11 @@ void    enqueue_task(t_data *dt, t_scan_task *task)
     pthread_mutex_unlock(&mutex);
 }
 
-t_scan_task *dequeue_task(t_data *dt)
+t_task *dequeue_task(t_data *dt)
 {
     pthread_mutex_lock(&mutex);
     t_lst       *first_node = NULL;
-    t_scan_task *task = NULL;
+    t_task *task = NULL;
 
     if (dt->queue == NULL || ft_lst_size(dt->queue) == 1)
         return NULL;
@@ -96,7 +96,7 @@ t_scan_task *dequeue_task(t_data *dt)
     return task;
 };
 
-void    send_icmp(t_data *dt, t_scan_task *task)
+void    send_icmp(t_data *dt, t_task *task)
 {
     for (int i = 0; i < NFDS; i++) // only one for now
     {
@@ -151,7 +151,7 @@ void* worker_function(void *dt)
     printf(C_B_YELLOW"[NEW THREAD]"C_RES"\n");
     while (g_end_server == FALSE)
     {
-        t_scan_task *task = dequeue_task(dt);
+        t_task *task = dequeue_task(dt);
         if (task == NULL)
         {
             g_end_server = TRUE;
@@ -160,7 +160,7 @@ void* worker_function(void *dt)
         print_info_task("Dequeued task", task->id);
         if (task->task_type == T_SEND)
         {
-            if (task->scan_type == S_ICMP)
+            if (task->scan_type == ICMP)
             {
                 send_icmp((t_data *)dt, task);
             }
@@ -169,16 +169,16 @@ void* worker_function(void *dt)
     return NULL;
 }
 
-t_scan_task    *create_task(int socket, struct sockaddr_in target_address, int dst_port)
+t_task    *create_task(int socket, struct sockaddr_in target_address, int dst_port)
 {
-    t_scan_task *task = NULL;
+    t_task *task = NULL;
 
-    task = mmalloc(sizeof(t_scan_task));
+    task = mmalloc(sizeof(t_task));
     if (task == NULL)
         exit_error_close_socket("nmap: malloc failure.", socket);
     task->id                = g_task_id++;
     task->task_type         = T_SEND;
-    task->scan_type         = S_ICMP;
+    task->scan_type         = ICMP;
     task->dst_port          = dst_port;
     ft_memset(&(task->target_address), 0, sizeof(struct sockaddr_in));
     task->target_address    = target_address;
@@ -190,7 +190,7 @@ void    init_queue(t_data *dt)
 {
     for (int i = 0; i <= g_max_send; i++)
     {
-        t_scan_task *task;
+        t_task *task;
 
         task = create_task(dt->socket, dt->target_address, dt->dst_port + i);
         enqueue_task(dt, task);
