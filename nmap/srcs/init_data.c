@@ -38,6 +38,32 @@ static void resolve_hostname(t_host *host) // useful only when input_dest is ip 
     }
 }
 
+static t_port    *create_port(int socket, int port_id, struct sockaddr_in target_address)
+{
+    t_port *port = NULL;
+
+    port = mmalloc(sizeof(t_port));
+    if (port == NULL)
+        exit_error_close_socket("ft_nmap: malloc failure.", socket);
+    port->port_id           = port_id;
+    port->conclusion        = IN_PROGRESS;
+    ft_memset(&(port->target_address), 0, sizeof(struct sockaddr_in));
+    port->target_address    = target_address;
+    ft_memset(&(port->scans), 0, sizeof(port->scans));
+
+    return port;
+
+}
+
+static void    add_port(int socket, t_host *host, int port_id)
+{
+    t_port *port;
+
+    port = create_port(socket, port_id, host->target_address);
+    ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
+}
+
+
 static void    add_host(t_data *dt, char *curr_arg)
 {
     if (dt)
@@ -45,12 +71,8 @@ static void    add_host(t_data *dt, char *curr_arg)
         dt->host.input_dest = curr_arg;
         resolve_address(&dt->host);
         resolve_hostname(&dt->host);
-        dt->host.input_dest = curr_arg;
-        dt->host.input_dest = curr_arg;
-        dt->host.input_dest = curr_arg;
-        dt->host.input_dest = curr_arg;
-        dt->host.input_dest = curr_arg;
-
+        for (int port_id = dt->first_port; port_id <= dt->last_port; port_id++)
+            add_port(dt->socket, &dt->host, port_id);
     }
 }
 
@@ -79,6 +101,8 @@ static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->threads             = THREADS_NB;
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
+    dt->first_port          = FIRST_PORT;
+    dt->last_port           = LAST_PORT;
 }
 
 void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)

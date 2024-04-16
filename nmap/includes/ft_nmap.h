@@ -29,6 +29,11 @@
 # define MAX_PORTS              1024
 // DEFAULTS OPTIONS VALUES
 # define THREADS_NB             4
+# define FIRST_PORT             1
+# define LAST_PORT              1024
+# define MIN_PORT               1
+# define MAX_PORT               65535
+# define MAX_PORT_RANGE         1024
 // POLL
 # define NFDS                   1
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
@@ -136,6 +141,8 @@ typedef struct  s_data
     // OPTIONS
     int                 threads;
     int                 verbose;
+    int                 first_port;
+    int                 last_port;
 
 }				t_data;
 

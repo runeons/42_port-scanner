@@ -122,29 +122,45 @@
 //         dt->dst_port = DST_PORT;
 // }
 
-// void   option_f(t_data *dt)
-// {
-//     int  first_ttl  = 0;
-//     char *param     = NULL;
+void   option_p(t_data *dt)
+{
+    char    *param     = NULL;
+    char    **tmp      = NULL;
+    int     first_port = FIRST_PORT;
+    int     last_port  = LAST_PORT;
 
-//     if (is_activated_option(dt->act_options, 'f'))
-//     {
-//         param = ft_strdup(get_option(dt->act_options, 'f')->param);
-//         if (param == NULL)
-//             exit_options_error("ft_nmap: malloc failure.\n");
-//         if (ft_isstrnum(param) == 0)
-//             exit_options_error("ft_nmap: invalid value: (`%s' near `%s')\n", param, param);
-//         first_ttl = ft_atoi(param);
-//         if (first_ttl <= 0)
-//             exit_options_error("ft_nmap: option value too small: %d\n", first_ttl);
-//         else if (first_ttl >= dt->max_ttl)
-//             exit_options_error("ft_nmap: option first ttl value higher than max ttl: %d\n", first_ttl);
-//         else
-//             dt->curr_ttl = first_ttl;
-//     }
-//     else
-//         dt->curr_ttl = FIRST_TTL;
-// }
+    if (is_activated_option(dt->act_options, 'p'))
+    {
+        param = ft_strdup(get_option(dt->act_options, 'p')->param);
+        if (param == NULL)
+            exit_options_error("ft_nmap: malloc failure.\n");
+        tmp = ft_split(param, '-');
+        if (tmp == NULL)
+            exit_options_error("ft_nmap: malloc failure.\n");
+        if (ft_tablen(tmp) != 1 && ft_tablen(tmp) != 2)
+            exit_options_error("ft_nmap: invalid ports range.\n");
+        for (int i = 0; tmp && tmp[i]; i++)
+            if (ft_isstrnum(tmp[i]) == 0)
+                exit_options_error("ft_nmap: invalid port value '%s'\n", tmp[i]);
+        first_port = ft_atoi(tmp[0]);
+        if (first_port < MIN_PORT || first_port > MAX_PORT)
+            exit_options_error("ft_nmap: port value out of range: %d\n", first_port);
+        if (tmp[1])
+        {
+            last_port = ft_atoi(tmp[1]);
+            if (last_port < MIN_PORT || last_port > MAX_PORT)
+                exit_options_error("ft_nmap: port value out of range: %d\n", last_port);
+        }
+        else
+            last_port = first_port;
+        if (first_port > last_port)
+            exit_options_error("ft_nmap: port range not ordered.\n");
+        if ((last_port - first_port) >= MAX_PORT_RANGE)
+            exit_options_error("ft_nmap: port range too high (max 1024).\n");
+        dt->first_port = first_port;
+        dt->last_port = last_port;
+    }
+}
 
 void   option_v(t_data *dt)
 {
@@ -175,15 +191,12 @@ void   option_th(t_data *dt)
             dt->threads = threads;
     }
     else
-    {
         dt->threads = THREADS_NB;
-    }
 }
 
 void    init_options_params(t_data *dt)
 {
-    (void)dt;
-    // option_p(dt);
+    option_p(dt);
     // option_s(dt);
     option_th(dt);
     // option_i(dt);
