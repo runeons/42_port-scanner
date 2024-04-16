@@ -116,35 +116,32 @@ typedef struct  s_port
 
 typedef struct  s_host
 {
+    char                *input_dest;
+    char                *resolved_address;
+    char                *resolved_hostname;
     struct sockaddr_in  target_address;
+    int                 dst_port;
     t_lst               *ports;
 }               t_host;
 
 typedef struct  s_data
 {
-    char                *input_dest;
     t_lst               *act_options;
-    char                *resolved_address;
-    char                *resolved_hostname;
     int                 socket;
     struct sockaddr_in  local_address;
-    struct sockaddr_in  target_address;
-    int                 dst_port;
     int                 src_port;
     struct pollfd       fds[SOCKETS_NB];
     t_lst               *queue;
+    t_host              host;
     // OPTIONS
-
-    int threads;
-    int verbose;
+    int                 threads;
+    int                 verbose;
 
 }				t_data;
 
 //  options.c
 void            init_options_params(t_data *dt);
 //  socket.c
-void            resolve_hostname(t_data *dt);
-void            resolve_address(t_data *dt);
 void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            open_main_socket(t_data *dt);
 void            debug_addrinfo(struct addrinfo *ai);
@@ -177,8 +174,6 @@ void            retrieve_packet(u_char *args, const struct pcap_pkthdr *header, 
 void            sniff_packets(pcap_t *handle);
 
 // init_data.c
-void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
-void            add_destination(t_data *dt, char *curr_arg);
 void            initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 
 // tasks.c
@@ -186,6 +181,5 @@ void            enqueue_task(t_data *dt, t_task *task);
 t_task          *dequeue_task(t_data *dt);
 t_task          *create_task(int socket, struct sockaddr_in target_address, int dst_port);
 void            init_queue(t_data *dt);
-
 
 #endif

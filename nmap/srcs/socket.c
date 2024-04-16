@@ -24,44 +24,6 @@ void    debug_sockaddr_in(struct sockaddr_in *addr)
     }
 }
 
-void resolve_address(t_data *dt) // check that dest exists and resolve address if input == hostname
-{
-    struct addrinfo     *resolved_add;
-    struct addrinfo     *tmp;
-
-    if (getaddrinfo(dt->input_dest, NULL, NULL, &resolved_add) != 0)
-        exit_error("ft_nmap: unknown host\n");
-    // debug_addrinfo(resolved_add);
-    tmp = resolved_add;
-    while (tmp != NULL)
-    {
-        if ((struct sockaddr_in *)tmp->ai_addr)
-            dt->resolved_address = ft_strdup(inet_ntoa(((struct sockaddr_in *)tmp->ai_addr)->sin_addr));
-        if (dt->resolved_address == NULL)
-            exit_error("ft_nmap: malloc failure.\n");
-        tmp = tmp->ai_next;
-        break; // useful if many
-    }
-    freeaddrinfo(resolved_add);
-}
-
-void resolve_hostname(t_data *dt) // useful only when input_dest is ip address (vs. hostname)
-{
-    char    host[MAX_HOSTNAME_LEN];
-
-    ft_bzero(host, MAX_HOSTNAME_LEN);
-    if (inet_pton(AF_INET, dt->resolved_address, &(dt->target_address.sin_addr)) <= 0)
-        exit_error("ft_nmap: address error: Invalid IPv4 address.\n");
-    if (getnameinfo((struct sockaddr*)&(dt->target_address), sizeof(dt->target_address), host, sizeof(host), NULL, 0, 0) != 0)
-        exit_error("ft_nmap: address error: The hostname could not be resolved.\n");
-    else
-    {
-        dt->resolved_hostname = ft_strdup(host);
-        if (dt->resolved_hostname == NULL)
-            exit_error("ft_nmap: malloc failure.\n");
-    }
-}
-
 void    bind_socket_to_src_port(t_data *dt, int src_port)
 {
     dt->local_address.sin_family        = AF_INET;

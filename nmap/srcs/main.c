@@ -2,7 +2,7 @@
 
 int g_end_server       = FALSE;
 int g_sequence         = 0;
-int g_max_send         = 220;
+int g_max_send         = 15;
 int g_task_id          = 0;
 int g_retrieve         = 0;
 int g_sent             = 0;
@@ -18,6 +18,21 @@ t_scan all_scans[] =
     {NUL,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
     {XMAS, OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
 };
+
+static void    option_h()
+{
+    display_help();
+    free_all_malloc();
+    exit(0);
+}
+
+static void    parse_input(t_parsed_cmd *parsed_cmd, int ac, char **av)
+{
+    if (ac < 2)
+        option_h();
+    *parsed_cmd = parse_options(ac, av);
+    debug_activated_options(parsed_cmd->act_options);
+}
 
 void    send_icmp(t_data *dt, t_task *task)
 {
@@ -41,7 +56,7 @@ void    send_icmp(t_data *dt, t_task *task)
     }
 }
 
-void* worker_function(void *dt)
+void    *worker_function(void *dt)
 {
     (void)dt;
     printf(C_B_YELLOW"[NEW THREAD]"C_RES"\n");
@@ -50,6 +65,7 @@ void* worker_function(void *dt)
         t_task *task = dequeue_task(dt);
         if (task == NULL)
         {
+            printf(C_B_RED"[ENDING SERVER] %d queue size"C_RES"\n", ft_lst_size(((t_data *)dt)->queue));
             g_end_server = TRUE;
             return NULL;         
         }
@@ -65,25 +81,36 @@ void* worker_function(void *dt)
     return NULL;
 }
 
-static void    option_h()
+void    nmap(t_data *dt, pcap_t *handle)
 {
-    display_help();
-    free_all_malloc();
-    exit(0);
-}
-
-static void    parse_input(t_parsed_cmd *parsed_cmd, int ac, char **av)
-{
-    if (ac < 2)
-        option_h();
-    *parsed_cmd = parse_options(ac, av);
-    debug_activated_options(parsed_cmd->act_options);
+    pthread_t   workers[dt->threads];
+    int         r;
+        
+    r = 0;
+    for (int i = 0; i < dt->threads; i++)
+        pthread_create(&workers[i], NULL, worker_function, dt);
+    printf(C_B_YELLOW"[MAIN THREAD - START - PRINT NMAP START]"C_RES"\n");
+    while (g_end_server == FALSE)
+    {
+        printf(C_G_YELLOW"[INFO]"C_RES" Waiting on poll()...\n");
+        r = poll(dt->fds, NFDS, POLL_TIMEOUT);
+        if (r < 0)
+            exit_error("Poll failure.");
+        if (r == 0)
+            exit_error("Poll timed out.");
+        sniff_packets(handle);
+    }
+    for (int i = 0; i < dt->threads; i++)
+    {
+        print_info_task("END THREAD", i);
+        pthread_join(workers[i], NULL);
+    }
+    printf(C_B_YELLOW"[MAIN THREAD - END - RETRIEVED %d / %d (%d)]"C_RES"\n", g_retrieve, g_sent, g_queued);
 }
 
 int     main(int ac, char **av)
 {
     t_data          dt;
-    int             r = 0;
     pcap_t          *handle;
     t_parsed_cmd    parsed_cmd;
 
@@ -92,31 +119,10 @@ int     main(int ac, char **av)
         option_h();
     initialise_data(&dt, &parsed_cmd);
     open_main_socket(&dt);
+    init_queue(&dt);
     // debug_sockaddr_in(&dt.target_address);
     prepare_sniffer(&handle);
-    pthread_t       workers[dt.threads];
-    for (int i = 0; i < dt.threads; i++)
-    {
-        pthread_create(&workers[i], NULL, worker_function, &dt);
-    }
-    printf(C_B_YELLOW"[MAIN THREAD - START - PRINT NMAP START]"C_RES"\n");
-    init_queue(&dt);
-    while (g_end_server == FALSE)
-    {
-        printf(C_G_YELLOW"[INFO]"C_RES" Waiting on poll()...\n");
-        r = poll(dt.fds, NFDS, POLL_TIMEOUT);
-        if (r < 0)
-            exit_error("Poll failure.");
-        if (r == 0)
-            exit_error("Poll timed out.");
-        sniff_packets(handle);
-    }
-    for (int i = 0; i < dt.threads; i++)
-    {
-        print_info_task("END THREAD", i);
-        pthread_join(workers[i], NULL);
-    }
-    printf(C_B_YELLOW"[MAIN THREAD - END - RETRIEVED %d / %d (%d)]"C_RES"\n", g_retrieve, g_sent, g_queued);
+    nmap(&dt, handle);
     close(dt.socket);
     // free_all_malloc();
     return (0);

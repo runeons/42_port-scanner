@@ -54,7 +54,7 @@ void    init_queue(t_data *dt)
     {
         t_task *task;
 
-        task = create_task(dt->socket, dt->target_address, dt->dst_port + i);
+        task = create_task(dt->socket, dt->host.target_address, dt->host.dst_port + i);
         enqueue_task(dt, task);
     }
 }
