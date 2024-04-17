@@ -9,7 +9,7 @@ int g_sent             = 0;
 int g_queued           = 0;
 int g_verbose          = OFF;
 
-t_scan_results scan_results[] =
+t_scan all_scans[] =
 {
     {SYN,   TCP_SYN_ACK,         OPEN},
     {SYN,   TCP_RST,             CLOSED},
@@ -26,10 +26,10 @@ t_scan_results scan_results[] =
 
 e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
 {
-    for (size_t i = 0; i < sizeof(scan_results) / sizeof(scan_results[0]); i++)
+    for (size_t i = 0; i < sizeof(all_scans) / sizeof(all_scans[0]); i++)
     {
-        if (scan_results[i].scan_type == scan_type && scan_results[i].response == response)
-            return (scan_results[i].conclusion);
+        if (all_scans[i].scan_type == scan_type && all_scans[i].response == response)
+            return (all_scans[i].conclusion);
     }
     printf(C_B_RED"[SHOULD NOT APPEAR] : no conclusion"C_RES"\n"); // 
     return NOT_CONCLUDED; // default

@@ -23,10 +23,12 @@
 // GENERAL
 # define TRUE                   1
 # define FALSE                  0
+# define DEBUG                  1
 # define MAX_HOSTNAME_LEN       128
 # define SOCKETS_NB             1               // e.g. 200
 # define MAX_SCANS              6
 # define MAX_PORTS              1024
+# define MAX_SEND               3
 # define SCAN_CHARS             "SAUFNXI"
 // DEFAULTS OPTIONS VALUES
 # define THREADS_NB             4
@@ -52,6 +54,15 @@
 # define ON                     1
 // PACKET FLAGS
 # define ICMP_ECHO_REPLY        0
+
+extern int g_end_server;
+extern int g_sequence;
+extern int g_max_send;
+extern int g_task_id;
+extern int g_retrieve;
+extern int g_sent;
+extern int g_queued;
+extern int g_verbose;
 
 typedef enum
 {
@@ -88,21 +99,12 @@ typedef enum
     UNFILTERED,
 }       e_conclusion;
 
-typedef struct  s_scan_results
+typedef struct  s_scan
 {
     e_scan_type     scan_type;
     e_response      response;
     e_conclusion    conclusion;
-}               t_scan_results;
-
-extern int g_end_server;
-extern int g_sequence;
-extern int g_max_send;
-extern int g_task_id;
-extern int g_retrieve;
-extern int g_sent;
-extern int g_queued;
-extern int g_verbose;
+}               t_scan;
 
 typedef struct  s_packet
 {
@@ -119,19 +121,19 @@ typedef struct  s_task
     int                 dst_port;
 }               t_task;
 
-typedef struct s_scan
+typedef struct s_scan_tracker
 {
-    t_scan_results      scan_results;
+    t_scan              scan;
     int                 count_sent;
     int                 max_send;
-}              t_scan;
+}              t_scan_tracker;
 
 typedef struct  s_port
 {
     struct sockaddr_in  target_address;
     int                 port_id;
-    t_scan              scans[6];
     int                 conclusion;
+    t_scan_tracker      scan_trackers[];
 }               t_port;
 
 typedef struct  s_host
@@ -177,6 +179,8 @@ void            craft_and_send_icmp(int socket, t_packet *packet, t_task *task);
 void            debug_icmp_packet(t_packet packet);
 void            debug_interfaces(pcap_if_t *interfaces);
 void            debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask);
+void            debug_scan_tracker(t_scan_tracker scan_tracker);
+void            debug_scan(t_scan scan);
 
 // utils_print.c
 void            print_info(char *msg);

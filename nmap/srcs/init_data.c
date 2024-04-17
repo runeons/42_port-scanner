@@ -38,9 +38,19 @@ static void resolve_hostname(t_host *host) // useful only when input_dest is ip 
     }
 }
 
-static t_port    *create_port(int socket, int port_id, struct sockaddr_in target_address)
+void            init_scan(t_scan_tracker *scan_tracker, e_scan_type scan_type)
 {
-    t_port *port = NULL;
+    scan_tracker->scan.scan_type      = scan_type;
+    scan_tracker->scan.response       = IN_PROGRESS;
+    scan_tracker->scan.conclusion     = NOT_CONCLUDED; 
+    scan_tracker->count_sent          = 0;
+    scan_tracker->max_send            = MAX_SEND;
+}
+
+static t_port    *create_port(int socket, int port_id, struct sockaddr_in target_address, e_scan_type *unique_scans, int unique_scans_nb)
+{
+    t_port  *port = NULL;
+    size_t  scan_trackers_size = unique_scans_nb * sizeof(t_scan_tracker);
 
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
@@ -49,19 +59,20 @@ static t_port    *create_port(int socket, int port_id, struct sockaddr_in target
     port->conclusion        = IN_PROGRESS;
     ft_memset(&(port->target_address), 0, sizeof(struct sockaddr_in));
     port->target_address    = target_address;
-    ft_memset(&(port->scans), 0, sizeof(port->scans));
-
+    ft_memset(port->scan_trackers, 0, scan_trackers_size);
+    for (int i = 0; i < unique_scans_nb; i++)
+        init_scan(&port->scan_trackers[i],  unique_scans[i]);
+    debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
 
-static void    add_port(int socket, t_host *host, int port_id)
+static void    add_port(int socket, t_host *host, int port_id, e_scan_type *unique_scans, int unique_scans_nb)
 {
     t_port *port;
 
-    port = create_port(socket, port_id, host->target_address);
+    port = create_port(socket, port_id, host->target_address, unique_scans, unique_scans_nb);
     ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
 }
-
 
 static void    add_host(t_data *dt, char *curr_arg)
 {
@@ -71,7 +82,7 @@ static void    add_host(t_data *dt, char *curr_arg)
         resolve_address(&dt->host);
         resolve_hostname(&dt->host);
         for (int port_id = dt->first_port; port_id <= dt->last_port; port_id++)
-            add_port(dt->socket, &dt->host, port_id);
+            add_port(dt->socket, &dt->host, port_id, dt->unique_scans, dt->unique_scans_nb);
     }
 }
 
