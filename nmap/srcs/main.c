@@ -117,7 +117,7 @@ void    nmap(t_data *dt, pcap_t *handle)
             exit_error("Poll failure.");
         if (r == 0)
             exit_error("Poll timed out.");
-        sniff_packets(dt->handle);
+        sniff_packets(dt->sniffer.handle);
     }
     for (int i = 0; i < dt->threads; i++)
     {
@@ -141,9 +141,9 @@ int     main(int ac, char **av)
     init_queue(&dt);
     prepare_sniffer(&dt);
 
-    nmap(&dt, dt.handle);
+    nmap(&dt, dt.sniffer.handle);
 
-	pcap_close(dt.handle);
+	pcap_close(dt.sniffer.handle);
     close(dt.socket);
     free_all_malloc();
     return (0);

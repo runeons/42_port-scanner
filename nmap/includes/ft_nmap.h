@@ -147,17 +147,26 @@ typedef struct  s_host
     t_lst               *ports;
 }               t_host;
 
+typedef struct  s_sniffer
+{
+    pcap_t              *handle;
+    char                *device;
+    char                *filter;
+}               t_sniffer;
+
 typedef struct  s_data
 {
-    t_lst               *act_options;
+    // SOCKET
     int                 socket;
-    struct sockaddr_in  local_address;
+    struct sockaddr_in  src_address;
     int                 src_port;
     struct pollfd       fds[SOCKETS_NB];
+    // SCANS
     t_lst               *queue;
-    t_host              host;
-    pcap_t              *handle;
+    t_host              host;               // one for now
+    t_sniffer           sniffer;
     // OPTIONS
+    t_lst               *act_options;
     int                 threads;
     int                 verbose;
     int                 first_port;

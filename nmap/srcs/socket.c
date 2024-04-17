@@ -2,10 +2,10 @@
 
 void    bind_socket_to_src_port(t_data *dt, int src_port)
 {
-    dt->local_address.sin_family        = AF_INET;
-    dt->local_address.sin_addr.s_addr   = INADDR_ANY;
-    dt->local_address.sin_port          = htons(src_port);
-    if (bind(dt->socket, (struct sockaddr *)&dt->local_address, sizeof(dt->local_address)) == -1)
+    dt->src_address.sin_family        = AF_INET;
+    dt->src_address.sin_addr.s_addr   = INADDR_ANY;
+    dt->src_address.sin_port          = htons(src_port);
+    if (bind(dt->socket, (struct sockaddr *)&dt->src_address, sizeof(dt->src_address)) == -1)
         exit_error_close(dt->socket, "Error binding socket.\n");
 }
 

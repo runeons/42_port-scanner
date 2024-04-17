@@ -105,7 +105,7 @@ static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->act_options         = parsed_cmd->act_options;
     dt->socket              = 0;
     dt->src_port            = 45555;
-    ft_memset(&(dt->local_address),  0, sizeof(struct sockaddr_in));
+    ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
     ft_memset(dt->fds, 0, sizeof(dt->fds));
     dt->fds[0].events       = POLLOUT;
     dt->queue               = NULL;
@@ -115,15 +115,11 @@ static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->first_port          = FIRST_PORT;
     dt->last_port           = LAST_PORT;
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
-    dt->handle              = NULL;
+    ft_memset(&dt->sniffer, 0, sizeof(dt->sniffer));
+    dt->sniffer.handle      = NULL;          
+    dt->sniffer.device      = NULL;          
+    dt->sniffer.filter      = NULL;          
 }
-
-// void    add_handle(t_data *dt)
-// {
-//     if (!(dt->handle = (pcap_t *)mmalloc(sizeof(struct pcap))))
-//         exit_error("ft_nmap: malloc failure.\n");
-
-// }
 
 void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
@@ -133,5 +129,4 @@ void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)
         exit_error("ft_nmap: usage error: Destination required and only one.\n");
     else
         add_host(dt, parsed_cmd->not_options->content);
-    // add_handle(dt);
 }
