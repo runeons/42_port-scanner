@@ -9,15 +9,31 @@ int g_sent             = 0;
 int g_queued           = 0;
 int g_verbose          = OFF;
 
-t_scan all_scans[] =
+t_scan_results scan_results[] =
 {
-    {SYN,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-    {ACK,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-    {UDP,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-    {FIN,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-    {NUL,  OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
-    {XMAS, OFF, IN_PROGRESS, 0, 3, IN_PROGRESS},
+    {SYN,   TCP_SYN_ACK,         OPEN},
+    {SYN,   TCP_RST,             CLOSED},
+    {SYN,   NO_RESPONSE,         FILTERED},
+    {SYN,   ICMP_UNR_C_3,        FILTERED},
+    {SYN,   ICMP_UNR_C_NOT_3,    FILTERED},
+    {ACK,   TCP_RST,             UNFILTERED},
+    {ACK,   NO_RESPONSE,         FILTERED},
+    {ACK,   ICMP_UNR_C_3,        FILTERED},
+    {ACK,   ICMP_UNR_C_NOT_3,    FILTERED},
+    {ICMP,  ICMP_ECHO_REPLY,     OPEN},
+    {ICMP,  NO_RESPONSE,         CLOSED},
 };
+
+e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
+{
+    for (size_t i = 0; i < sizeof(scan_results) / sizeof(scan_results[0]); i++)
+    {
+        if (scan_results[i].scan_type == scan_type && scan_results[i].response == response)
+            return (scan_results[i].conclusion);
+    }
+    printf(C_B_RED"[SHOULD NOT APPEAR] : no conclusion"C_RES"\n"); // 
+    return NOT_CONCLUDED; // default
+}
 
 static void    option_h()
 {
@@ -119,6 +135,8 @@ int     main(int ac, char **av)
         option_h();
     initialise_data(&dt, &parsed_cmd);
     open_main_socket(&dt);
+    // for (int i = 0; i < dt.unique_scans_nb; i++)
+    //     printf(C_G_RED"[QUICK DEBUG] dt.unique_scans[i]: %d"C_RES"\n", dt.unique_scans[i]);
     init_queue(&dt);
     // debug_sockaddr_in(&dt.target_address);
     prepare_sniffer(&handle);

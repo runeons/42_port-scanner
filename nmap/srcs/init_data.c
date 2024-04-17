@@ -52,7 +52,6 @@ static t_port    *create_port(int socket, int port_id, struct sockaddr_in target
     ft_memset(&(port->scans), 0, sizeof(port->scans));
 
     return port;
-
 }
 
 static void    add_port(int socket, t_host *host, int port_id)
@@ -103,6 +102,8 @@ static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     init_host(&dt->host);
     dt->first_port          = FIRST_PORT;
     dt->last_port           = LAST_PORT;
+    ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
+    dt->unique_scans_nb     = 0;
 }
 
 void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)

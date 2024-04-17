@@ -98,29 +98,90 @@
 //         dt->probes_interval_us = PROBES_INTERVAL_S * 1000000;
 // }
 
-// void   option_p(t_data *dt)
-// {
-//     int  dst_port  = 0;
-//     char *param     = NULL;
+int     is_in_scans(char c, int scans[MAX_SCANS])
+{
+    for (int i = 0; i < MAX_SCANS; i++)
+    {
+        if (scans[i == c])
+            return TRUE;
+    }
+    return FALSE;
+}
 
-//     if (is_activated_option(dt->act_options, 'p'))
-//     {
-//         param = ft_strdup(get_option(dt->act_options, 'p')->param);
-//         if (param == NULL)
-//             exit_options_error("ft_nmap: malloc failure.\n");
-//         if (ft_isstrnum(param) == 0)
-//             exit_options_error("ft_nmap: invalid value: (`%s' near `%s')\n", param, param);
-//         dst_port = ft_atoi(param);
-//         if (dst_port <= 0)
-//             exit_options_error("ft_nmap: option value too small: %d\n", dst_port);
-//         else if (dst_port > MAX_PORT)
-//             exit_options_error("ft_nmap: option value too big: %d\n", dst_port);
-//         else
-//             dt->dst_port = dst_port;
-//     }
-//     else
-//         dt->dst_port = DST_PORT;
-// }
+e_scan_type char_to_scan_type(char c)
+{
+    switch (c)
+    {
+        case 'S':
+            return SYN;
+        case 'A':
+            return ACK;
+        case 'U':
+            return UDP;
+        case 'F':
+            return FIN;
+        case 'N':
+            return NUL;
+        case 'X':
+            return XMAS;
+        case 'I':
+            return ICMP;
+        default:
+            return UNKNOWN; // Invalid scan type
+    }
+}
+
+int is_valid_scan_char(char c)
+{
+    return (ft_strchr(SCAN_CHARS, c) != NULL);
+}
+
+
+void   option_s(t_data *dt)
+{
+    int     unique_scans[MAX_SCANS];
+    char    *param      = NULL;
+    int     scans_present[MAX_SCANS] = {FALSE};
+
+    ft_memset(unique_scans, 0, sizeof(unique_scans));
+    if (is_activated_option(dt->act_options, 's'))
+    {
+        param = ft_strdup(get_option(dt->act_options, 's')->param);
+        if (param == NULL)
+            exit_options_error("ft_nmap: malloc failure.\n");
+        if (ft_strlen(param) <= 0 || ft_strlen(param) > MAX_SCANS)
+            exit_options_error("ft_nmap: invalid scans number.\n");
+        for (int i = 0; param[i]; i++)
+        {
+            if (is_valid_scan_char(param[i]))
+            {
+                e_scan_type scan_type = char_to_scan_type(param[i]);
+                if (scan_type != UNKNOWN)
+                    scans_present[scan_type] = TRUE;
+                else
+                    exit_options_error("ft_nmap: invalid scan value: '%c'\n", param[i]);
+            }
+            else
+                exit_options_error("ft_nmap: invalid scan value: '%c'\n", param[i]);
+        }
+        int count = 0;
+        for (int i = 0; i < MAX_SCANS; i++)
+        {
+            if (scans_present[i])
+                dt->unique_scans[count++] = (e_scan_type)i;
+        }
+        dt->unique_scans_nb = count;
+    }
+    else
+    {
+        for (int i = 0; i < MAX_SCANS; i++)
+        {
+            dt->unique_scans[i] = (e_scan_type)i;
+            scans_present[i] = TRUE;
+        }
+        dt->unique_scans_nb = MAX_SCANS;
+    }
+}
 
 void   option_p(t_data *dt)
 {
@@ -197,7 +258,7 @@ void   option_th(t_data *dt)
 void    init_options_params(t_data *dt)
 {
     option_p(dt);
-    // option_s(dt);
+    option_s(dt);
     option_th(dt);
     // option_i(dt);
     // option_n(dt);

@@ -27,6 +27,7 @@
 # define SOCKETS_NB             1               // e.g. 200
 # define MAX_SCANS              6
 # define MAX_PORTS              1024
+# define SCAN_CHARS             "SAUFNXI"
 // DEFAULTS OPTIONS VALUES
 # define THREADS_NB             4
 # define FIRST_PORT             1
@@ -44,38 +45,55 @@
 # define IP_H_LEN               20  // sizeof(struct iphdr)
 # define ICMP_H_LEN             8   // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
-// PACKETS FLAGS
-# define ICMP_ECHO_REPLY        0       // INIT TEST ONLY
 // TASKS
 # define T_SEND                 1
-// ALL SCANS
-# define SYN                    0
-# define ACK                    1
-# define UDP                    2
-# define FIN                    3
-# define NUL                    4
-# define XMAS                   5
-# define ICMP                   6       // INIT TEST ONLY
 // SCANS
 # define OFF                    0
 # define ON                     1
-// RESPONSES & CONCLUSION
-# define IN_PROGRESS            0
-// RESPONSES
-# define TCP_SYN_ACK            1             
-# define TCP_RST                2                 
-# define UDP_ANY                3
-# define ICMP_UNREACH_C_3       4       // type 3 | code 3
-# define ICMP_UNREACH_C_NOT_3   5       // type 3 | code 1, 2, 9, 10, 13
-# define NO_RESPONSE            6
-# define OTHER                  7
-# define ICMP_ECHO              8       // INIT TEST ONLY
-// CONCLUSION
-# define OPEN                   1
-# define CLOSED                 2
-# define FILTERED               3
-# define OPEN_FILTERED          4
-# define UNFILTERED             5
+// PACKET FLAGS
+# define ICMP_ECHO_REPLY        0
+
+typedef enum
+{
+    ICMP,               // INIT TEST ONLY
+    SYN,
+    ACK,
+    UDP,
+    FIN,
+    NUL,
+    XMAS,
+    UNKNOWN,
+}       e_scan_type;
+
+typedef enum
+{
+    IN_PROGRESS,
+    TCP_SYN_ACK,
+    TCP_RST,
+    UDP_ANY,
+    ICMP_UNR_C_3,       // type 3 unreachablee | code 3
+    ICMP_UNR_C_NOT_3,   // type 3 unreachablee | code 1, 2, 9, 10, 13
+    NO_RESPONSE,
+    OTHER,
+    ICMP_ECHO_OK,          // INIT TEST ONLY
+}       e_response;
+
+typedef enum
+{
+    NOT_CONCLUDED,
+    OPEN,
+    CLOSED,
+    FILTERED,
+    OPEN_FILTERED,
+    UNFILTERED,
+}       e_conclusion;
+
+typedef struct  s_scan_results
+{
+    e_scan_type     scan_type;
+    e_response      response;
+    e_conclusion    conclusion;
+}               t_scan_results;
 
 extern int g_end_server;
 extern int g_sequence;
@@ -103,12 +121,9 @@ typedef struct  s_task
 
 typedef struct s_scan
 {
-    int     name;
-    int     required;
-    int     response;
-    int     count_sent;
-    int     max_send;
-    int     conclusion;
+    t_scan_results      scan_results;
+    int                 count_sent;
+    int                 max_send;
 }              t_scan;
 
 typedef struct  s_port
@@ -143,7 +158,8 @@ typedef struct  s_data
     int                 verbose;
     int                 first_port;
     int                 last_port;
-
+    e_scan_type         unique_scans[MAX_SCANS];
+    int                 unique_scans_nb;
 }				t_data;
 
 //  options.c
