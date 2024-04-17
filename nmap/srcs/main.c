@@ -104,6 +104,7 @@ void    nmap(t_data *dt, pcap_t *handle)
     pthread_t   workers[dt->threads];
     int         r;
         
+    (void)handle;
     r = 0;
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
@@ -116,7 +117,7 @@ void    nmap(t_data *dt, pcap_t *handle)
             exit_error("Poll failure.");
         if (r == 0)
             exit_error("Poll timed out.");
-        sniff_packets(handle);
+        sniff_packets(dt->handle);
     }
     for (int i = 0; i < dt->threads; i++)
     {
@@ -129,7 +130,6 @@ void    nmap(t_data *dt, pcap_t *handle)
 int     main(int ac, char **av)
 {
     t_data          dt;
-    pcap_t          *handle;
     t_parsed_cmd    parsed_cmd;
 
     parse_input(&parsed_cmd, ac, av);
@@ -139,10 +139,12 @@ int     main(int ac, char **av)
     open_main_socket(&dt);
     debug_host(dt.host);
     init_queue(&dt);
-    // debug_sockaddr_in(dt.target_address);
-    prepare_sniffer(&dt, &handle);
-    nmap(&dt, handle);
+    prepare_sniffer(&dt);
+
+    nmap(&dt, dt.handle);
+
+	pcap_close(dt.handle);
     close(dt.socket);
-    // free_all_malloc();
+    free_all_malloc();
     return (0);
 }

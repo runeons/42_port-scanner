@@ -53,13 +53,13 @@ static t_port    *create_port(int socket, int port_id, struct sockaddr_in target
 
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
-        exit_error_close_socket("ft_nmap: malloc failure.", socket);
+        exit_error_close_socket("ft_nmap: malloc failure.", socket); // TO CHECK LATER - may not need to close socket here
     ft_memset(&(port->target_address), 0, sizeof(struct sockaddr_in));
     port->target_address    = target_address;
     port->port_id           = port_id;
     port->conclusion        = NOT_CONCLUDED;
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scans_nb)))
-        exit_error_close_socket("ft_nmap: malloc failure.", socket);
+        exit_error_close_socket("ft_nmap: malloc failure.", socket); // TO CHECK LATER - may not need to close socket here
     for (int i = 0; i < g_scans_nb; i++)
         init_scan(&port->scan_trackers[i], unique_scans[i]);
     // debug_scan_tracker(port->scan_trackers[0]);
@@ -115,7 +115,15 @@ static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->first_port          = FIRST_PORT;
     dt->last_port           = LAST_PORT;
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
+    dt->handle              = NULL;
 }
+
+// void    add_handle(t_data *dt)
+// {
+//     if (!(dt->handle = (pcap_t *)mmalloc(sizeof(struct pcap))))
+//         exit_error("ft_nmap: malloc failure.\n");
+
+// }
 
 void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
@@ -125,4 +133,5 @@ void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)
         exit_error("ft_nmap: usage error: Destination required and only one.\n");
     else
         add_host(dt, parsed_cmd->not_options->content);
+    // add_handle(dt);
 }

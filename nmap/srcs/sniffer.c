@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-void    prepare_sniffer(t_data *dt, pcap_t **handle)
+void    prepare_sniffer(t_data *dt)
 {
     pcap_if_t           *interfaces;
     char                device[] = "enp0s3";
@@ -20,15 +20,12 @@ void    prepare_sniffer(t_data *dt, pcap_t **handle)
     if (pcap_findalldevs(&interfaces, err_buf) == -1)
         exit_error_str("Finding devices", err_buf);
     // debug_interfaces(interfaces);
-    (void)dt;
-    // if(!(*handle =  mmalloc(sizeof(pcap_t *))))
-    //     exit_error("Malloc failure.");
-    if ((*handle = pcap_open_live(device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
+    if ((dt->handle = pcap_open_live(device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
         exit_error_str("Opening device:", err_buf);
-    if (pcap_compile(*handle, &compiled_filter, filter, 0, net_mask) == -1)
-        exit_error_str("Parsing filter:", pcap_geterr(*handle));
-    if (pcap_setfilter(*handle, &compiled_filter) == -1)
-        exit_error_str("Compiling filter:", pcap_geterr(*handle));
+    if (pcap_compile(dt->handle, &compiled_filter, filter, 0, net_mask) == -1)
+        exit_error_str("Parsing filter:", pcap_geterr(dt->handle));
+    if (pcap_setfilter(dt->handle, &compiled_filter) == -1)
+        exit_error_str("Compiling filter:", pcap_geterr(dt->handle));
     pcap_freealldevs(interfaces);
 }
 
@@ -60,5 +57,4 @@ void    sniff_packets(pcap_t *handle)
     printf(C_G_YELLOW"[INFO]"C_RES" Ready to sniff...\n");
     pcap_dispatch(handle, 0, retrieve_packet, NULL);
 	print_info("Capture completed");
-	pcap_close(handle);
 }

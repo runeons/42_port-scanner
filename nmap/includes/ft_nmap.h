@@ -156,7 +156,7 @@ typedef struct  s_data
     struct pollfd       fds[SOCKETS_NB];
     t_lst               *queue;
     t_host              host;
-    // pcap_t           *handle;
+    pcap_t              *handle;
     // OPTIONS
     int                 threads;
     int                 verbose;
@@ -200,7 +200,7 @@ void            warning_str(char *msg, char *error);
 void            warning_int(char *msg, int nb);
 
 // sniffer.c
-void            prepare_sniffer(t_data *dt, pcap_t **handle);
+void            prepare_sniffer(t_data *dt);
 void            retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void            sniff_packets(pcap_t *handle);
 
