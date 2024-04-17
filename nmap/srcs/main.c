@@ -8,6 +8,7 @@ int g_retrieve         = 0;
 int g_sent             = 0;
 int g_queued           = 0;
 int g_verbose          = OFF;
+int g_scans_nb         = 0;
 
 t_scan all_scans[] =
 {

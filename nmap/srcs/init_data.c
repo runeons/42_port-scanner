@@ -47,10 +47,10 @@ void            init_scan(t_scan_tracker *scan_tracker, e_scan_type scan_type)
     scan_tracker->max_send            = MAX_SEND;
 }
 
-static t_port    *create_port(int socket, int port_id, struct sockaddr_in target_address, e_scan_type *unique_scans, int unique_scans_nb)
+static t_port    *create_port(int socket, int port_id, struct sockaddr_in target_address, e_scan_type *unique_scans)
 {
     t_port  *port = NULL;
-    size_t  scan_trackers_size = unique_scans_nb * sizeof(t_scan_tracker);
+    size_t  scan_trackers_size = g_scans_nb * sizeof(t_scan_tracker);
 
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
@@ -60,18 +60,19 @@ static t_port    *create_port(int socket, int port_id, struct sockaddr_in target
     ft_memset(&(port->target_address), 0, sizeof(struct sockaddr_in));
     port->target_address    = target_address;
     ft_memset(port->scan_trackers, 0, scan_trackers_size);
-    for (int i = 0; i < unique_scans_nb; i++)
-        init_scan(&port->scan_trackers[i],  unique_scans[i]);
-    debug_scan_tracker(port->scan_trackers[0]);
+    for (int i = 0; i < g_scans_nb; i++)
+        init_scan(&port->scan_trackers[i], unique_scans[i]);
+    // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
 
-static void    add_port(int socket, t_host *host, int port_id, e_scan_type *unique_scans, int unique_scans_nb)
+static void    add_port(int socket, t_host *host, int port_id, e_scan_type *unique_scans)
 {
     t_port *port;
 
-    port = create_port(socket, port_id, host->target_address, unique_scans, unique_scans_nb);
+    port = create_port(socket, port_id, host->target_address, unique_scans);
     ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
+    debug_port(*port);
 }
 
 static void    add_host(t_data *dt, char *curr_arg)
@@ -82,7 +83,7 @@ static void    add_host(t_data *dt, char *curr_arg)
         resolve_address(&dt->host);
         resolve_hostname(&dt->host);
         for (int port_id = dt->first_port; port_id <= dt->last_port; port_id++)
-            add_port(dt->socket, &dt->host, port_id, dt->unique_scans, dt->unique_scans_nb);
+            add_port(dt->socket, &dt->host, port_id, dt->unique_scans);
     }
 }
 
@@ -114,7 +115,6 @@ static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->first_port          = FIRST_PORT;
     dt->last_port           = LAST_PORT;
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
-    dt->unique_scans_nb     = 0;
 }
 
 void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)

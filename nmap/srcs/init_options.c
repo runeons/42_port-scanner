@@ -170,7 +170,7 @@ void   option_s(t_data *dt)
             if (scans_present[i])
                 dt->unique_scans[count++] = (e_scan_type)i;
         }
-        dt->unique_scans_nb = count;
+        g_scans_nb = count;
     }
     else
     {
@@ -179,7 +179,7 @@ void   option_s(t_data *dt)
             dt->unique_scans[i] = (e_scan_type)i;
             scans_present[i] = TRUE;
         }
-        dt->unique_scans_nb = MAX_SCANS;
+        g_scans_nb = MAX_SCANS;
     }
 }
 

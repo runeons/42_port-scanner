@@ -63,6 +63,7 @@ extern int g_retrieve;
 extern int g_sent;
 extern int g_queued;
 extern int g_verbose;
+extern int g_scans_nb; // important
 
 typedef enum
 {
@@ -99,17 +100,10 @@ typedef enum
     UNFILTERED,
 }       e_conclusion;
 
-typedef struct  s_scan
-{
-    e_scan_type     scan_type;
-    e_response      response;
-    e_conclusion    conclusion;
-}               t_scan;
-
 typedef struct  s_packet
 {
-	struct icmphdr  h;
-	char            payload[ICMP_P_LEN];
+	struct icmphdr      h;
+	char                payload[ICMP_P_LEN];
 }               t_packet;
 
 typedef struct  s_task
@@ -120,6 +114,13 @@ typedef struct  s_task
     struct sockaddr_in  target_address;
     int                 dst_port;
 }               t_task;
+
+typedef struct  s_scan
+{
+    e_scan_type         scan_type;
+    e_response          response;
+    e_conclusion        conclusion;
+}               t_scan;
 
 typedef struct s_scan_tracker
 {
@@ -161,7 +162,6 @@ typedef struct  s_data
     int                 first_port;
     int                 last_port;
     e_scan_type         unique_scans[MAX_SCANS];
-    int                 unique_scans_nb;
 }				t_data;
 
 //  options.c
@@ -181,6 +181,7 @@ void            debug_interfaces(pcap_if_t *interfaces);
 void            debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask);
 void            debug_scan_tracker(t_scan_tracker scan_tracker);
 void            debug_scan(t_scan scan);
+void    debug_port(t_port port);
 
 // utils_print.c
 void            print_info(char *msg);

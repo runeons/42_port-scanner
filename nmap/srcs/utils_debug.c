@@ -46,10 +46,23 @@ void    debug_scan_tracker(t_scan_tracker scan_tracker)
 {
     if (DEBUG == 1)
     {
-        printf(C_G_RED"[DEBUG] scan"C_RES"\n");
-        debug_scan(scan_tracker.scan);
+        printf(C_G_RED"[DEBUG] scan_tracker"C_RES"\n");
         printf("        count_sent  %d\n", scan_tracker.count_sent);
         printf("        max_send    %d\n", scan_tracker.max_send);
+        debug_scan(scan_tracker.scan);
         printf(C_G_RED"-------"C_RES"\n");
+    }
+}
+
+void    debug_port(t_port port)
+{
+    if (DEBUG == 1)
+    {
+        printf(C_G_GREEN"[DEBUG] port %d"C_RES"\n", port.port_id);
+        printf("        port_id     %d\n", port.port_id);
+        printf("        conclusion  %d\n", port.conclusion);
+        for (int i = 0; i < g_scans_nb; i++)
+            debug_scan_tracker(port.scan_trackers[i]);
+        printf(C_G_GREEN"-------"C_RES"\n");
     }
 }
