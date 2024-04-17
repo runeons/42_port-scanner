@@ -23,13 +23,17 @@
 // GENERAL
 # define TRUE                   1
 # define FALSE                  0
-# define DEBUG                  1
 # define MAX_HOSTNAME_LEN       128
 # define SOCKETS_NB             1               // e.g. 200
 # define MAX_SCANS              6
 # define MAX_PORTS              1024
 # define MAX_SEND               3
 # define SCAN_CHARS             "SAUFNXI"
+// DEBUG
+# define DEBUG_PARSING          0
+# define DEBUG_STRUCT           1
+# define DEBUG_NET              0
+# define DEBUG_OTHER            0
 // DEFAULTS OPTIONS VALUES
 # define THREADS_NB             4
 # define FIRST_PORT             1
@@ -178,7 +182,7 @@ typedef struct  s_data
 void            init_options_params(t_data *dt);
 //  socket.c
 void            bind_socket_to_src_port(t_data *dt, int src_port);
-void            open_main_socket(t_data *dt);
+void            init_socket(t_data *dt);
 
 // packet.c
 void            craft_and_send_icmp(int socket, t_packet *packet, t_task *task);
@@ -209,12 +213,13 @@ void            warning_str(char *msg, char *error);
 void            warning_int(char *msg, int nb);
 
 // sniffer.c
-void            prepare_sniffer(t_data *dt);
+void            init_handle(t_sniffer *sniffer);
 void            retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void            sniff_packets(pcap_t *handle);
 
 // init_data.c
-void            initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd);
+void            fill_host(t_data *dt, char *curr_arg);
+void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 
 // tasks.c
 void            enqueue_task(t_data *dt, t_task *task);

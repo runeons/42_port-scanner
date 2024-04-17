@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-static void resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
+static void     resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
 {
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
@@ -21,7 +21,7 @@ static void resolve_address(t_host *host) // check that dest exists and resolve 
     freeaddrinfo(resolved_add);
 }
 
-static void resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
+static void     resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
 {
     char    hostname[MAX_HOSTNAME_LEN];
 
@@ -38,7 +38,7 @@ static void resolve_hostname(t_host *host) // useful only when input_dest is ip 
     }
 }
 
-void            init_scan(t_scan_tracker *scan_tracker, e_scan_type scan_type)
+static void      init_scan(t_scan_tracker *scan_tracker, e_scan_type scan_type)
 {
     scan_tracker->scan.scan_type      = scan_type;
     scan_tracker->scan.response       = IN_PROGRESS;
@@ -47,35 +47,35 @@ void            init_scan(t_scan_tracker *scan_tracker, e_scan_type scan_type)
     scan_tracker->max_send            = MAX_SEND;
 }
 
-static t_port    *create_port(int socket, int port_id, struct sockaddr_in target_address, e_scan_type *unique_scans)
+static t_port    *create_port(int port_id, struct sockaddr_in target_address, e_scan_type *unique_scans)
 {
     t_port  *port = NULL;
 
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
-        exit_error_close_socket("ft_nmap: malloc failure.", socket); // TO CHECK LATER - may not need to close socket here
+        exit_error("ft_nmap: malloc failure.");
     ft_memset(&(port->target_address), 0, sizeof(struct sockaddr_in));
     port->target_address    = target_address;
     port->port_id           = port_id;
     port->conclusion        = NOT_CONCLUDED;
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scans_nb)))
-        exit_error_close_socket("ft_nmap: malloc failure.", socket); // TO CHECK LATER - may not need to close socket here
+        exit_error("ft_nmap: malloc failure.");
     for (int i = 0; i < g_scans_nb; i++)
         init_scan(&port->scan_trackers[i], unique_scans[i]);
     // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
 
-static void    add_port(int socket, t_host *host, int port_id, e_scan_type *unique_scans)
+static void     add_port(t_host *host, int port_id, e_scan_type *unique_scans)
 {
     t_port *port;
 
-    port = create_port(socket, port_id, host->target_address, unique_scans);
+    port = create_port(port_id, host->target_address, unique_scans);
     ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
     // debug_port(*port);
 }
 
-static void    add_host(t_data *dt, char *curr_arg)
+void            fill_host(t_data *dt, char *curr_arg)
 {
     if (dt)
     {
@@ -83,11 +83,11 @@ static void    add_host(t_data *dt, char *curr_arg)
         resolve_address(&dt->host);
         resolve_hostname(&dt->host);
         for (int port_id = dt->first_port; port_id <= dt->last_port; port_id++)
-            add_port(dt->socket, &dt->host, port_id, dt->unique_scans);
+            add_port(&dt->host, port_id, dt->unique_scans);
     }
 }
 
-static void init_host(t_host *host)
+static void     init_host(t_host *host)
 {
     host->input_dest          = "";
     host->resolved_address    = NULL;
@@ -100,7 +100,7 @@ static void init_host(t_host *host)
     host->ports               = NULL;
 }
 
-static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
+static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
     dt->act_options         = parsed_cmd->act_options;
     dt->socket              = 0;
@@ -121,12 +121,11 @@ static void    init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->sniffer.filter      = NULL;          
 }
 
-void    initialise_data(t_data *dt, t_parsed_cmd *parsed_cmd)
+void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
-    init_data(dt, parsed_cmd);
+    init_data_struct(dt, parsed_cmd);
     init_options_params(dt);
     if (ft_lst_size(parsed_cmd->not_options) != 1)
         exit_error("ft_nmap: usage error: Destination required and only one.\n");
-    else
-        add_host(dt, parsed_cmd->not_options->content);
+    // fill_host(dt, parsed_cmd->not_options->content);
 }

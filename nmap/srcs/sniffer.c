@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-void    prepare_sniffer(t_data *dt)
+void    init_handle(t_sniffer *sniffer)
 {
     pcap_if_t           *interfaces;
     struct bpf_program  compiled_filter;
@@ -8,26 +8,22 @@ void    prepare_sniffer(t_data *dt)
     bpf_u_int32         dev_mask;		                    // The netmask of our sniffing device
     bpf_u_int32         net_mask;		                    // The IP of our sniffing device   
 
-    if (!(dt->sniffer.device = ft_strdup("enp0s3")))
-        exit_error("Malloc failure.");
-    if (!(dt->sniffer.filter = ft_strdup("src host 1.1.1.1")))
-        exit_error("Malloc failure.");
-    if (pcap_lookupnet(dt->sniffer.device, &net_mask, &dev_mask, err_buf) == -1) // get network mask needed for the filter
+    if (pcap_lookupnet(sniffer->device, &net_mask, &dev_mask, err_buf) == -1) // get network mask needed for the filter
     {
-        warning_str("No network mask for device:", dt->sniffer.device);
+        warning_str("No network mask for device:", sniffer->device);
         net_mask = 0;
         dev_mask = 0;
     }
-    // debug_net_mask(net_mask, dev_mask);
+    debug_net_mask(net_mask, dev_mask);
     if (pcap_findalldevs(&interfaces, err_buf) == -1)
         exit_error_str("Finding devices", err_buf);
-    // debug_interfaces(interfaces);
-    if ((dt->sniffer.handle = pcap_open_live(dt->sniffer.device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
+    debug_interfaces(interfaces);
+    if ((sniffer->handle = pcap_open_live(sniffer->device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
         exit_error_str("Opening device:", err_buf);
-    if (pcap_compile(dt->sniffer.handle, &compiled_filter, dt->sniffer.filter, 0, net_mask) == -1)
-        exit_error_str("Parsing filter:", pcap_geterr(dt->sniffer.handle));
-    if (pcap_setfilter(dt->sniffer.handle, &compiled_filter) == -1)
-        exit_error_str("Compiling filter:", pcap_geterr(dt->sniffer.handle));
+    if (pcap_compile(sniffer->handle, &compiled_filter, sniffer->filter, 0, net_mask) == -1)
+        exit_error_str("Parsing filter:", pcap_geterr(sniffer->handle));
+    if (pcap_setfilter(sniffer->handle, &compiled_filter) == -1)
+        exit_error_str("Compiling filter:", pcap_geterr(sniffer->handle));
     pcap_freealldevs(interfaces);
 }
 

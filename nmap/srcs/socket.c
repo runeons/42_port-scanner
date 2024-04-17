@@ -9,7 +9,7 @@ void    bind_socket_to_src_port(t_data *dt, int src_port)
         exit_error_close(dt->socket, "Error binding socket.\n");
 }
 
-void    open_main_socket(t_data *dt)
+void    init_socket(t_data *dt)
 {
     int optval = 64; // TTL_VALUE for IP_TTL socket
 

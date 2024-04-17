@@ -17,22 +17,29 @@ void    debug_interfaces(pcap_if_t *interfaces)
     pcap_if_t   *tmp;
     int         i = 0;
 
-    printf(C_G_YELLOW"[INTERFACES]"C_RES"\n");
-    for (tmp = interfaces; tmp; tmp = tmp->next)
-        printf("%d: %s\n", i++, tmp->name);
-    printf("\n");
+    if (DEBUG_NET == 1)
+    {
+        printf(C_G_YELLOW"[DEBUG] interfaces"C_RES"\n");
+        for (tmp = interfaces; tmp; tmp = tmp->next)
+            printf("        %d: %s\n", i++, tmp->name);
+        printf(C_G_YELLOW"-------"C_RES"\n");
+    }
 }
 
 void    debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask)
 {
-    printf(C_G_RED"[NET_MASK] %d = %x"C_RES"\n", net_mask, net_mask);
-    printf(C_G_RED"[DEV_MASK] %d = %x"C_RES"\n", dev_mask, dev_mask);
-    printf("\n");
+    if (DEBUG_NET == 1)
+    {
+        printf(C_G_YELLOW"[DEBUG] masks"C_RES"\n");
+        printf("        net_mask: %d = %x\n", net_mask, net_mask);
+        printf("        dev_mask: %d = %x\n", dev_mask, dev_mask);
+        printf(C_G_YELLOW"-------"C_RES"\n");
+    }
 }
 
 void    debug_addrinfo(struct addrinfo ai)
 {
-    if (DEBUG == 1)
+    if (DEBUG_STRUCT == 1)
     {
         printf(C_G_GRAY"[DEBUG] addrinfo"C_RES"\n");
         printf("        ai_family: %d\n",   ai.ai_family);
@@ -44,7 +51,7 @@ void    debug_addrinfo(struct addrinfo ai)
 
 void    debug_sockaddr_in(struct sockaddr_in addr)
 {
-    if (DEBUG == 1)
+    if (DEBUG_STRUCT == 1)
     {
         printf(C_G_GRAY"[DEBUG] sockaddr_in"C_RES"\n");
         printf("        sin_family: %d\n",              addr.sin_family);
@@ -56,7 +63,7 @@ void    debug_sockaddr_in(struct sockaddr_in addr)
 
 void    debug_scan(t_scan scan)
 {
-    if (DEBUG == 1)
+    if (DEBUG_STRUCT == 1)
     {
         printf(C_G_BLUE"[DEBUG] scan"C_RES"\n");
         printf("        scan_type   %d\n", scan.scan_type);
@@ -68,7 +75,7 @@ void    debug_scan(t_scan scan)
 
 void    debug_scan_tracker(t_scan_tracker scan_tracker)
 {
-    if (DEBUG == 1)
+    if (DEBUG_STRUCT == 1)
     {
         printf(C_G_RED"[DEBUG] scan_tracker"C_RES"\n");
         printf("        count_sent  %d\n", scan_tracker.count_sent);
@@ -80,7 +87,7 @@ void    debug_scan_tracker(t_scan_tracker scan_tracker)
 
 void    debug_port(t_port port)
 {
-    if (DEBUG == 1)
+    if (DEBUG_STRUCT == 1)
     {
         printf(C_G_GREEN"[DEBUG] port %d"C_RES"\n", port.port_id);
         printf("        port_id     %d\n", port.port_id);
@@ -102,7 +109,7 @@ void    debug_one_port(void *content)
 
 void    debug_host(t_host host)
 {
-    if (DEBUG == 1)
+    if (DEBUG_STRUCT == 1)
     {
         printf(C_G_CYAN"[DEBUG] host %s"C_RES"\n", host.input_dest);
         printf("        input_dest          %s\n", host.input_dest);
@@ -117,7 +124,7 @@ void    debug_host(t_host host)
 
 void    debug_queue(t_data dt)
 {
-    if (DEBUG == 1)
+    if (DEBUG_OTHER == 1)
     {
         printf(C_G_GREEN"[DEBUG] queue %d"C_RES"\n", ft_lst_size((dt.queue)));
         printf(C_G_GREEN"-------"C_RES"\n");

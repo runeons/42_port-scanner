@@ -48,7 +48,8 @@ static void    parse_input(t_parsed_cmd *parsed_cmd, int ac, char **av)
     if (ac < 2)
         option_h();
     *parsed_cmd = parse_options(ac, av);
-    debug_activated_options(parsed_cmd->act_options);
+    if (DEBUG_PARSING)
+        debug_activated_options(parsed_cmd->act_options);
 }
 
 void    send_icmp(t_data *dt, t_task *task)
@@ -79,7 +80,7 @@ void    *worker_function(void *dt)
     printf(C_B_YELLOW"[NEW THREAD]"C_RES"\n");
     while (g_end_server == FALSE)
     {
-        // debug_queue(*(t_data *)dt);
+        debug_queue(*(t_data *)dt);
         t_task *task = dequeue_task(dt);
         if (task == NULL)
         {
@@ -99,12 +100,11 @@ void    *worker_function(void *dt)
     return NULL;
 }
 
-void    nmap(t_data *dt, pcap_t *handle)
+void    nmap(t_data *dt)
 {
     pthread_t   workers[dt->threads];
     int         r;
         
-    (void)handle;
     r = 0;
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
@@ -127,6 +127,14 @@ void    nmap(t_data *dt, pcap_t *handle)
     printf(C_B_YELLOW"[MAIN THREAD - END - RETRIEVED %d / %d (%d)]"C_RES"\n", g_retrieve, g_sent, g_queued);
 }
 
+void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
+{
+    if (!(sniffer->device = ft_strdup(device)))
+        exit_error("Malloc failure.");
+    if (!(sniffer->filter = ft_strdup(filter)))
+        exit_error("Malloc failure.");
+}
+
 int     main(int ac, char **av)
 {
     t_data          dt;
@@ -135,13 +143,15 @@ int     main(int ac, char **av)
     parse_input(&parsed_cmd, ac, av);
     if (is_activated_option(parsed_cmd.act_options, 'h'))
         option_h();
-    initialise_data(&dt, &parsed_cmd);
-    open_main_socket(&dt);
+    init_data(&dt, &parsed_cmd);
+    init_socket(&dt);
+    fill_host(&dt, parsed_cmd.not_options->content);
     debug_host(dt.host);
     init_queue(&dt);
-    prepare_sniffer(&dt);
+    init_sniffer(&dt.sniffer, "enp0s3", "src host 1.1.1.1");
+    init_handle(&dt.sniffer);
 
-    nmap(&dt, dt.sniffer.handle);
+    nmap(&dt);
 
 	pcap_close(dt.sniffer.handle);
     close(dt.socket);
