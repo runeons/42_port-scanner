@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-void    prepare_sniffer(pcap_t **handle)
+void    prepare_sniffer(t_data *dt, pcap_t **handle)
 {
     pcap_if_t           *interfaces;
     char                device[] = "enp0s3";
@@ -20,12 +20,16 @@ void    prepare_sniffer(pcap_t **handle)
     if (pcap_findalldevs(&interfaces, err_buf) == -1)
         exit_error_str("Finding devices", err_buf);
     // debug_interfaces(interfaces);
+    (void)dt;
+    // if(!(*handle =  mmalloc(sizeof(pcap_t *))))
+    //     exit_error("Malloc failure.");
     if ((*handle = pcap_open_live(device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
         exit_error_str("Opening device:", err_buf);
     if (pcap_compile(*handle, &compiled_filter, filter, 0, net_mask) == -1)
         exit_error_str("Parsing filter:", pcap_geterr(*handle));
     if (pcap_setfilter(*handle, &compiled_filter) == -1)
         exit_error_str("Compiling filter:", pcap_geterr(*handle));
+    pcap_freealldevs(interfaces);
 }
 
 const struct iphdr          *ip_h;
@@ -39,7 +43,6 @@ void    retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_
     ip_h            = (struct iphdr *)          (packet + ETH_H_LEN);                           // packet + 14
     icmp_h          = (struct icmphdr *)        (packet + ETH_H_LEN + IP_H_LEN);                // packet + 14 + 20
     icmp_payload    = (char *)                  (packet + ETH_H_LEN + IP_H_LEN + ICMP_H_LEN);   // packet + 14 + 20 + 8
-    // printf(C_G_RED"[QUICK DEBUG] icmp_h->type: %hhu"C_RES"\n", icmp_h->type);
     if (icmp_h->type != ICMP_ECHO_REPLY)
         warning_int("Invalid ICMP type: (bytes)", icmp_h->type);
     else

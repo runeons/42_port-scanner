@@ -50,7 +50,6 @@ void            init_scan(t_scan_tracker *scan_tracker, e_scan_type scan_type)
 static t_port    *create_port(int socket, int port_id, struct sockaddr_in target_address, e_scan_type *unique_scans)
 {
     t_port  *port = NULL;
-    size_t  scan_trackers_size = g_scans_nb * sizeof(t_scan_tracker);
 
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
@@ -59,7 +58,8 @@ static t_port    *create_port(int socket, int port_id, struct sockaddr_in target
     port->target_address    = target_address;
     port->port_id           = port_id;
     port->conclusion        = NOT_CONCLUDED;
-    ft_memset(port->scan_trackers, 0, scan_trackers_size);
+    if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scans_nb)))
+        exit_error_close_socket("ft_nmap: malloc failure.", socket);
     for (int i = 0; i < g_scans_nb; i++)
         init_scan(&port->scan_trackers[i], unique_scans[i]);
     // debug_scan_tracker(port->scan_trackers[0]);

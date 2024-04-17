@@ -114,3 +114,12 @@ void    debug_host(t_host host)
         printf(C_G_CYAN"-------"C_RES"\n");
     }
 }
+
+void    debug_queue(t_data dt)
+{
+    if (DEBUG == 1)
+    {
+        printf(C_G_GREEN"[DEBUG] queue %d"C_RES"\n", ft_lst_size((dt.queue)));
+        printf(C_G_GREEN"-------"C_RES"\n");
+    }
+}

@@ -55,7 +55,7 @@ static void    send_packet(int socket, t_packet *packet, struct sockaddr_in *tar
         warning_int("Packet sending failure.", task_id);
         return;
     }
-    // print_info_int("Packet sent (bytes):", sizeof(*packet));
+    print_info_int("Packet sent (bytes):", sizeof(*packet));
     g_sent++;
     // debug_icmp_packet(*packet);
 }

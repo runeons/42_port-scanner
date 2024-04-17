@@ -79,6 +79,7 @@ void    *worker_function(void *dt)
     printf(C_B_YELLOW"[NEW THREAD]"C_RES"\n");
     while (g_end_server == FALSE)
     {
+        // debug_queue(*(t_data *)dt);
         t_task *task = dequeue_task(dt);
         if (task == NULL)
         {
@@ -139,7 +140,7 @@ int     main(int ac, char **av)
     debug_host(dt.host);
     init_queue(&dt);
     // debug_sockaddr_in(dt.target_address);
-    prepare_sniffer(&handle);
+    prepare_sniffer(&dt, &handle);
     nmap(&dt, handle);
     close(dt.socket);
     // free_all_malloc();
