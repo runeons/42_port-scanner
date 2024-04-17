@@ -7,7 +7,7 @@ static void resolve_address(t_host *host) // check that dest exists and resolve 
 
     if (getaddrinfo(host->input_dest, NULL, NULL, &resolved_add) != 0)
         exit_error("ft_nmap: unknown host\n");
-    // debug_addrinfo(resolved_add);
+    // debug_addrinfo(*resolved_add);
     tmp = resolved_add;
     while (tmp != NULL)
     {
@@ -55,10 +55,10 @@ static t_port    *create_port(int socket, int port_id, struct sockaddr_in target
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
         exit_error_close_socket("ft_nmap: malloc failure.", socket);
-    port->port_id           = port_id;
-    port->conclusion        = IN_PROGRESS;
     ft_memset(&(port->target_address), 0, sizeof(struct sockaddr_in));
     port->target_address    = target_address;
+    port->port_id           = port_id;
+    port->conclusion        = NOT_CONCLUDED;
     ft_memset(port->scan_trackers, 0, scan_trackers_size);
     for (int i = 0; i < g_scans_nb; i++)
         init_scan(&port->scan_trackers[i], unique_scans[i]);
@@ -72,7 +72,7 @@ static void    add_port(int socket, t_host *host, int port_id, e_scan_type *uniq
 
     port = create_port(socket, port_id, host->target_address, unique_scans);
     ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
-    debug_port(*port);
+    // debug_port(*port);
 }
 
 static void    add_host(t_data *dt, char *curr_arg)

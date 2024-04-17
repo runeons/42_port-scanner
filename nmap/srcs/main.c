@@ -136,10 +136,9 @@ int     main(int ac, char **av)
         option_h();
     initialise_data(&dt, &parsed_cmd);
     open_main_socket(&dt);
-    // for (int i = 0; i < dt.unique_scans_nb; i++)
-    //     printf(C_G_RED"[QUICK DEBUG] dt.unique_scans[i]: %d"C_RES"\n", dt.unique_scans[i]);
+    debug_host(dt.host);
     init_queue(&dt);
-    // debug_sockaddr_in(&dt.target_address);
+    // debug_sockaddr_in(dt.target_address);
     prepare_sniffer(&handle);
     nmap(&dt, handle);
     close(dt.socket);

@@ -30,6 +30,30 @@ void    debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask)
     printf("\n");
 }
 
+void    debug_addrinfo(struct addrinfo ai)
+{
+    if (DEBUG == 1)
+    {
+        printf(C_G_GRAY"[DEBUG] addrinfo"C_RES"\n");
+        printf("        ai_family: %d\n",   ai.ai_family);
+        printf("        ai_socktype: %d\n", ai.ai_socktype);
+        printf("        ai_addr: %s\n",     inet_ntoa(((struct sockaddr_in *)ai.ai_addr)->sin_addr));
+        printf(C_G_GRAY"-------"C_RES"\n");
+    }
+}
+
+void    debug_sockaddr_in(struct sockaddr_in addr)
+{
+    if (DEBUG == 1)
+    {
+        printf(C_G_GRAY"[DEBUG] sockaddr_in"C_RES"\n");
+        printf("        sin_family: %d\n",              addr.sin_family);
+        printf("        sin_port: %d\n",                addr.sin_port);
+        printf("        sin_addr.s_addr: %s (%d)\n",    inet_ntoa(addr.sin_addr), addr.sin_addr.s_addr);
+        printf(C_G_GRAY"-------"C_RES"\n");
+    }
+}
+
 void    debug_scan(t_scan scan)
 {
     if (DEBUG == 1)
@@ -64,5 +88,29 @@ void    debug_port(t_port port)
         for (int i = 0; i < g_scans_nb; i++)
             debug_scan_tracker(port.scan_trackers[i]);
         printf(C_G_GREEN"-------"C_RES"\n");
+    }
+}
+
+void    debug_one_port(void *content)
+{
+    if (content)
+    {
+        t_port *p = (t_port *)content;
+        debug_port(*p);
+    }
+}
+
+void    debug_host(t_host host)
+{
+    if (DEBUG == 1)
+    {
+        printf(C_G_CYAN"[DEBUG] host %s"C_RES"\n", host.input_dest);
+        printf("        input_dest          %s\n", host.input_dest);
+        printf("        resolved_address    %s\n", host.resolved_address);
+        printf("        resolved_hostname   %s\n", host.resolved_hostname);
+        printf("        dst_port            %d\n", host.dst_port);
+        debug_sockaddr_in(host.target_address);
+        ft_lst_iter_content(host.ports, debug_one_port);
+        printf(C_G_CYAN"-------"C_RES"\n");
     }
 }

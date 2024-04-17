@@ -4,7 +4,7 @@
 
 NAME					= 	ft_nmap
 
-CC						= 	clang -g3
+CC						= 	clang -g3 -gdwarf-4
 
 FFLAGS					=   -fsanitize=address
 

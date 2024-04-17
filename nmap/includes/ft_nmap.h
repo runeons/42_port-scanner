@@ -169,8 +169,6 @@ void            init_options_params(t_data *dt);
 //  socket.c
 void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            open_main_socket(t_data *dt);
-void            debug_addrinfo(struct addrinfo *ai);
-void            debug_sockaddr_in(struct sockaddr_in *addr);
 
 // packet.c
 void            craft_and_send_icmp(int socket, t_packet *packet, t_task *task);
@@ -179,9 +177,12 @@ void            craft_and_send_icmp(int socket, t_packet *packet, t_task *task);
 void            debug_icmp_packet(t_packet packet);
 void            debug_interfaces(pcap_if_t *interfaces);
 void            debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask);
+void            debug_addrinfo(struct addrinfo ai);
+void            debug_sockaddr_in(struct sockaddr_in addr);
 void            debug_scan_tracker(t_scan_tracker scan_tracker);
 void            debug_scan(t_scan scan);
-void    debug_port(t_port port);
+void            debug_port(t_port port);
+void            debug_host(t_host host);
 
 // utils_print.c
 void            print_info(char *msg);
