@@ -51,8 +51,6 @@
 # define IP_H_LEN               20  // sizeof(struct iphdr)
 # define ICMP_H_LEN             8   // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
-// TASKS
-# define T_SEND                 1
 // SCANS
 # define OFF                    0
 # define ON                     1
@@ -68,6 +66,12 @@ extern int g_sent;
 extern int g_queued;
 extern int g_verbose;
 extern int g_scans_nb; // important
+
+typedef enum
+{
+    T_SEND,
+    T_EMPTY,
+}       e_task_type;
 
 typedef enum
 {
@@ -113,8 +117,8 @@ typedef struct  s_packet
 typedef struct  s_task
 {
     int                 id;
-    int                 task_type; // SEND, RECV
-    int                 scan_type; // ICMP, TCP, UDP
+    int                 task_type;
+    int                 scan_type;
     struct sockaddr_in  target_address;
     int                 dst_port;
 }               t_task;
@@ -193,6 +197,7 @@ void            debug_interfaces(pcap_if_t *interfaces);
 void            debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask);
 void            debug_addrinfo(struct addrinfo ai);
 void            debug_sockaddr_in(struct sockaddr_in addr);
+void            debug_task(t_task task);
 void            debug_scan_tracker(t_scan_tracker scan_tracker);
 void            debug_scan(t_scan scan);
 void            debug_port(t_port port);
@@ -224,11 +229,13 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 // tasks.c
 void            enqueue_task(t_data *dt, t_task *task);
 t_task          *dequeue_task(t_data *dt);
-t_task          *create_task(int socket, struct sockaddr_in target_address, int dst_port);
-void            init_queue(t_data *dt);
+t_task          *fill_task(t_task *task, struct sockaddr_in target_address, int dst_port, e_task_type task_type, e_scan_type scan_type);
+t_task          *create_task(int socket);
+void            init_queue(t_data *dt, t_host *host);
 
 // utils_enum.c
 
+const char      *task_type_string(e_task_type task_type);
 const char      *scan_type_string(e_scan_type scan_type);
 const char      *response_string(e_response response);
 const char      *conclusion_string(e_conclusion conclusion);

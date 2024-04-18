@@ -1,5 +1,18 @@
 #include "ft_nmap.h"
 
+const char  *task_type_string(e_task_type task_type)
+{
+    switch (task_type)
+    {
+        case T_SEND:
+            return "T_SEND";
+        case T_EMPTY:
+            return "T_EMPTY";
+        default:
+            return "Invalid";
+    }
+}
+
 const char  *scan_type_string(e_scan_type scan_type)
 {
     switch (scan_type)

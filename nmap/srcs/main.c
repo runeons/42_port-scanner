@@ -147,7 +147,7 @@ int     main(int ac, char **av)
     init_socket(&dt);
     fill_host(&dt, parsed_cmd.not_options->content);
     debug_host(dt.host);
-    init_queue(&dt);
+    init_queue(&dt, &dt.host);
     init_sniffer(&dt.sniffer, "enp0s3", "src host 1.1.1.1");
     init_handle(&dt.sniffer);
 

@@ -73,6 +73,20 @@ void    debug_scan(t_scan scan)
     }
 }
 
+void    debug_task(t_task task)
+{
+    if (DEBUG_STRUCT == 1)
+    {
+        printf(C_G_YELLOW"[DEBUG] task"C_RES"\n");
+        printf("        id              %d\n", task.id);
+        printf("        task_type       %s\n", task_type_string(task.task_type));
+        printf("        scan_type       %s\n", scan_type_string(task.scan_type));
+        printf("        dst_port        %d\n", task.dst_port);
+        printf("        target_address  %s\n", inet_ntoa(task.target_address.sin_addr));
+        printf(C_G_YELLOW"-------"C_RES"\n");
+    }
+}
+
 void    debug_scan_tracker(t_scan_tracker scan_tracker)
 {
     if (DEBUG_STRUCT == 1)

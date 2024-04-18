@@ -15,7 +15,7 @@ t_task *dequeue_task(t_data *dt)
 {
     pthread_mutex_lock(&mutex);
     t_lst       *first_node = NULL;
-    t_task *task = NULL;
+    t_task      *task = NULL;
 
     if (dt->queue == NULL || ft_lst_size(dt->queue) == 1)
         return NULL;
@@ -31,30 +31,45 @@ t_task *dequeue_task(t_data *dt)
     return task;
 };
 
-t_task    *create_task(int socket, struct sockaddr_in target_address, int dst_port)
+t_task    *fill_task(t_task *task, struct sockaddr_in target_address, int dst_port, e_task_type task_type, e_scan_type scan_type)
+{
+    task->id                = g_task_id++;
+    task->task_type         = task_type;
+    task->scan_type         = scan_type;
+    task->dst_port          = dst_port;
+    task->target_address    = target_address;
+    return task;
+}
+
+t_task    *create_task(int socket)
 {
     t_task *task = NULL;
 
     task = mmalloc(sizeof(t_task));
     if (task == NULL)
         exit_error_close_socket("ft_nmap: malloc failure.", socket);
-    task->id                = g_task_id++;
-    task->task_type         = T_SEND;
-    task->scan_type         = ICMP;
-    task->dst_port          = dst_port;
+    task->id                = 0;
+    task->task_type         = T_EMPTY;
+    task->scan_type         = UNKNOWN;
+    task->dst_port          = 0;
     ft_memset(&(task->target_address), 0, sizeof(struct sockaddr_in));
-    task->target_address    = target_address;
-
     return task;
 }
 
-void    init_queue(t_data *dt)
+void init_queue(t_data *dt, t_host *host)
 {
-    for (int i = 0; i <= g_max_send; i++)
+    t_lst *curr_port = host->ports;
+    while (curr_port != NULL)
     {
-        t_task *task;
-
-        task = create_task(dt->socket, dt->host.target_address, dt->host.dst_port + i);
-        enqueue_task(dt, task);
+        t_port *port = (t_port *)curr_port->content;
+        for (int i = 0; i < g_scans_nb; i++)
+        {
+            t_scan_tracker  *curr_tracker = &(port->scan_trackers[i]);
+            t_task          *task = create_task(dt->socket);
+            fill_task(task, host->target_address, port->port_id, T_SEND, curr_tracker->scan.scan_type);
+            enqueue_task(dt, task);
+            debug_task(*task);
+        }
+        curr_port = curr_port->next;
     }
 }
