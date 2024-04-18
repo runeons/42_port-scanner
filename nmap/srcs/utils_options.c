@@ -11,7 +11,7 @@ t_option allowed_options[] =
     {'t', "threads",        1, "NB",            NULL, "specify number of threads to speed scanning up"},                                    // default 4
     // {'n', "no-dns",         0, "",              NULL, "do not perform DNS lookup"},
     {'v', "verbose",        0, "",              NULL, "display more information while scanning"},
-    // {'i', "ip",             1, "IP",            NULL, "specify ipv4 to scan"},                                                              // default 1.1.1.1
+    // {'i', "ip",             1, "IP",            NULL, "specify ipv4 to scan"},
     // {'f', "file",           1, "FILE",          NULL, "specify file to get ip list"},
 };
 

@@ -26,7 +26,7 @@
 # define MAX_SCANS              6
 # define MAX_PORTS              1024
 # define MAX_SEND               3
-# define SCAN_CHARS             "SAUFNXI"
+# define SCAN_CHARS             "SAUFNXI"       // I = tmp (initial test only)
 # define SOCKETS_NB             1               // tmp - 1 for now
 # define MAX_HOSTNAME_LEN       128
 // DEBUG && VERBOSE
@@ -53,7 +53,7 @@
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
 // PACKET FLAGS
-# define ICMP_ECHO_REPLY        0               // tmp - initial test only
+# define ICMP_ECHO_REPLY        0               // tmp (initial test only)
 
 extern t_lst    *g_queue;                // global queue
 extern int      g_scan_types_nb;         // unique scans nb
@@ -75,14 +75,14 @@ typedef enum
 
 typedef enum
 {
-    ICMP,           // tmp - initial test only
+    ICMP,           // tmp (initial test only)
     SYN,
     ACK,
     UDP,
     FIN,
     NUL,
     XMAS,
-    UNKNOWN,        // tmp - may not use it
+    UNKNOWN,        // tmp (may not use it)
 }       e_scan_type;
 
 typedef enum
@@ -94,8 +94,8 @@ typedef enum
     ICMP_UNR_C_3,       // type 3 unreachablee | code 3
     ICMP_UNR_C_NOT_3,   // type 3 unreachablee | code 1, 2, 9, 10, 13
     NO_RESPONSE,
-    OTHER,                  // tmp - may not use it
-    ICMP_ECHO_OK,           // tmp - initial test only
+    OTHER,                  // tmp (may not use it)
+    ICMP_ECHO_OK,           // tmp (initial test only)
 }       e_response;
 
 typedef enum
@@ -105,7 +105,7 @@ typedef enum
     CLOSED,
     FILTERED,
     OPEN_FILTERED,
-    UNFILTERED,             // tmp - may not use it
+    UNFILTERED,             // tmp (may not use it)
 }       e_conclusion;
 
 typedef struct  s_packet
