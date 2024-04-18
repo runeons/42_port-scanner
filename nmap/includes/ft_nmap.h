@@ -227,4 +227,11 @@ t_task          *dequeue_task(t_data *dt);
 t_task          *create_task(int socket, struct sockaddr_in target_address, int dst_port);
 void            init_queue(t_data *dt);
 
+// utils_enum.c
+
+const char      *scan_type_string(e_scan_type scan_type);
+const char      *response_string(e_response response);
+const char      *conclusion_string(e_conclusion conclusion);
+
+
 #endif

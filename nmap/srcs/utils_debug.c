@@ -42,9 +42,9 @@ void    debug_addrinfo(struct addrinfo ai)
     if (DEBUG_STRUCT == 1)
     {
         printf(C_G_GRAY"[DEBUG] addrinfo"C_RES"\n");
-        printf("        ai_family: %d\n",   ai.ai_family);
-        printf("        ai_socktype: %d\n", ai.ai_socktype);
-        printf("        ai_addr: %s\n",     inet_ntoa(((struct sockaddr_in *)ai.ai_addr)->sin_addr));
+        printf("        ai_family       %d\n", ai.ai_family);
+        printf("        ai_socktype     %d\n", ai.ai_socktype);
+        printf("        ai_addr         %s\n", inet_ntoa(((struct sockaddr_in *)ai.ai_addr)->sin_addr));
         printf(C_G_GRAY"-------"C_RES"\n");
     }
 }
@@ -54,9 +54,9 @@ void    debug_sockaddr_in(struct sockaddr_in addr)
     if (DEBUG_STRUCT == 1)
     {
         printf(C_G_GRAY"[DEBUG] sockaddr_in"C_RES"\n");
-        printf("        sin_family: %d\n",              addr.sin_family);
-        printf("        sin_port: %d\n",                addr.sin_port);
-        printf("        sin_addr.s_addr: %s (%d)\n",    inet_ntoa(addr.sin_addr), addr.sin_addr.s_addr);
+        printf("        sin_family          %d\n", addr.sin_family);
+        printf("        sin_port            %d\n", addr.sin_port);
+        printf("        sin_addr.s_addr     %s (%d)\n", inet_ntoa(addr.sin_addr), addr.sin_addr.s_addr);
         printf(C_G_GRAY"-------"C_RES"\n");
     }
 }
@@ -66,9 +66,9 @@ void    debug_scan(t_scan scan)
     if (DEBUG_STRUCT == 1)
     {
         printf(C_G_BLUE"[DEBUG] scan"C_RES"\n");
-        printf("        scan_type   %d\n", scan.scan_type);
-        printf("        response    %d\n", scan.response);
-        printf("        conclusion  %d\n", scan.conclusion);
+        printf("        scan_type   %s\n", scan_type_string(scan.scan_type));
+        printf("        response    %s\n", response_string(scan.response));
+        printf("        conclusion  %s\n", conclusion_string(scan.conclusion));
         printf(C_G_BLUE"-------"C_RES"\n");
     }
 }
@@ -91,7 +91,7 @@ void    debug_port(t_port port)
     {
         printf(C_G_GREEN"[DEBUG] port %d"C_RES"\n", port.port_id);
         printf("        port_id     %d\n", port.port_id);
-        printf("        conclusion  %d\n", port.conclusion);
+        printf("        conclusion  %s\n", conclusion_string(port.conclusion));
         for (int i = 0; i < g_scans_nb; i++)
             debug_scan_tracker(port.scan_trackers[i]);
         printf(C_G_GREEN"-------"C_RES"\n");

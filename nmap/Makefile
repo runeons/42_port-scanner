@@ -47,6 +47,7 @@ SRCS_LIST					=	\
 							socket.c \
 							tasks.c \
 							utils_debug.c \
+							utils_enum.c \
 							utils_error.c \
 							utils_options.c \
 							utils_print.c \
