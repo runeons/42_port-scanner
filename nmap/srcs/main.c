@@ -89,15 +89,11 @@ void    *worker_function(void *dt)
 {
     print_info_thread("STARTING NEW THREAD");
     while (g_end_server == FALSE)
-    {
-        debug_queue(*(t_data *)dt);
+    {   
+        // debug_queue(*(t_data *)dt);
         t_task *task = dequeue_task(dt);
         if (task == NULL)
-        {
-            printf(C_B_RED"[ENDING SERVER] queue size = %d"C_RES"\n", ft_lst_size(((t_data *)dt)->queue));
-            g_end_server = TRUE;
             return NULL;         
-        }
         print_info_task("Dequeued task", task->id);
         handle_task((t_data *)dt, task);
     }
@@ -129,7 +125,6 @@ void    nmap(t_data *dt)
         pthread_join(workers[i], NULL);
     }
     print_info_thread("ENDING MAIN THREAD");
-    printf(C_B_RED"[END] RETRIEVED %d / %d (%d)]"C_RES"\n", g_retrieve, g_sent, g_queued);
 }
 
 void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
@@ -158,6 +153,7 @@ int     main(int ac, char **av)
 
     nmap(&dt);
 
+    debug_end(dt);
 	pcap_close(dt.sniffer.handle);
     close(dt.socket);
     free_all_malloc();

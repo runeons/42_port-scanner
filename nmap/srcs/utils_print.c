@@ -20,6 +20,6 @@ void print_info_task(char *msg, int n)
 
 void print_info_thread(char *msg)
 {
-    if (DEBUG_THREAD == ON)
+    if (VERBOSE_THREAD == ON)
         printf(C_B_YELLOW"[THREAD]"C_RES"   %s\n", msg);
 }

@@ -29,12 +29,13 @@
 # define MAX_PORTS              1024
 # define MAX_SEND               3
 # define SCAN_CHARS             "SAUFNXI"
-// DEBUG
+// DEBUG && VERBOSE
 # define DEBUG_PARSING          0
 # define DEBUG_STRUCT           1
 # define DEBUG_NET              0
-# define DEBUG_THREAD           1
 # define DEBUG_OTHER            0
+# define DEBUG_QUEUE            1
+# define VERBOSE_THREAD         1
 // DEFAULTS OPTIONS VALUES
 # define THREADS_NB             4
 # define FIRST_PORT             1
@@ -204,6 +205,7 @@ void            debug_scan(t_scan scan);
 void            debug_port(t_port port);
 void            debug_host(t_host host);
 void            debug_queue(t_data dt);
+void            debug_end(t_data dt);
 
 // utils_print.c
 void            print_info(char *msg);

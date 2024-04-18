@@ -138,9 +138,19 @@ void    debug_host(t_host host)
 
 void    debug_queue(t_data dt)
 {
-    if (DEBUG_OTHER == 1)
+    if (DEBUG_QUEUE == 1)
     {
         printf(C_G_GREEN"[DEBUG] queue %d"C_RES"\n", ft_lst_size((dt.queue)));
         printf(C_G_GREEN"-------"C_RES"\n");
     }
+}
+
+void    debug_end(t_data dt)
+{
+    printf(C_G_GRAY"[DEBUG] ft_nmap done: 1 IP address (%s)"C_RES"\n", dt.host.input_dest);
+        printf("        total_queued        %d\n", g_queued);
+        printf("        total_sent          %d\n", g_sent);
+        printf("        total_retrieved     %d\n", g_retrieve);
+    printf(C_G_GRAY"-------"C_RES"\n");
+
 }

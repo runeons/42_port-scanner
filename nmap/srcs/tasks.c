@@ -17,8 +17,6 @@ t_task *dequeue_task(t_data *dt)
     t_lst       *first_node = NULL;
     t_task      *task = NULL;
 
-    if (dt->queue == NULL || ft_lst_size(dt->queue) == 1)
-        return NULL;
     first_node = ft_lst_get_first_node(&dt->queue);
     if (first_node)
     {
@@ -26,7 +24,12 @@ t_task *dequeue_task(t_data *dt)
         ft_lst_remove_node(&dt->queue, first_node);
     }
     else
+    {
+        printf(C_B_RED"[DEQUEUE ENDING SERVER] = %d"C_RES"\n", ft_lst_size(dt->queue));
+        g_end_server = TRUE;
+        pthread_mutex_unlock(&mutex);
         return NULL;  
+    }
     pthread_mutex_unlock(&mutex);
     return task;
 };

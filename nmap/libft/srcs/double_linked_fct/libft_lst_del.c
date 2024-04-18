@@ -56,12 +56,10 @@ void	ft_lst_remove_node(t_lst **alst, t_lst *to_remove)
 	{
 		tmp = *alst;
 		if (tmp == to_remove)
-		{
-			if (tmp->next)
-			{
-				tmp->next->prev = NULL;
-				*alst = tmp->next;
-			}
+		{   
+			*alst = tmp->next;
+            if (*alst)
+                (*alst)->prev = NULL;
 		}
 		else
 		{
