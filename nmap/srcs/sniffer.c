@@ -52,7 +52,7 @@ void    retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_
 
 void    sniff_packets(pcap_t *handle)
 {
-    printf(C_G_YELLOW"[INFO]"C_RES" Ready to sniff...\n");
+    printf(C_G_YELLOW"[INFO]"C_RES"     Ready to sniff...\n");
     pcap_dispatch(handle, 0, retrieve_packet, NULL);
 	print_info("Capture completed");
 }

@@ -74,28 +74,32 @@ void    send_icmp(t_data *dt, t_task *task)
     }
 }
 
+void    handle_task(t_data *dt, t_task *task)
+{
+    if (task->task_type == T_SEND)
+    {
+        if (task->scan_type == ICMP)
+        {
+            send_icmp((t_data *)dt, task);
+        }
+    }
+}
+
 void    *worker_function(void *dt)
 {
-    (void)dt;
-    printf(C_B_YELLOW"[NEW THREAD]"C_RES"\n");
+    print_info_thread("STARTING NEW THREAD");
     while (g_end_server == FALSE)
     {
         debug_queue(*(t_data *)dt);
         t_task *task = dequeue_task(dt);
         if (task == NULL)
         {
-            printf(C_B_RED"[ENDING SERVER] %d queue size"C_RES"\n", ft_lst_size(((t_data *)dt)->queue));
+            printf(C_B_RED"[ENDING SERVER] queue size = %d"C_RES"\n", ft_lst_size(((t_data *)dt)->queue));
             g_end_server = TRUE;
             return NULL;         
         }
         print_info_task("Dequeued task", task->id);
-        if (task->task_type == T_SEND)
-        {
-            if (task->scan_type == ICMP)
-            {
-                send_icmp((t_data *)dt, task);
-            }
-        }
+        handle_task((t_data *)dt, task);
     }
     return NULL;
 }
@@ -108,10 +112,10 @@ void    nmap(t_data *dt)
     r = 0;
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
-    printf(C_B_YELLOW"[MAIN THREAD - START - PRINT NMAP START]"C_RES"\n");
+    print_info_thread("STARTING MAIN THREAD");
     while (g_end_server == FALSE)
     {
-        printf(C_G_YELLOW"[INFO]"C_RES" Waiting on poll()...\n");
+        printf(C_G_YELLOW"[INFO]"C_RES"     Waiting on poll()...\n");
         r = poll(dt->fds, NFDS, POLL_TIMEOUT);
         if (r < 0)
             exit_error("Poll failure.");
@@ -124,7 +128,8 @@ void    nmap(t_data *dt)
         print_info_task("END THREAD", i);
         pthread_join(workers[i], NULL);
     }
-    printf(C_B_YELLOW"[MAIN THREAD - END - RETRIEVED %d / %d (%d)]"C_RES"\n", g_retrieve, g_sent, g_queued);
+    print_info_thread("ENDING MAIN THREAD");
+    printf(C_B_RED"[END] RETRIEVED %d / %d (%d)]"C_RES"\n", g_retrieve, g_sent, g_queued);
 }
 
 void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)

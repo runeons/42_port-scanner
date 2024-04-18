@@ -33,6 +33,7 @@
 # define DEBUG_PARSING          0
 # define DEBUG_STRUCT           1
 # define DEBUG_NET              0
+# define DEBUG_THREAD           1
 # define DEBUG_OTHER            0
 // DEFAULTS OPTIONS VALUES
 # define THREADS_NB             4
@@ -208,6 +209,7 @@ void            debug_queue(t_data dt);
 void            print_info(char *msg);
 void            print_info_int(char *msg, int n);
 void            print_info_task(char *msg, int n);
+void            print_info_thread(char *msg);
 
 // utils_error.c
 void            exit_error(char *msg);
