@@ -27,32 +27,25 @@ void    init_handle(t_sniffer *sniffer)
     pcap_freealldevs(interfaces);
 }
 
-const struct iphdr          *ip_h;
-const struct icmphdr        *icmp_h;
-const char                  *icmp_payload;
-
-void    retrieve_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
+void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
-    (void)args;
-    (void)header;
-    ip_h            = (struct iphdr *)          (packet + ETH_H_LEN);                           // packet + 14
-    icmp_h          = (struct icmphdr *)        (packet + ETH_H_LEN + IP_H_LEN);                // packet + 14 + 20
-    icmp_payload    = (char *)                  (packet + ETH_H_LEN + IP_H_LEN + ICMP_H_LEN);   // packet + 14 + 20 + 8
-    if (icmp_h->type != ICMP_ECHO_REPLY)
-        warning_int("Invalid ICMP type: (bytes)", icmp_h->type);
-    else
-    {
-        print_info_int("Retrieved packet", g_retrieve);
-        // printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet "C_G_GREEN"[%d]"C_RES"\n", g_retrieve);
-        // printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet of size "C_G_GREEN"[%d]"C_RES" with type "C_G_GREEN"[%d]"C_RES" and code "C_G_GREEN"[%d]"C_RES"\n", header->len, icmp_h->type, icmp_h->code);
-        // printf(C_G_MAGENTA"[INFO]"C_RES"PAYLOAD [%s]\n", icmp_payload);
-        g_retrieve++;
-    }
+    t_task  *task = create_task(g_socket);
+
+    task->id            = 100000 + g_retrieve++; // TO DO
+    task->task_type     = T_RECV;
+    task->args          = args;
+    task->header        = (struct pcap_pkthdr *)header;
+    task->packet        = (u_char *)packet;
+    enqueue_task(task);
+    // debug_task(*task);
 }
 
-void    sniff_packets(pcap_t *handle)
+void    sniff_packets(pcap_t *handle, t_data *dt)
 {
-    printf(C_G_YELLOW"[INFO]"C_RES"     Ready to sniff...\n");
-    pcap_dispatch(handle, 0, retrieve_packet, NULL);
-	print_info("Capture completed");
+    (void)dt;
+    printf(C_G_BLUE"[INFO]"C_RES"     Ready to sniff...\n");
+    while (g_scans_tracker != 0)
+        pcap_dispatch(handle, 0, packet_handler, 0);
+    debug_queue(*dt);
+    // printf(C_G_BLUE"[INFO]"C_RES"     Capture completed\n");
 }

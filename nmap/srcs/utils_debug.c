@@ -106,7 +106,7 @@ void    debug_port(t_port port)
         printf(C_G_GREEN"[DEBUG] port %d"C_RES"\n", port.port_id);
         printf("        port_id     %d\n", port.port_id);
         printf("        conclusion  %s\n", conclusion_string(port.conclusion));
-        for (int i = 0; i < g_scans_nb; i++)
+        for (int i = 0; i < g_scan_types_nb; i++)
             debug_scan_tracker(port.scan_trackers[i]);
         printf(C_G_GREEN"-------"C_RES"\n");
     }
@@ -129,18 +129,17 @@ void    debug_host(t_host host)
         printf("        input_dest          %s\n", host.input_dest);
         printf("        resolved_address    %s\n", host.resolved_address);
         printf("        resolved_hostname   %s\n", host.resolved_hostname);
-        printf("        dst_port            %d\n", host.dst_port);
         debug_sockaddr_in(host.target_address);
         ft_lst_iter_content(host.ports, debug_one_port);
         printf(C_G_CYAN"-------"C_RES"\n");
     }
 }
 
-void    debug_queue(t_data dt)
+void    debug_queue()
 {
     if (DEBUG_QUEUE == 1)
     {
-        printf(C_G_GREEN"[DEBUG] queue %d"C_RES"\n", ft_lst_size((dt.queue)));
+        printf(C_G_GREEN"[DEBUG] g_queue %d"C_RES"\n", ft_lst_size(g_queue));
         printf(C_G_GREEN"-------"C_RES"\n");
     }
 }

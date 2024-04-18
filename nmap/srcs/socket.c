@@ -20,5 +20,5 @@ void    init_socket(t_data *dt)
         exit_error_close(dt->socket, "ft_nmap: socket error in setting option: Exiting program.%s\n");
     bind_socket_to_src_port(dt, dt->src_port);
     dt->fds[0].fd = dt->socket;
-
+    g_socket = dt->socket;
 }

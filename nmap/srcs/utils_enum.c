@@ -1,11 +1,13 @@
 #include "ft_nmap.h"
 
-const char  *task_type_string(e_task_type task_type)
+char  *task_type_string(e_task_type task_type)
 {
     switch (task_type)
     {
         case T_SEND:
             return "T_SEND";
+        case T_RECV:
+            return "T_RECV";
         case T_EMPTY:
             return "T_EMPTY";
         default:
@@ -13,7 +15,7 @@ const char  *task_type_string(e_task_type task_type)
     }
 }
 
-const char  *scan_type_string(e_scan_type scan_type)
+char  *scan_type_string(e_scan_type scan_type)
 {
     switch (scan_type)
     {
@@ -38,7 +40,7 @@ const char  *scan_type_string(e_scan_type scan_type)
     }
 }
 
-const char  *response_string(e_response response)
+char  *response_string(e_response response)
 {
     switch (response)
     {
@@ -65,7 +67,7 @@ const char  *response_string(e_response response)
     }
 }
 
-const char  *conclusion_string(e_conclusion conclusion)
+char  *conclusion_string(e_conclusion conclusion)
 {
     switch (conclusion)
     {

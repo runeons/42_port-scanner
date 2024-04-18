@@ -170,7 +170,7 @@ void   option_s(t_data *dt)
             if (scans_present[i])
                 dt->unique_scans[count++] = (e_scan_type)i;
         }
-        g_scans_nb = count;
+        g_scan_types_nb = count;
     }
     else
     {
@@ -179,7 +179,7 @@ void   option_s(t_data *dt)
             dt->unique_scans[i] = (e_scan_type)i;
             scans_present[i] = TRUE;
         }
-        g_scans_nb = MAX_SCANS;
+        g_scan_types_nb = MAX_SCANS;
     }
 }
 
@@ -226,9 +226,9 @@ void   option_p(t_data *dt)
 void   option_v(t_data *dt)
 {
     if (is_activated_option(dt->act_options, 'v'))
-        g_verbose = ON;
+        g_verbose = TRUE;
     else
-        g_verbose = OFF;
+        g_verbose = FALSE;
 }
 
 void   option_th(t_data *dt)

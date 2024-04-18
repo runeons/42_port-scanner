@@ -58,9 +58,9 @@ static t_port    *create_port(int port_id, struct sockaddr_in target_address, e_
     port->target_address    = target_address;
     port->port_id           = port_id;
     port->conclusion        = NOT_CONCLUDED;
-    if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scans_nb)))
+    if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
         exit_error("ft_nmap: malloc failure.");
-    for (int i = 0; i < g_scans_nb; i++)
+    for (int i = 0; i < g_scan_types_nb; i++)
         init_scan(&port->scan_trackers[i], unique_scans[i]);
     // debug_scan_tracker(port->scan_trackers[0]);
     return port;
@@ -96,7 +96,6 @@ static void     init_host(t_host *host)
     host->target_address.sin_family       = AF_INET;
     host->target_address.sin_port         = 0;
     host->target_address.sin_addr.s_addr  = INADDR_ANY;
-    host->dst_port            = 80;
     host->ports               = NULL;
 }
 
@@ -108,7 +107,7 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
     ft_memset(dt->fds, 0, sizeof(dt->fds));
     dt->fds[0].events       = POLLOUT;
-    dt->queue               = NULL;
+    // dt->queue               = NULL;
     dt->threads             = THREADS_NB;
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
@@ -127,5 +126,4 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     init_options_params(dt);
     if (ft_lst_size(parsed_cmd->not_options) != 1)
         exit_error("ft_nmap: usage error: Destination required and only one.\n");
-    // fill_host(dt, parsed_cmd->not_options->content);
 }
