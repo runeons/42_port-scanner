@@ -3,11 +3,10 @@
 // cf. ft_nmap.h for details
 t_lst *g_queue         = NULL;
 int g_scan_types_nb    = 0;
-int g_scans_tracker    = 0;
+int g_remaining_scans  = 0;
 int g_scan_tracker_id  = 0;
 int g_socket           = 0;
 int g_sequence         = 0;
-int g_task_id          = 0;
 int g_retrieve         = 0;
 int g_sent             = 0;
 int g_queued           = 0;
@@ -55,34 +54,6 @@ static void    parse_input(t_parsed_cmd *parsed_cmd, int ac, char **av)
     if (DEBUG_PARSING)
         debug_activated_options(parsed_cmd->act_options);
 }
-
-// const struct iphdr          *ip_h;
-// const struct icmphdr        *icmp_h;
-// const char                  *icmp_payload;
-
-// void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
-// {
-//     (void)args;
-//     (void)header;
-//     ip_h            = (struct iphdr *)          (packet + ETH_H_LEN);                           // packet + 14
-//     icmp_h          = (struct icmphdr *)        (packet + ETH_H_LEN + IP_H_LEN);                // packet + 14 + 20
-//     icmp_payload    = (char *)                  (packet + ETH_H_LEN + IP_H_LEN + ICMP_H_LEN);   // packet + 14 + 20 + 8
-//     if (icmp_h->type != ICMP_ECHO_REPLY)
-//         warning_int("Invalid ICMP type: (bytes)", icmp_h->type);
-//     else
-//     {
-//         print_info_int("Retrieved packet", g_retrieve);
-//         // printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet "C_G_GREEN"[%d]"C_RES"\n", g_retrieve);
-//         // printf(C_G_MAGENTA"[INFO]"C_RES" Retrieved packet of size "C_G_GREEN"[%d]"C_RES" with type "C_G_GREEN"[%d]"C_RES" and code "C_G_GREEN"[%d]"C_RES"\n", header->len, icmp_h->type, icmp_h->code);
-//         // printf(C_G_MAGENTA"[INFO]"C_RES"PAYLOAD [%s]\n", icmp_payload);
-//         g_retrieve++;
-//     }
-// }
-
-#include <netinet/ip.h>
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
-#include <netinet/ip_icmp.h>
 
 e_response determine_response_type(t_data *dt, t_task *task)
 {
@@ -170,7 +141,7 @@ void    handle_recv_task(t_data *dt, t_task *task)
     // printf(C_G_RED"[QUICK DEBUG] id [%d] [%s]"C_RES"\n", id, response_string(response));
     update_scan_tracker(dt, id, response);
     // debug_task(*task);
-    g_scans_tracker--;
+    g_remaining_scans--;
 }
 
 void    handle_send_task(t_data *dt, t_task *task)
@@ -208,7 +179,7 @@ void    handle_task(t_data *dt, t_task *task)
 void    *worker_function(void *dt)
 {
     print_info_thread("STARTING NEW THREAD");
-    while (g_scans_tracker != 0)
+    while (g_remaining_scans != 0)
     {
         // debug_queue();
         t_task *task = dequeue_task();
@@ -231,7 +202,7 @@ void    nmap(t_data *dt)
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");
-    while (g_scans_tracker != 0)
+    while (g_remaining_scans != 0)
     {
         printf(C_G_BLUE"[INFO]"C_RES"     Waiting on poll()...\n");
         r = poll(dt->fds, NFDS, POLL_TIMEOUT);

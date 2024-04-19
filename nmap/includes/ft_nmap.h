@@ -12,8 +12,10 @@
 # include <netdb.h>             // addrinfo
 # include <sys/poll.h>
 # include <errno.h>
+# include <netinet/ip.h>
+# include <netinet/tcp.h>
+// # include <netinet/udp.h>
 # include <netinet/ip_icmp.h>   // struct icmphdr
-// # include <netinet/udp.h>       // struct udphdr
 # include <utils_colors.h>
 # include <utils_options.h>
 # include <libft.h>
@@ -58,10 +60,10 @@
 extern t_lst    *g_queue;                // global queue
 extern int      g_scan_types_nb;         // unique scans nb
 extern int      g_scan_tracker_id;       // unique id (to track tasks responses)
-extern int      g_scans_tracker;         // counter to track & end server
+extern int      g_remaining_scans;       // counter to track & end server
 extern int      g_socket;                // main socket
-extern int      g_sequence;              // not sure yet whether we need id to send icmp sequence
-extern int      g_task_id;               // not sure yet whether we need id to track tasks 
+
+extern int      g_sequence;              // not sure yet whether we really need it
 extern int      g_retrieve;              // tmp (count retrieved packets)
 extern int      g_sent;                  // tmp (count sent packets)
 extern int      g_queued;                // tmp (count queued packets)
@@ -76,14 +78,14 @@ typedef enum
 
 typedef enum
 {
-    ICMP,           // tmp (initial test only)
+    ICMP,               // tmp (initial test only)
     SYN,
     ACK,
     UDP,
     FIN,
     NUL,
     XMAS,
-    UNKNOWN,        // tmp (may not use it)
+    UNKNOWN,            // tmp (may not use it)
 }       e_scan_type;
 
 typedef enum
@@ -92,11 +94,11 @@ typedef enum
     TCP_SYN_ACK,
     TCP_RST,
     UDP_ANY,
-    ICMP_UNR_C_3,       // type 3 unreachablee | code 3
-    ICMP_UNR_C_NOT_3,   // type 3 unreachablee | code 1, 2, 9, 10, 13
+    ICMP_UNR_C_3,       // type 3 unreachable | code 3
+    ICMP_UNR_C_NOT_3,   // type 3 unreachable | code 1, 2, 9, 10, 13
     NO_RESPONSE,
-    OTHER,                  // tmp (may not use it)
-    ICMP_ECHO_OK,           // tmp (initial test only)
+    OTHER,              // tmp (may not use it)
+    ICMP_ECHO_OK,       // tmp (initial test only)
 }       e_response;
 
 typedef enum
@@ -106,7 +108,7 @@ typedef enum
     CLOSED,
     FILTERED,
     OPEN_FILTERED,
-    UNFILTERED,             // tmp (may not use it)
+    UNFILTERED,         // tmp (may not use it)
 }       e_conclusion;
 
 typedef struct  s_packet

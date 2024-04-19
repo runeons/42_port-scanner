@@ -25,6 +25,7 @@ void    init_handle(t_sniffer *sniffer)
     if (pcap_setfilter(sniffer->handle, &compiled_filter) == -1)
         exit_error_str("Compiling filter:", pcap_geterr(sniffer->handle));
     pcap_freealldevs(interfaces);
+    pcap_freecode(&compiled_filter);
 }
 
 void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
@@ -52,7 +53,7 @@ void    sniff_packets(pcap_t *handle, t_data *dt)
 {
     (void)dt;
     printf(C_G_BLUE"[INFO]"C_RES"     Ready to sniff...\n");
-    while (g_scans_tracker != 0)
+    while (g_remaining_scans != 0)
         pcap_dispatch(handle, 0, packet_handler, 0);
     debug_queue(*dt);
     // printf(C_G_BLUE"[INFO]"C_RES"     Capture completed\n");
