@@ -78,7 +78,7 @@ void    debug_task(t_task task)
     if (DEBUG_STRUCT == 1)
     {
         printf(C_G_YELLOW"[DEBUG] task"C_RES"\n");
-        printf("        id              %d\n", task.id);
+        printf("        id              %d\n", task.scan_tracker_id);
         printf("        task_type       %s\n", task_type_string(task.task_type));
         printf("        scan_type       %s\n", scan_type_string(task.scan_type));
         printf("        dst_port        %d\n", task.dst_port);

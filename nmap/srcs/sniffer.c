@@ -27,15 +27,23 @@ void    init_handle(t_sniffer *sniffer)
     pcap_freealldevs(interfaces);
 }
 
+void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
+{
+    if (!(sniffer->device = ft_strdup(device)))
+        exit_error("Malloc failure.");
+    if (!(sniffer->filter = ft_strdup(filter)))
+        exit_error("Malloc failure.");
+}
+
 void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
     t_task  *task = create_task(g_socket);
 
-    task->id            = 100000 + g_retrieve++; // TO DO
-    task->task_type     = T_RECV;
-    task->args          = args;
-    task->header        = (struct pcap_pkthdr *)header;
-    task->packet        = (u_char *)packet;
+    task->scan_tracker_id   = 100000 + g_retrieve++; // TO DO
+    task->task_type         = T_RECV;
+    task->args              = args;
+    task->header            = (struct pcap_pkthdr *)header;
+    task->packet            = (u_char *)packet;
     enqueue_task(task);
     // debug_task(*task);
 }

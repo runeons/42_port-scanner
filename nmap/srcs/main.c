@@ -4,6 +4,7 @@
 t_lst *g_queue         = NULL;
 int g_scan_types_nb    = 0;
 int g_scans_tracker    = 0;
+int g_scan_tracker_id  = 0;
 int g_socket           = 0;
 int g_sequence         = 0;
 int g_task_id          = 0;
@@ -55,28 +56,6 @@ static void    parse_input(t_parsed_cmd *parsed_cmd, int ac, char **av)
         debug_activated_options(parsed_cmd->act_options);
 }
 
-void    send_icmp(t_data *dt, t_task *task)
-{
-    for (int i = 0; i < NFDS; i++) // only one for now
-    {
-        if (dt->fds[i].revents == 0)
-        {
-            enqueue_task(task);
-            printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->id);
-            continue;
-        }
-        if (dt->fds[i].revents != POLLOUT)
-            exit_error_close_socket("Poll unexpected result", dt->socket);
-        if (dt->fds[i].fd == dt->socket)
-        {
-            t_packet packet;
-            craft_and_send_icmp(dt->socket, &packet, task);
-        }
-        else
-            warning("Unknown fd is readable.");
-    }
-}
-
 // const struct iphdr          *ip_h;
 // const struct icmphdr        *icmp_h;
 // const char                  *icmp_payload;
@@ -100,26 +79,130 @@ void    send_icmp(t_data *dt, t_task *task)
 //     }
 // }
 
-void    recv_icmp(t_data *dt, t_task *task)
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+#include <netinet/ip_icmp.h>
+
+e_response determine_response_type(t_data *dt, t_task *task)
 {
     (void)dt;
+    struct ip *ip_hdr = (struct ip *)(task->packet + ETH_H_LEN);
+    if (ip_hdr->ip_p == IPPROTO_TCP)
+    {
+        struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+
+        if (tcp_hdr->syn && tcp_hdr->ack)
+            return TCP_SYN_ACK;
+        else if (tcp_hdr->rst)
+            return TCP_RST;
+    }
+    else if (ip_hdr->ip_p == IPPROTO_UDP)
+        return UDP_ANY;
+    else if (ip_hdr->ip_p == IPPROTO_ICMP)
+    {
+        struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+
+        if (icmp_hdr->icmp_type == ICMP_ECHOREPLY)
+            return ICMP_ECHO_OK;
+        else if (icmp_hdr->icmp_type == ICMP_UNREACH)
+        {
+            if (icmp_hdr->icmp_code == 3)
+                return ICMP_UNR_C_3;
+            else if (icmp_hdr->icmp_code == 1 || icmp_hdr->icmp_code == 2 ||
+                     icmp_hdr->icmp_code == 9 || icmp_hdr->icmp_code == 10 ||
+                     icmp_hdr->icmp_code == 13)
+                return ICMP_UNR_C_NOT_3;
+        }
+    }
+    return OTHER;
+}
+
+void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response)
+{
+    t_lst *curr_port = dt->host.ports;
+
+    while (curr_port != NULL)
+    {
+        t_port *port = curr_port->content;
+
+        for (int i = 0; i < g_scan_types_nb; i++)
+        {
+            t_scan_tracker *tracker = &(port->scan_trackers[i]);
+            if (tracker == NULL)
+                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            if (tracker->id == scan_tracker_id)
+            {
+                tracker->scan.response = response;
+                return;
+            }
+        }
+        curr_port = curr_port->next;
+    }
+    printf(C_B_RED"[SHOULD NOT APPEAR] scan_tracker_id not found"C_RES"\n");
+}
+
+int     extract_response_id(t_data *dt, t_task *task, e_response response)
+{
+    (void)dt;
+    int id = -1;
+
+    if (response == ICMP_ECHO_OK)
+    {
+        struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+        if (icmp_hdr)
+            id = icmp_hdr->icmp_id;
+    }
+    else
+        printf(C_B_RED"[SHOULD NOT APPEAR] response != ICMP_ECHO_OK"C_RES"\n");
+    return id;
+}
+
+void    handle_recv_task(t_data *dt, t_task *task)
+{
+    int         id;
+    e_response  response;
+
+    (void)dt;
     (void)task;
+    response = determine_response_type(dt, task);
+    id = extract_response_id(dt, task, response);
+    // printf(C_G_RED"[QUICK DEBUG] id [%d] [%s]"C_RES"\n", id, response_string(response));
+    update_scan_tracker(dt, id, response);
+    // debug_task(*task);
     g_scans_tracker--;
+}
+
+void    handle_send_task(t_data *dt, t_task *task)
+{
+    for (int i = 0; i < NFDS; i++) // only one for now
+    {
+        if (dt->fds[i].revents == 0)
+        {
+            enqueue_task(task);
+            printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->scan_tracker_id);
+            continue;
+        }
+        if (dt->fds[i].revents != POLLOUT)
+            exit_error_close_socket("Poll unexpected result", dt->socket);
+        if (dt->fds[i].fd == dt->socket)
+        {
+            t_packet packet;
+            if (task->scan_type == ICMP)
+                craft_icmp_packet(&packet, task);
+            send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);
+        }
+        else
+            warning("Unknown fd is readable.");
+    }
 }
 
 void    handle_task(t_data *dt, t_task *task)
 {
     if (task->task_type == T_SEND)
-    {
-        if (task->scan_type == ICMP)
-        {
-            send_icmp(dt, task);
-        }
-    }
+        handle_send_task(dt, task);
     else if (task->task_type == T_RECV)
-    {
-        recv_icmp(dt, task);
-    }
+        handle_recv_task(dt, task);
 }
 
 void    *worker_function(void *dt)
@@ -131,7 +214,7 @@ void    *worker_function(void *dt)
         t_task *task = dequeue_task();
         if (task == NULL)
             continue;
-        print_info_task("Dequeued task", task->id);
+        print_info_task("Dequeued task", task->scan_tracker_id);
         handle_task((t_data *)dt, task);
     }
     print_info_thread("WORKER RETURN");
@@ -164,14 +247,6 @@ void    nmap(t_data *dt)
         pthread_join(workers[i], NULL);
     }
     print_info_thread("ENDING MAIN THREAD");
-}
-
-void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
-{
-    if (!(sniffer->device = ft_strdup(device)))
-        exit_error("Malloc failure.");
-    if (!(sniffer->filter = ft_strdup(filter)))
-        exit_error("Malloc failure.");
 }
 
 int     main(int ac, char **av)

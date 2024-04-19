@@ -57,6 +57,7 @@
 
 extern t_lst    *g_queue;                // global queue
 extern int      g_scan_types_nb;         // unique scans nb
+extern int      g_scan_tracker_id;       // unique id (to track tasks responses)
 extern int      g_scans_tracker;         // counter to track & end server
 extern int      g_socket;                // main socket
 extern int      g_sequence;              // not sure yet whether we need id to send icmp sequence
@@ -116,7 +117,7 @@ typedef struct  s_packet
 
 typedef struct  s_task
 {
-    int                 id;
+    int                 scan_tracker_id;
     int                 task_type;
     int                 scan_type;
     // T_SEND
@@ -125,7 +126,7 @@ typedef struct  s_task
     // T_RECV
     u_char              *args;
     struct pcap_pkthdr *header;
-    u_char        *packet;
+    u_char              *packet;
 }               t_task;
 
 typedef struct  s_scan
@@ -137,6 +138,7 @@ typedef struct  s_scan
 
 typedef struct s_scan_tracker
 {
+    int                 id;
     t_scan              scan;
     int                 count_sent;
     int                 max_send;
@@ -194,7 +196,8 @@ void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            init_socket(t_data *dt);
 
 // packet.c
-void            craft_and_send_icmp(int socket, t_packet *packet, t_task *task);
+void            send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id);
+void            craft_icmp_packet(t_packet *packet, t_task *task);
 
 // utils_debug.c
 void            debug_icmp_packet(t_packet packet);
@@ -226,6 +229,7 @@ void            warning_int(char *msg, int nb);
 
 // sniffer.c
 void            init_handle(t_sniffer *sniffer);
+void            init_sniffer(t_sniffer *sniffer, char *device, char *filter);
 void            packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void            sniff_packets(pcap_t *handle, t_data *dt);
 
@@ -236,7 +240,7 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 // tasks.c
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
-t_task          *fill_send_task(t_task *task, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type);
+t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type);
 t_task          *create_task();
 void            init_queue(t_host *host);
 

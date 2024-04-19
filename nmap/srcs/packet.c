@@ -35,17 +35,16 @@ static void    craft_icmp_payload(t_packet *packet)
     g_sequence++;
 }
 
-static void    craft_icmp_packet(t_packet *packet, t_task *task)
+void    craft_icmp_packet(t_packet *packet, t_task *task)
 {
-    (void) task;
     craft_icmp_payload(packet);
     packet->h.type = ICMP_ECHO;
-    packet->h.un.echo.id = getpid();
+    packet->h.un.echo.id = task->scan_tracker_id;
     packet->h.un.echo.sequence = g_sequence;
     packet->h.checksum = checksum(packet, sizeof(*packet));
 }
 
-static void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
+void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
 {
     int r = 0;
 
@@ -58,10 +57,4 @@ static void    send_packet(int socket, t_packet *packet, struct sockaddr_in *tar
     print_info_int("Packet sent (bytes):", sizeof(*packet));
     g_sent++;
     // debug_icmp_packet(*packet);
-}
-
-void            craft_and_send_icmp(int socket, t_packet *packet, t_task *task)
-{
-    craft_icmp_packet(packet, task);
-    send_packet(socket, packet, &task->target_address, task->id);
 }

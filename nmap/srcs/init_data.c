@@ -38,8 +38,9 @@ static void     resolve_hostname(t_host *host) // useful only when input_dest is
     }
 }
 
-static void      init_scan(t_scan_tracker *scan_tracker, e_scan_type scan_type)
+static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type)
 {
+    scan_tracker->id                  = g_scan_tracker_id++;
     scan_tracker->scan.scan_type      = scan_type;
     scan_tracker->scan.response       = IN_PROGRESS;
     scan_tracker->scan.conclusion     = NOT_CONCLUDED; 
@@ -61,7 +62,7 @@ static t_port    *create_port(int port_id, struct sockaddr_in target_address, e_
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
         exit_error("ft_nmap: malloc failure.");
     for (int i = 0; i < g_scan_types_nb; i++)
-        init_scan(&port->scan_trackers[i], unique_scans[i]);
+        init_scan_tracker(&port->scan_trackers[i], unique_scans[i]);
     // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
