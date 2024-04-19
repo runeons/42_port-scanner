@@ -45,7 +45,8 @@ SRCS_LIST					=	\
 							packet.c \
 							sniffer.c \
 							socket.c \
-							tasks.c \
+							tasks_handling.c \
+							tasks_queue.c \
 							utils_debug.c \
 							utils_enum.c \
 							utils_error.c \

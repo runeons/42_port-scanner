@@ -64,7 +64,7 @@ extern int      g_remaining_scans;       // counter to track & end server
 extern int      g_socket;                // main socket
 
 extern int      g_sequence;              // not sure yet whether we really need it
-extern int      g_retrieve;              // tmp (count retrieved packets)
+extern int      g_retrieved;             // tmp (count retrieved packets)
 extern int      g_sent;                  // tmp (count sent packets)
 extern int      g_queued;                // tmp (count queued packets)
 extern int      g_verbose;               // tmp (verbose -v)
@@ -111,7 +111,7 @@ typedef enum
     UNFILTERED,         // tmp (may not use it)
 }       e_conclusion;
 
-typedef struct  s_packet
+typedef struct  s_packet    // tmp (initial test only)
 {
 	struct icmphdr      h;
 	char                payload[ICMP_P_LEN];
@@ -121,13 +121,13 @@ typedef struct  s_task
 {
     int                 scan_tracker_id;
     int                 task_type;
-    int                 scan_type;
     // T_SEND
+    int                 scan_type;
     struct sockaddr_in  target_address;
     int                 dst_port;
     // T_RECV
     u_char              *args;
-    struct pcap_pkthdr *header;
+    struct pcap_pkthdr  *header;
     u_char              *packet;
 }               t_task;
 
@@ -148,7 +148,6 @@ typedef struct s_scan_tracker
 
 typedef struct  s_port
 {
-    struct sockaddr_in  target_address;
     int                 port_id;
     int                 conclusion;
     t_scan_tracker      *scan_trackers;
@@ -239,12 +238,15 @@ void            sniff_packets(pcap_t *handle, t_data *dt);
 void            fill_host(t_data *dt, char *curr_arg);
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 
-// tasks.c
+// tasks_queue.c
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
 t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type);
 t_task          *create_task();
 void            init_queue(t_host *host);
+
+// tasks_handling.c
+void            handle_task(t_data *dt, t_task *task);
 
 // utils_enum.c
 
@@ -252,6 +254,5 @@ char            *task_type_string(e_task_type task_type);
 char            *scan_type_string(e_scan_type scan_type);
 char            *response_string(e_response response);
 char            *conclusion_string(e_conclusion conclusion);
-
 
 #endif

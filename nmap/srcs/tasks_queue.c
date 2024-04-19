@@ -60,7 +60,7 @@ void init_queue(t_host *host)
     t_lst *curr_port = host->ports;
     while (curr_port != NULL)
     {
-        t_port *port = (t_port *)curr_port->content;
+        t_port *port = (t_port *)curr_port->content; // TO PROTECT
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker  *curr_tracker = &(port->scan_trackers[i]); // TO PROTECT

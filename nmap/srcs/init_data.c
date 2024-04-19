@@ -48,15 +48,13 @@ static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type sca
     scan_tracker->max_send            = MAX_SEND;
 }
 
-static t_port    *create_port(int port_id, struct sockaddr_in target_address, e_scan_type *unique_scans)
+static t_port    *create_port(int port_id, e_scan_type *unique_scans)
 {
     t_port  *port = NULL;
 
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
         exit_error("ft_nmap: malloc failure.");
-    ft_memset(&(port->target_address), 0, sizeof(struct sockaddr_in));
-    port->target_address    = target_address;
     port->port_id           = port_id;
     port->conclusion        = NOT_CONCLUDED;
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
@@ -71,7 +69,7 @@ static void     add_port(t_host *host, int port_id, e_scan_type *unique_scans)
 {
     t_port *port;
 
-    port = create_port(port_id, host->target_address, unique_scans);
+    port = create_port(port_id, unique_scans);
     ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
     // debug_port(*port);
 }
@@ -90,14 +88,14 @@ void            fill_host(t_data *dt, char *curr_arg)
 
 static void     init_host(t_host *host)
 {
-    host->input_dest          = "";
-    host->resolved_address    = NULL;
-    host->resolved_hostname   = "";
+    host->input_dest                        = "";
+    host->resolved_address                  = NULL;
+    host->resolved_hostname                 = "";
     ft_memset(&(host->target_address), 0, sizeof(struct sockaddr_in));
-    host->target_address.sin_family       = AF_INET;
-    host->target_address.sin_port         = 0;
-    host->target_address.sin_addr.s_addr  = INADDR_ANY;
-    host->ports               = NULL;
+    host->target_address.sin_family         = AF_INET;
+    host->target_address.sin_port           = 0;
+    host->target_address.sin_addr.s_addr    = INADDR_ANY;
+    host->ports                             = NULL;
 }
 
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
