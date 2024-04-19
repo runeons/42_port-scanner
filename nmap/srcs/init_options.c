@@ -127,7 +127,7 @@ e_scan_type char_to_scan_type(char c)
         case 'I':
             return ICMP;
         default:
-            return UNKNOWN; // Invalid scan type
+            return UNKNOWN;
     }
 }
 

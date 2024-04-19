@@ -15,17 +15,18 @@ int g_verbose          = FALSE;
 
 t_scan all_scans[] =
 {
-    {SYN,   TCP_SYN_ACK,         OPEN},
-    {SYN,   TCP_RST,             CLOSED},
-    {SYN,   NO_RESPONSE,         FILTERED},
-    {SYN,   ICMP_UNR_C_3,        FILTERED},
-    {SYN,   ICMP_UNR_C_NOT_3,    FILTERED},
-    {ACK,   TCP_RST,             UNFILTERED},
-    {ACK,   NO_RESPONSE,         FILTERED},
-    {ACK,   ICMP_UNR_C_3,        FILTERED},
-    {ACK,   ICMP_UNR_C_NOT_3,    FILTERED},
-    {ICMP,  ICMP_ECHO_REPLY,     OPEN},
-    {ICMP,  NO_RESPONSE,         CLOSED},
+    // {SYN,   TCP_SYN_ACK,         OPEN},
+    // {SYN,   TCP_RST,             CLOSED},
+    // {SYN,   NO_RESPONSE,         FILTERED},
+    // {SYN,   ICMP_UNR_C_3,        FILTERED},
+    // {SYN,   ICMP_UNR_C_NOT_3,    FILTERED},
+    // {ACK,   TCP_RST,             UNFILTERED},
+    // {ACK,   NO_RESPONSE,         FILTERED},
+    // {ACK,   ICMP_UNR_C_3,        FILTERED},
+    // {ACK,   ICMP_UNR_C_NOT_3,    FILTERED},
+    {ICMP,  ICMP_ECHO_REPLY,     OPEN},             // tmp (initial test only)
+    {ICMP,  ICMP_ECHO_OK,        OPEN},             // tmp (initial test only)
+    {ICMP,  NO_RESPONSE,         CLOSED},           // tmp (initial test only)
 };
 
 e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
@@ -35,8 +36,7 @@ e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
         if (all_scans[i].scan_type == scan_type && all_scans[i].response == response)
             return (all_scans[i].conclusion);
     }
-    printf(C_B_RED"[SHOULD NOT APPEAR] : no conclusion"C_RES"\n"); // 
-    return NOT_CONCLUDED; // default
+    return NOT_CONCLUDED;
 }
 
 static void    option_h()
@@ -61,7 +61,7 @@ e_response determine_response_type(t_data *dt, t_task *task)
     struct ip *ip_hdr = (struct ip *)(task->packet + ETH_H_LEN);
     if (ip_hdr->ip_p == IPPROTO_TCP)
     {
-        struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+        struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + IP_H_LEN);
 
         if (tcp_hdr->syn && tcp_hdr->ack)
             return TCP_SYN_ACK;
@@ -72,7 +72,7 @@ e_response determine_response_type(t_data *dt, t_task *task)
         return UDP_ANY;
     else if (ip_hdr->ip_p == IPPROTO_ICMP)
     {
-        struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+        struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + IP_H_LEN);
 
         if (icmp_hdr->icmp_type == ICMP_ECHOREPLY)
             return ICMP_ECHO_OK;
@@ -105,6 +105,14 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
             if (tracker->id == scan_tracker_id)
             {
                 tracker->scan.response = response;
+                tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, response);
+                if (tracker->scan.conclusion != NOT_CONCLUDED)
+                    g_remaining_scans--;
+                else
+                {
+                    printf(C_B_CYAN"[TO IMPLEMENT] - NOT CONCLUDED -> RESEND OR IGNORE / INCREMENT COUNTER"C_RES"\n");
+                    g_remaining_scans--; // remove when all scans are implemented (now, avoid infinite looping)
+                }
                 return;
             }
         }
@@ -125,23 +133,19 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
             id = icmp_hdr->icmp_id;
     }
     else
-        printf(C_B_RED"[SHOULD NOT APPEAR] response != ICMP_ECHO_OK"C_RES"\n");
+        printf(C_B_CYAN"[TO IMPLEMENT] - response != ICMP_ECHO_O"C_RES"\n");
     return id;
 }
 
 void    handle_recv_task(t_data *dt, t_task *task)
 {
-    int         id;
-    e_response  response;
+    int             id;
+    e_response      response;
 
-    (void)dt;
-    (void)task;
     response = determine_response_type(dt, task);
     id = extract_response_id(dt, task, response);
-    // printf(C_G_RED"[QUICK DEBUG] id [%d] [%s]"C_RES"\n", id, response_string(response));
     update_scan_tracker(dt, id, response);
     // debug_task(*task);
-    g_remaining_scans--;
 }
 
 void    handle_send_task(t_data *dt, t_task *task)
