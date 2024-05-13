@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 void    debug_icmp_packet(t_packet packet)
 {
@@ -138,8 +138,9 @@ void    debug_host(t_host host)
     }
 }
 
-void    debug_queue()
+void    debug_queue(t_data dt)
 {
+    (void) dt;
     if (DEBUG_QUEUE == 1)
     {
         printf(C_G_GREEN"[DEBUG] g_queue %d"C_RES"\n", ft_lst_size(g_queue));

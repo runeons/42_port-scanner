@@ -3,7 +3,9 @@
 
 NAME = libft.a
 
-CC = clang
+COMPILER := $(shell command -v clang >/dev/null 2>&1 && echo "clang" || echo "gcc")
+
+CC = $(COMPILER)
 
 CFLAGS = #-Wall -Wextra -Werror
 

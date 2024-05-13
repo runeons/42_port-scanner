@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 pthread_mutex_t mutex       = PTHREAD_MUTEX_INITIALIZER;
 

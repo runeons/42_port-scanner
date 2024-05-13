@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 // cf. ft_nmap.h for details
 t_lst *g_queue         = NULL;

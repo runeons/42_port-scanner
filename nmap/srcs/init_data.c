@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 static void     resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
 {

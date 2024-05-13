@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 void    init_handle(t_sniffer *sniffer)
 {

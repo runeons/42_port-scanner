@@ -18,7 +18,7 @@
 # include <netinet/ip_icmp.h>   // struct icmphdr
 # include <utils_colors.h>
 # include <utils_options.h>
-# include <libft.h>
+# include "../libft/includes/libft.h"
 # include <pcap.h>
 # include <pthread.h>
 
