@@ -76,6 +76,7 @@ int     main(int ac, char **av)
 {
     t_data          dt;
     t_parsed_cmd    parsed_cmd;
+    pcap_if_t       *interfaces = NULL;
 
     parse_input(&parsed_cmd, ac, av);
     if (is_activated_option(parsed_cmd.act_options, 'h'))
@@ -85,7 +86,10 @@ int     main(int ac, char **av)
     fill_host(&dt, parsed_cmd.not_options->content);
     debug_host(dt.host);
     init_queue(&dt.host);
-    init_sniffer(&dt.sniffer, "enp0s3", "src host 1.1.1.1");
+    interfaces = find_devices();
+    debug_interfaces(interfaces);
+    init_sniffer(&dt.sniffer, interfaces->name, "src host 1.1.1.1");
+    pcap_freealldevs(interfaces);
     init_handle(&dt.sniffer);
 
     nmap(&dt);

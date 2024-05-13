@@ -2,7 +2,6 @@
 
 void    init_handle(t_sniffer *sniffer)
 {
-    pcap_if_t           *interfaces;
     struct bpf_program  compiled_filter;
     char                err_buf[PCAP_ERRBUF_SIZE];          // 256 from pcap.h
     bpf_u_int32         dev_mask;		                    // The netmask of our sniffing device
@@ -15,16 +14,12 @@ void    init_handle(t_sniffer *sniffer)
         dev_mask = 0;
     }
     debug_net_mask(net_mask, dev_mask);
-    if (pcap_findalldevs(&interfaces, err_buf) == -1)
-        exit_error_str("Finding devices", err_buf);
-    debug_interfaces(interfaces);
     if ((sniffer->handle = pcap_open_live(sniffer->device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
         exit_error_str("Opening device:", err_buf);
     if (pcap_compile(sniffer->handle, &compiled_filter, sniffer->filter, 0, net_mask) == -1)
         exit_error_str("Parsing filter:", pcap_geterr(sniffer->handle));
     if (pcap_setfilter(sniffer->handle, &compiled_filter) == -1)
         exit_error_str("Compiling filter:", pcap_geterr(sniffer->handle));
-    pcap_freealldevs(interfaces);
     pcap_freecode(&compiled_filter);
 }
 
@@ -34,6 +29,15 @@ void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
         exit_error("Malloc failure.");
     if (!(sniffer->filter = ft_strdup(filter)))
         exit_error("Malloc failure.");
+}
+
+pcap_if_t *find_devices(){
+    pcap_if_t   *interfaces;
+    char        err_buf[PCAP_ERRBUF_SIZE];
+
+    if (pcap_findalldevs(&interfaces, err_buf) == -1)
+        exit_error_str("Finding devices", err_buf);
+    return interfaces;
 }
 
 void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
