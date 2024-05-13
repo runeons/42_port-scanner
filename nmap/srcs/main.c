@@ -77,6 +77,7 @@ int     main(int ac, char **av)
     t_data          dt;
     t_parsed_cmd    parsed_cmd;
     pcap_if_t       *interfaces = NULL;
+    char            filter[sizeof("src host xxx.xxx.xxx.xxx")];
 
     parse_input(&parsed_cmd, ac, av);
     if (is_activated_option(parsed_cmd.act_options, 'h'))
@@ -88,7 +89,8 @@ int     main(int ac, char **av)
     init_queue(&dt.host);
     interfaces = find_devices();
     debug_interfaces(interfaces);
-    init_sniffer(&dt.sniffer, interfaces->name, "src host 1.1.1.1");
+    sprintf(filter, "src host %s", dt.host.resolved_address);
+    init_sniffer(&dt.sniffer, interfaces->name, filter);
     pcap_freealldevs(interfaces);
     init_handle(&dt.sniffer);
 
