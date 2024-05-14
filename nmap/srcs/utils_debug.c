@@ -138,9 +138,8 @@ void    debug_host(t_host host)
     }
 }
 
-void    debug_queue(t_data dt)
+void    debug_queue()
 {
-    (void) dt;
     if (DEBUG_QUEUE == 1)
     {
         printf(C_G_GREEN"[DEBUG] g_queue %d"C_RES"\n", ft_lst_size(g_queue));

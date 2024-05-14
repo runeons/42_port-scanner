@@ -1,5 +1,7 @@
 #include "../includes/ft_nmap.h"
 
+extern pthread_mutex_t mutex;
+
 t_scan all_scans[] =
 {
     {SYN,   TCP_SYN_ACK,         OPEN},
@@ -92,6 +94,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
             {
                 tracker->scan.response = response;
                 tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, response);
+                pthread_mutex_lock(&mutex);
                 if (tracker->scan.conclusion != NOT_CONCLUDED)
                 {
                     g_remaining_scans--;
@@ -101,6 +104,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
                     printf(C_B_CYAN"[TO IMPLEMENT] - NOT CONCLUDED -> RESEND OR IGNORE / INCREMENT COUNTER"C_RES"\n");
                     g_remaining_scans--; // remove when all scans are implemented (now, avoid infinite looping)
                 }
+                pthread_mutex_unlock(&mutex);
                 return;
             }
         }
@@ -150,8 +154,17 @@ void    handle_send_task(t_data *dt, t_task *task)
         if (dt->fds[i].fd == dt->socket)
         {
             t_packet packet;
-            if (task->scan_type == ICMP)
-                craft_icmp_packet(&packet, task);
+
+            switch (task->scan_type){
+                case ICMP:
+                    craft_icmp_packet(&packet, task);
+                    break;
+                default:
+                    pthread_mutex_lock(&mutex);
+                    g_remaining_scans--; //since a recv_task will never be created for an unimplemented scan
+                    pthread_mutex_unlock(&mutex);
+                    continue;
+            }
             send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else

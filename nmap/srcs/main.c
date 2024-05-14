@@ -33,7 +33,7 @@ void    *worker_function(void *dt)
     print_info_thread("STARTING NEW THREAD");
     while (g_remaining_scans != 0)
     {
-        // debug_queue();
+        //debug_queue();
         t_task *task = dequeue_task();
         if (task == NULL)
             continue;
