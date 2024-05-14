@@ -233,7 +233,7 @@ void   option_v(t_data *dt)
 
 void   option_th(t_data *dt)
 {
-    int  threads  = 0;
+    int  threads    = 0;
     char *param     = NULL;
 
     if (is_activated_option(dt->act_options, 't'))
@@ -244,12 +244,12 @@ void   option_th(t_data *dt)
         if (ft_isstrnum(param) == 0)
             exit_options_error("ft_nmap: invalid value: (`%s' near `%s')\n", param, "t");
         threads = ft_atoi(param);
-        if (threads <= 0)
+        if (threads < 0)
             exit_options_error("ft_nmap: option value too small: %d\n", threads);
-        else if (threads > 255)
+        else if (threads > 250)
             exit_options_error("ft_nmap: option value too big: %d\n", threads);
         else
-            dt->threads = threads;
+            dt->threads = threads + THREADS_NB;
     }
     else
         dt->threads = THREADS_NB;

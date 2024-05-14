@@ -96,6 +96,7 @@ int     main(int ac, char **av)
 
     nmap(&dt);
 
+    debug_host(dt.host);
     debug_end(dt);
 	pcap_close(dt.sniffer.handle);
     close(dt.socket);

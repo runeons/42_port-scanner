@@ -1,7 +1,5 @@
 #include "../includes/ft_nmap.h"
 
-extern pthread_mutex_t mutex;
-
 t_scan all_scans[] =
 {
     {SYN,   TCP_SYN_ACK,         OPEN},

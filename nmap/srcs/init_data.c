@@ -106,17 +106,17 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
     ft_memset(dt->fds, 0, sizeof(dt->fds));
     dt->fds[0].events       = POLLOUT;
-    // dt->queue               = NULL;
+    // dt->queue            = NULL;
     dt->threads             = THREADS_NB;
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
-    dt->first_port          = FIRST_PORT;
+    dt->first_port           = FIRST_PORT;
     dt->last_port           = LAST_PORT;
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
     ft_memset(&dt->sniffer, 0, sizeof(dt->sniffer));
     dt->sniffer.handle      = NULL;          
     dt->sniffer.device      = NULL;          
-    dt->sniffer.filter      = NULL;          
+    dt->sniffer.filter       = NULL;
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
