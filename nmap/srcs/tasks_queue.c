@@ -2,6 +2,12 @@
 
 pthread_mutex_t mutex       = PTHREAD_MUTEX_INITIALIZER;
 
+inline void decr_remaining_scans(){
+    pthread_mutex_lock(&mutex);
+    g_remaining_scans--;
+    pthread_mutex_unlock(&mutex);
+}
+
 void    enqueue_task(t_task *task)
 {
     pthread_mutex_lock(&mutex);
