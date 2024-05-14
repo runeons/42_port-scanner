@@ -240,6 +240,7 @@ void            fill_host(t_data *dt, char *curr_arg);
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 
 // tasks_queue.c
+void            decr_remaining_scans();
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
 t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type);
