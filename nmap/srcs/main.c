@@ -48,9 +48,8 @@ void    *worker_function(void *dt)
 void    nmap(t_data *dt)
 {
     pthread_t   workers[dt->threads];
-    int         r;
-        
-    r = 0;
+    int         r = 0;
+    
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");

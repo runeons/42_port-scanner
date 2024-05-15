@@ -111,11 +111,43 @@ typedef enum
     UNFILTERED,         // tmp (may not use it)
 }       e_conclusion;
 
-typedef struct  s_packet    // tmp (initial test only)
-{
-	struct icmphdr      h;
+// typedef struct  s_packet    // tmp (initial test only)
+// {
+// 	struct icmphdr      h;
+// 	char                payload[ICMP_P_LEN];
+// }               t_packet;
+
+/////////////////
+#define packet(x) packet.x
+
+struct icmp_packet{
+    struct icmphdr      h;
 	char                payload[ICMP_P_LEN];
-}               t_packet;
+};
+
+typedef union {
+    void *generic;
+    struct icmp_packet icmp;
+} u_packet;
+
+typedef enum {
+    PACKET_TYPE_ICMP = ICMP,
+    PACKET_TYPE_SYN = SYN,
+    PACKET_TYPE_ACK = ACK,
+    PACKET_TYPE_UDP = UDP,
+    PACKET_TYPE_FIN = FIN,
+    PACKET_TYPE_NUL = NUL,
+    PACKET_TYPE_XMAS = XMAS,
+} e_packet_type;
+
+typedef struct{
+    e_packet_type   type;
+    u_packet        packet;
+    size_t          size;
+} t_packet;
+
+///////////////////////////
+
 
 typedef struct  s_task
 {

@@ -25,23 +25,26 @@ static void    craft_icmp_payload(t_packet *packet)
     int i;
 
     i = 0;
-    ft_bzero(packet, sizeof(*packet));
+    ft_bzero(&packet->packet(icmp), packet->size);
+   
     while (i < ICMP_P_LEN)
     {
-		packet->payload[i] = 'A';
+		packet->packet(icmp).payload[i] = 'A';
         i++;
     }
-    packet->payload[ICMP_P_LEN - 1] = '\0';
+    packet->packet(icmp).payload[ICMP_P_LEN - 1] = '\0';
     g_sequence++;
 }
 
 void    craft_icmp_packet(t_packet *packet, t_task *task)
 {
+    packet->type = PACKET_TYPE_ICMP;
+    packet->size = sizeof(struct icmp_packet);
     craft_icmp_payload(packet);
-    packet->h.type = ICMP_ECHO;
-    packet->h.un.echo.id = task->scan_tracker_id;
-    packet->h.un.echo.sequence = g_sequence;
-    packet->h.checksum = checksum(packet, sizeof(*packet));
+    packet->packet(icmp).h.type = ICMP_ECHO;
+    packet->packet(icmp).h.un.echo.id = task->scan_tracker_id;
+    packet->packet(icmp).h.un.echo.sequence = g_sequence;
+    packet->packet(icmp).h.checksum = checksum(&packet->packet(icmp), packet->size);
 }
 
 void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
@@ -49,7 +52,7 @@ void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_add
     int r = 0;
 
     // print_info("Main socket is readable");
-    if ((r = sendto(socket, packet, sizeof(*packet), 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
+    if ((r = sendto(socket, &packet->packet(generic), packet->size, 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
     {
         warning_int("Packet sending failure.", task_id);
         return;
