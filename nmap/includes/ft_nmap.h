@@ -111,13 +111,6 @@ typedef enum
     UNFILTERED,         // tmp (may not use it)
 }       e_conclusion;
 
-// typedef struct  s_packet    // tmp (initial test only)
-// {
-// 	struct icmphdr      h;
-// 	char                payload[ICMP_P_LEN];
-// }               t_packet;
-
-/////////////////
 #define packet(x) packet.x
 
 struct icmp_packet{
@@ -145,9 +138,6 @@ typedef struct{
     u_packet        packet;
     size_t          size;
 } t_packet;
-
-///////////////////////////
-
 
 typedef struct  s_task
 {
