@@ -156,8 +156,18 @@ void    handle_send_task(t_data *dt, t_task *task)
                 case ICMP:
                     craft_icmp_packet(&packet, task);
                     break;
+                case SYN:
+                case ACK:
+                case FIN:
+                case NUL:
+                case XMAS:
+                    construct_tcp_packet(&packet, task);
+                    break;
+                case UDP:
+                    construct_udp_packet(&packet, task);
+                    break;
                 default:
-                    decr_remaining_scans(); //since a recv_task will never be created for an unimplemented scan
+                    warning("Unknown SCAN");
                     continue;
             }
             send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);

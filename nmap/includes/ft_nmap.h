@@ -14,6 +14,7 @@
 # include <errno.h>
 # include <netinet/ip.h>
 # include <netinet/tcp.h>
+# include <netinet/udp.h>
 // # include <netinet/udp.h>
 # include <netinet/ip_icmp.h>   // struct icmphdr
 # include <utils_colors.h>
@@ -54,6 +55,8 @@
 # define IP_H_LEN               20              // sizeof(struct iphdr)
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
+# define TCP_P_LEN              20
+# define UDP_P_LEN              14              //based on nmap
 // PACKET FLAGS
 # define ICMP_ECHO_REPLY        0               // tmp (initial test only)
 
@@ -120,13 +123,19 @@ struct icmp_packet{
 
 struct tcp_packet{
     struct tcphdr       h;
-	//char                payload[TCP_P_LEN];
+	char                payload[TCP_P_LEN];
+};
+
+struct udp_packet{
+    struct udphdr       h;
+    char                payload[UDP_P_LEN];
 };
 
 typedef union {
     void                *generic;
     struct icmp_packet  icmp;
     struct tcp_packet   tcp;
+    struct udp_packet   udp;
 } u_packet;
 
 typedef enum {
@@ -199,10 +208,15 @@ typedef struct  s_sniffer
     char                *filter;
 }               t_sniffer;
 
+//# define SOCKET_POOL_SIZE 1;
+
 typedef struct  s_data
 {
     // SOCKET
     int                 socket;
+    // int                 icmp_socket_pool[SOCKET_POOL_SIZE]; //for now only one , it should be changing based on the number of targets;
+    // int                 udp_socket_pool[SOCKET_POOL_SIZE];
+    // int                 icmp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;
     int                 src_port;
     struct pollfd       fds[SOCKETS_NB];
@@ -229,6 +243,7 @@ void            init_socket(t_data *dt);
 void            send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id);
 void            craft_icmp_packet(t_packet *packet, t_task *task);
 void            construct_tcp_packet(t_packet *packet, t_task *task);
+void            construct_udp_packet(t_packet *packet, t_task *task);
 
 // utils_debug.c
 void            debug_icmp_packet(t_packet packet);

@@ -51,7 +51,7 @@ void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_c
     task->packet            = (u_char *)packet;
     enqueue_task(task);
     g_retrieved++;
-    // debug_task(*task);
+    debug_task(*task);
 }
 
 void    sniff_packets(pcap_t *handle, t_data *dt)
