@@ -25,7 +25,7 @@
 // GENERAL
 # define TRUE                   1
 # define FALSE                  0
-# define MAX_SCANS              6
+# define MAX_SCANS              7
 # define MAX_PORTS              1024
 # define MAX_SEND               3
 # define SCAN_CHARS             "SAUFNXI"       // I = tmp (initial test only)
@@ -118,9 +118,15 @@ struct icmp_packet{
 	char                payload[ICMP_P_LEN];
 };
 
+struct tcp_packet{
+    struct tcphdr       h;
+	//char                payload[TCP_P_LEN];
+};
+
 typedef union {
-    void *generic;
-    struct icmp_packet icmp;
+    void                *generic;
+    struct icmp_packet  icmp;
+    struct tcp_packet   tcp;
 } u_packet;
 
 typedef enum {
@@ -132,6 +138,7 @@ typedef enum {
     PACKET_TYPE_NUL = NUL,
     PACKET_TYPE_XMAS = XMAS,
 } e_packet_type;
+
 
 typedef struct{
     e_packet_type   type;
@@ -221,6 +228,7 @@ void            init_socket(t_data *dt);
 // packet.c
 void            send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id);
 void            craft_icmp_packet(t_packet *packet, t_task *task);
+void            construct_tcp_packet(t_packet *packet, t_task *task);
 
 // utils_debug.c
 void            debug_icmp_packet(t_packet packet);
