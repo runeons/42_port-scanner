@@ -33,8 +33,9 @@ t_task *dequeue_task()
     return task;
 };
 
-t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type)
+t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket)
 {
+    task->socket            = socket;
     task->scan_tracker_id   = id;
     task->task_type         = T_SEND;
     task->scan_type         = scan_type;
@@ -49,9 +50,10 @@ t_task    *create_task()
 
     task = mmalloc(sizeof(t_task));
     if (task == NULL)
-        exit_error_close_socket("ft_nmap: malloc failure.", g_socket);
+        exit_error("ft_nmap: malloc failure.");
     task->scan_tracker_id   = 0;
     task->task_type         = T_EMPTY;
+    task->socket            = -1;
     task->scan_type         = UNKNOWN;
     task->dst_port          = 0;
     task->args              = NULL;
@@ -61,9 +63,10 @@ t_task    *create_task()
     return task;
 }
 
-void init_queue(t_host *host)
+void init_queue(t_data *dt)
 {
-    t_lst *curr_port = host->ports;
+    int tmp_socket = -1;
+    t_lst *curr_port = dt->host.ports;
     while (curr_port != NULL)
     {
         t_port *port = (t_port *)curr_port->content; // TO PROTECT
@@ -71,7 +74,21 @@ void init_queue(t_host *host)
         {
             t_scan_tracker  *curr_tracker = &(port->scan_trackers[i]); // TO PROTECT
             t_task          *task = create_task();
-            fill_send_task(task, curr_tracker->id, host->target_address, port->port_id, curr_tracker->scan.scan_type);
+            switch (curr_tracker->scan.scan_type){
+                case ICMP:
+                    tmp_socket = dt->fds[0].fd;
+                    break;
+                case UDP:
+                    tmp_socket = dt->fds[1].fd;
+                    break;
+                case SYN:case ACK:case FIN:case NUL:case XMAS:
+                    tmp_socket = dt->fds[2].fd;
+                    break;
+                default:
+                    printf("Invalid scan type | just skip this task");
+                    continue;
+            } //bad code , I'll update it as soon as we make proper socket_pools
+            fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket);
             enqueue_task(task);
             debug_task(*task);
             g_remaining_scans++;

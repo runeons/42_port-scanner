@@ -42,7 +42,7 @@ pcap_if_t *find_devices(){
 
 void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
-    t_task  *task = create_task(g_socket);
+    t_task  *task = create_task();
 
     task->scan_tracker_id   = 0; // TO DO
     task->task_type         = T_RECV;

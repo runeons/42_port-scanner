@@ -5,7 +5,6 @@ t_lst *g_queue         = NULL;
 int g_scan_types_nb    = 0;
 int g_remaining_scans  = 0;
 int g_scan_tracker_id  = 0;
-int g_socket           = 0;
 int g_sequence         = 0;
 int g_retrieved        = 0;
 int g_sent             = 0;
@@ -85,7 +84,7 @@ int     main(int ac, char **av)
     init_socket(&dt);
     fill_host(&dt, parsed_cmd.not_options->content);
     debug_host(dt.host);
-    init_queue(&dt.host);
+    init_queue(&dt);
     interfaces = find_devices();
     debug_interfaces(interfaces);
     sprintf(filter, "src host %s", dt.host.resolved_address);

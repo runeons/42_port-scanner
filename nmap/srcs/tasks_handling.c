@@ -138,7 +138,7 @@ void    handle_recv_task(t_data *dt, t_task *task)
 
 void    handle_send_task(t_data *dt, t_task *task)
 {
-    for (int i = 0; i < NFDS; i++) // only one for now
+    for (int i = 0; i < NFDS; i++)
     {
         if (dt->fds[i].revents == 0)
         {
@@ -146,7 +146,7 @@ void    handle_send_task(t_data *dt, t_task *task)
             printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->scan_tracker_id);
             continue;
         }
-        if (dt->fds[i].revents != POLLOUT)
+        if (!(dt->fds[i].revents & POLLOUT))
             exit_error_close_socket("Poll unexpected result", dt->socket);
         if (dt->fds[i].fd == dt->socket)
         {
@@ -170,10 +170,10 @@ void    handle_send_task(t_data *dt, t_task *task)
                     warning("Unknown SCAN");
                     continue;
             }
-            send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);
+            send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else
-            warning("Unknown fd is readable.");
+            warning("Unknown fd is writable.");
     }
 }
 

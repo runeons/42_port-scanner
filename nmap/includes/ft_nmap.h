@@ -46,7 +46,8 @@
 # define MAX_PORT               65535
 # define MAX_PORT_RANGE         1024
 // POLL
-# define NFDS                   1               // tmp - 1 for now
+# define SOCKET_POOL_SIZE       1
+# define NFDS                   3 * SOCKET_POOL_SIZE
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
 // PCAP
 # define PROMISCUOUS            1
@@ -64,7 +65,6 @@ extern t_lst    *g_queue;                // global queue
 extern int      g_scan_types_nb;         // unique scans nb
 extern int      g_scan_tracker_id;       // unique id (to track tasks responses)
 extern int      g_remaining_scans;       // counter to track & end server
-extern int      g_socket;                // main socket
 
 extern int      g_sequence;              // not sure yet whether we really need it
 extern int      g_retrieved;             // tmp (count retrieved packets)
@@ -155,7 +155,7 @@ typedef struct{
     size_t          size;
 } t_packet;
 
-typedef struct  s_task
+typedef struct  s_task //if there is a clear distinction between the T_SEND and T_RECV fields then turn them into a union
 {
     int                 scan_tracker_id;
     int                 task_type;
@@ -163,6 +163,7 @@ typedef struct  s_task
     int                 scan_type;
     struct sockaddr_in  target_address;
     int                 dst_port;
+    int                 socket;
     // T_RECV
     u_char              *args;
     struct pcap_pkthdr  *header;
@@ -208,18 +209,16 @@ typedef struct  s_sniffer
     char                *filter;
 }               t_sniffer;
 
-//# define SOCKET_POOL_SIZE 1;
-
 typedef struct  s_data
 {
     // SOCKET
     int                 socket;
-    // int                 icmp_socket_pool[SOCKET_POOL_SIZE]; //for now only one , it should be changing based on the number of targets;
-    // int                 udp_socket_pool[SOCKET_POOL_SIZE];
-    // int                 icmp_socket_pool[SOCKET_POOL_SIZE];
+    int                 icmp_socket_pool[SOCKET_POOL_SIZE]; //for now only one , it should be changing based on the number of targets;
+    int                 udp_socket_pool[SOCKET_POOL_SIZE];
+    int                 tcp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;
     int                 src_port;
-    struct pollfd       fds[SOCKETS_NB];
+    struct pollfd       fds[SOCKET_POOL_SIZE * 3];
     // SCANS
     t_lst               *queue;
     t_host              host;               // one for now
@@ -236,7 +235,7 @@ typedef struct  s_data
 //  options.c
 void            init_options_params(t_data *dt);
 //  socket.c
-void            bind_socket_to_src_port(t_data *dt, int src_port);
+//void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            init_socket(t_data *dt);
 
 // packet.c
@@ -288,9 +287,9 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 void            decr_remaining_scans();
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
-t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type);
+t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket);
 t_task          *create_task();
-void            init_queue(t_host *host);
+void            init_queue(t_data *dt);
 
 // tasks_handling.c
 void            handle_task(t_data *dt, t_task *task);

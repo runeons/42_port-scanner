@@ -104,6 +104,9 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->socket              = 0;
     dt->src_port            = (getpid() & 0xffff) | 0x8000;
     ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
+    dt->src_address.sin_family        = AF_INET;
+    dt->src_address.sin_addr.s_addr   = INADDR_ANY;
+    dt->src_address.sin_port          = htons(dt->src_port);
     ft_memset(dt->fds, 0, sizeof(dt->fds));
     dt->fds[0].events       = POLLOUT;
     // dt->queue            = NULL;
