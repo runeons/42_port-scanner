@@ -93,7 +93,7 @@ static void     init_host(t_host *host)
     host->resolved_hostname                 = "";
     ft_memset(&(host->target_address), 0, sizeof(struct sockaddr_in));
     host->target_address.sin_family         = AF_INET;
-    host->target_address.sin_port           = (getpid() & 0xffff) | 0x8000;
+    host->target_address.sin_port           = 0;
     host->target_address.sin_addr.s_addr    = INADDR_ANY;
     host->ports                             = NULL;
 }
