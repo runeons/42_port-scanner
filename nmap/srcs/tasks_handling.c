@@ -173,7 +173,7 @@ void    handle_send_task(t_data *dt, t_task *task)
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else
-            warning("Unknown fd is writable.");
+            warning("Unknown fd is readable.");
     }
 }
 
