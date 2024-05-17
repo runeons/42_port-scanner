@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 t_scan all_scans[] =
 {
@@ -75,6 +75,7 @@ e_response determine_response_type(t_data *dt, t_task *task)
     return OTHER;
 }
 
+
 void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response)
 {
     t_lst *curr_port = dt->host.ports;
@@ -94,12 +95,12 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
                 tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, response);
                 if (tracker->scan.conclusion != NOT_CONCLUDED)
                 {
-                    g_remaining_scans--;
+                    decr_remaining_scans();
                 }
                 else
                 {
                     printf(C_B_CYAN"[TO IMPLEMENT] - NOT CONCLUDED -> RESEND OR IGNORE / INCREMENT COUNTER"C_RES"\n");
-                    g_remaining_scans--; // remove when all scans are implemented (now, avoid infinite looping)
+                    decr_remaining_scans(); // remove when all scans are implemented (now, avoid infinite looping)
                 }
                 return;
             }
@@ -137,7 +138,7 @@ void    handle_recv_task(t_data *dt, t_task *task)
 
 void    handle_send_task(t_data *dt, t_task *task)
 {
-    for (int i = 0; i < NFDS; i++) // only one for now
+    for (int i = 0; i < NFDS; i++)
     {
         if (dt->fds[i].revents == 0)
         {
@@ -145,14 +146,31 @@ void    handle_send_task(t_data *dt, t_task *task)
             printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->scan_tracker_id);
             continue;
         }
-        if (dt->fds[i].revents != POLLOUT)
-            exit_error_close_socket("Poll unexpected result", dt->socket);
-        if (dt->fds[i].fd == dt->socket)
+        if (!(dt->fds[i].revents & POLLOUT))
+            exit_error_close_socket("Poll unexpected result", task->socket);
+        if (dt->fds[i].fd == task->socket)
         {
             t_packet packet;
-            if (task->scan_type == ICMP)
-                craft_icmp_packet(&packet, task);
-            send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);
+
+            switch (task->scan_type){
+                case ICMP:
+                    craft_icmp_packet(&packet, task);
+                    break;
+                case SYN:
+                case ACK:
+                case FIN:
+                case NUL:
+                case XMAS:
+                    construct_tcp_packet(&packet, task);
+                    break;
+                case UDP:
+                    construct_udp_packet(&packet, task);
+                    break;
+                default:
+                    warning("Unknown SCAN");
+                    continue;
+            }
+            send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else
             warning("Unknown fd is readable.");

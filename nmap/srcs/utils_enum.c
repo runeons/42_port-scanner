@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 char  *task_type_string(e_task_type task_type)
 {

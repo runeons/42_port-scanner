@@ -1,8 +1,8 @@
 #ifndef UTILS_OPTIONS_H
 # define UTILS_OPTIONS_H
 
-# include "stdio.h"
-# include <libft.h>
+# include <stdio.h>
+# include "../libft/includes/libft.h"
 
 # define ARRAY_SIZE(arr)    (sizeof(arr) / sizeof((arr)[0])) // int option_count = ARRAY_SIZE(allowed_options);
 # define CMD_NAME           "ft_nmap"

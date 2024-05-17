@@ -14,18 +14,19 @@
 # include <errno.h>
 # include <netinet/ip.h>
 # include <netinet/tcp.h>
+# include <netinet/udp.h>
 // # include <netinet/udp.h>
 # include <netinet/ip_icmp.h>   // struct icmphdr
 # include <utils_colors.h>
 # include <utils_options.h>
-# include <libft.h>
+# include "../libft/includes/libft.h"
 # include <pcap.h>
 # include <pthread.h>
 
 // GENERAL
 # define TRUE                   1
 # define FALSE                  0
-# define MAX_SCANS              6
+# define MAX_SCANS              7
 # define MAX_PORTS              1024
 # define MAX_SEND               3
 # define SCAN_CHARS             "SAUFNXI"       // I = tmp (initial test only)
@@ -38,14 +39,15 @@
 # define DEBUG_QUEUE            0
 # define VERBOSE_THREAD         0
 // DEFAULTS OPTIONS VALUES
-# define THREADS_NB             4
+# define THREADS_NB             1
 # define FIRST_PORT             1
 # define LAST_PORT              1024
 # define MIN_PORT               1
 # define MAX_PORT               65535
 # define MAX_PORT_RANGE         1024
 // POLL
-# define NFDS                   1               // tmp - 1 for now
+# define SOCKET_POOL_SIZE       1
+# define NFDS                   3 * SOCKET_POOL_SIZE
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
 // PCAP
 # define PROMISCUOUS            1
@@ -54,6 +56,8 @@
 # define IP_H_LEN               20              // sizeof(struct iphdr)
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
+# define TCP_P_LEN              20
+# define UDP_P_LEN              14              //based on nmap
 // PACKET FLAGS
 # define ICMP_ECHO_REPLY        0               // tmp (initial test only)
 
@@ -61,7 +65,6 @@ extern t_lst    *g_queue;                // global queue
 extern int      g_scan_types_nb;         // unique scans nb
 extern int      g_scan_tracker_id;       // unique id (to track tasks responses)
 extern int      g_remaining_scans;       // counter to track & end server
-extern int      g_socket;                // main socket
 
 extern int      g_sequence;              // not sure yet whether we really need it
 extern int      g_retrieved;             // tmp (count retrieved packets)
@@ -111,13 +114,48 @@ typedef enum
     UNFILTERED,         // tmp (may not use it)
 }       e_conclusion;
 
-typedef struct  s_packet    // tmp (initial test only)
-{
-	struct icmphdr      h;
-	char                payload[ICMP_P_LEN];
-}               t_packet;
+#define packet(x) packet.x
 
-typedef struct  s_task
+struct icmp_packet{
+    struct icmphdr      h;
+	char                payload[ICMP_P_LEN];
+};
+
+struct tcp_packet{
+    struct tcphdr       h;
+	char                payload[TCP_P_LEN];
+};
+
+struct udp_packet{
+    struct udphdr       h;
+    char                payload[UDP_P_LEN];
+};
+
+typedef union {
+    void                *generic;
+    struct icmp_packet  icmp;
+    struct tcp_packet   tcp;
+    struct udp_packet   udp;
+} u_packet;
+
+typedef enum {
+    PACKET_TYPE_ICMP = ICMP,
+    PACKET_TYPE_SYN = SYN,
+    PACKET_TYPE_ACK = ACK,
+    PACKET_TYPE_UDP = UDP,
+    PACKET_TYPE_FIN = FIN,
+    PACKET_TYPE_NUL = NUL,
+    PACKET_TYPE_XMAS = XMAS,
+} e_packet_type;
+
+
+typedef struct{
+    e_packet_type   type;
+    u_packet        packet;
+    size_t          size;
+} t_packet;
+
+typedef struct  s_task //if there is a clear distinction between the T_SEND and T_RECV fields then turn them into a union
 {
     int                 scan_tracker_id;
     int                 task_type;
@@ -125,6 +163,7 @@ typedef struct  s_task
     int                 scan_type;
     struct sockaddr_in  target_address;
     int                 dst_port;
+    int                 socket;
     // T_RECV
     u_char              *args;
     struct pcap_pkthdr  *header;
@@ -173,10 +212,12 @@ typedef struct  s_sniffer
 typedef struct  s_data
 {
     // SOCKET
-    int                 socket;
+    int                 icmp_socket_pool[SOCKET_POOL_SIZE]; //for now only one , it should be changing based on the number of targets;
+    int                 udp_socket_pool[SOCKET_POOL_SIZE];
+    int                 tcp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;
     int                 src_port;
-    struct pollfd       fds[SOCKETS_NB];
+    struct pollfd       fds[SOCKET_POOL_SIZE * 3];
     // SCANS
     t_lst               *queue;
     t_host              host;               // one for now
@@ -193,12 +234,14 @@ typedef struct  s_data
 //  options.c
 void            init_options_params(t_data *dt);
 //  socket.c
-void            bind_socket_to_src_port(t_data *dt, int src_port);
+//void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            init_socket(t_data *dt);
 
 // packet.c
 void            send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id);
 void            craft_icmp_packet(t_packet *packet, t_task *task);
+void            construct_tcp_packet(t_packet *packet, t_task *task);
+void            construct_udp_packet(t_packet *packet, t_task *task);
 
 // utils_debug.c
 void            debug_icmp_packet(t_packet packet);
@@ -211,7 +254,7 @@ void            debug_scan_tracker(t_scan_tracker scan_tracker);
 void            debug_scan(t_scan scan);
 void            debug_port(t_port port);
 void            debug_host(t_host host);
-void            debug_queue(t_data dt);
+void            debug_queue();
 void            debug_end(t_data dt);
 
 // utils_print.c
@@ -231,6 +274,7 @@ void            warning_int(char *msg, int nb);
 // sniffer.c
 void            init_handle(t_sniffer *sniffer);
 void            init_sniffer(t_sniffer *sniffer, char *device, char *filter);
+pcap_if_t       *find_devices();
 void            packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void            sniff_packets(pcap_t *handle, t_data *dt);
 
@@ -239,11 +283,12 @@ void            fill_host(t_data *dt, char *curr_arg);
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 
 // tasks_queue.c
+void            decr_remaining_scans();
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
-t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type);
+t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket);
 t_task          *create_task();
-void            init_queue(t_host *host);
+void            init_queue(t_data *dt);
 
 // tasks_handling.c
 void            handle_task(t_data *dt, t_task *task);

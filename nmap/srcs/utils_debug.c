@@ -1,15 +1,15 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 void    debug_icmp_packet(t_packet packet)
 {
-    printf("       sizeof(packet): %lu\n", sizeof(packet));
-    printf("       packet.payload: %s\n", packet.payload);
-    printf("       sizeof(packet.payload): %lu\n", sizeof(packet.payload));
-    printf("       packet.h.type: %d\n", packet.h.type);
-    printf("       packet.h.code: %d\n", packet.h.code);
-    printf("       packet.h.checksum: %d\n", packet.h.checksum);
-    printf("       packet.h.un.echo.id: %d\n", packet.h.un.echo.id);
-    printf("       packet.h.un.echo.sequence: %d\n", packet.h.un.echo.sequence);
+    printf("       sizeof(packet): %lu\n", packet.size);
+    printf("       packet.payload: %s\n", packet.packet(icmp).payload);
+    printf("       sizeof(packet.payload): %lu\n", sizeof(packet.packet(icmp).payload));
+    printf("       packet.h.type: %d\n", packet.packet(icmp).h.type);
+    printf("       packet.h.code: %d\n", packet.packet(icmp).h.code);
+    printf("       packet.h.checksum: %d\n", packet.packet(icmp).h.checksum);
+    printf("       packet.h.un.echo.id: %d\n", packet.packet(icmp).h.un.echo.id);
+    printf("       packet.h.un.echo.sequence: %d\n", packet.packet(icmp).h.un.echo.sequence);
 }
 
 void    debug_interfaces(pcap_if_t *interfaces)

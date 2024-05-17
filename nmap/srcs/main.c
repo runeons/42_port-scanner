@@ -1,16 +1,27 @@
-#include "ft_nmap.h"
+#include "../includes/ft_nmap.h"
 
 // cf. ft_nmap.h for details
 t_lst *g_queue         = NULL;
 int g_scan_types_nb    = 0;
 int g_remaining_scans  = 0;
 int g_scan_tracker_id  = 0;
-int g_socket           = 0;
 int g_sequence         = 0;
 int g_retrieved        = 0;
 int g_sent             = 0;
 int g_queued           = 0;
 int g_verbose          = FALSE;
+
+static void    close_all_sockets(t_data *dt){
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+        close(dt->icmp_socket_pool[i]);
+    }
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+        close(dt->udp_socket_pool[i]);
+    }
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+        close(dt->tcp_socket_pool[i]);
+    }
+}
 
 static void    option_h()
 {
@@ -33,7 +44,7 @@ void    *worker_function(void *dt)
     print_info_thread("STARTING NEW THREAD");
     while (g_remaining_scans != 0)
     {
-        // debug_queue();
+        //debug_queue();
         t_task *task = dequeue_task();
         if (task == NULL)
             continue;
@@ -48,9 +59,8 @@ void    *worker_function(void *dt)
 void    nmap(t_data *dt)
 {
     pthread_t   workers[dt->threads];
-    int         r;
-        
-    r = 0;
+    int         r = 0;
+    
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");
@@ -76,6 +86,8 @@ int     main(int ac, char **av)
 {
     t_data          dt;
     t_parsed_cmd    parsed_cmd;
+    pcap_if_t       *interfaces = NULL;
+    char            filter[sizeof("src host xxx.xxx.xxx.xxx")];
 
     parse_input(&parsed_cmd, ac, av);
     if (is_activated_option(parsed_cmd.act_options, 'h'))
@@ -84,15 +96,20 @@ int     main(int ac, char **av)
     init_socket(&dt);
     fill_host(&dt, parsed_cmd.not_options->content);
     debug_host(dt.host);
-    init_queue(&dt.host);
-    init_sniffer(&dt.sniffer, "enp0s3", "src host 1.1.1.1");
+    init_queue(&dt);
+    interfaces = find_devices();
+    debug_interfaces(interfaces);
+    sprintf(filter, "src host %s", dt.host.resolved_address);
+    init_sniffer(&dt.sniffer, interfaces->name, filter);
+    pcap_freealldevs(interfaces);
     init_handle(&dt.sniffer);
 
     nmap(&dt);
 
+    debug_host(dt.host);
     debug_end(dt);
 	pcap_close(dt.sniffer.handle);
-    close(dt.socket);
+    close_all_sockets(&dt);
     free_all_malloc();
     return (0);
 }

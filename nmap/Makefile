@@ -4,7 +4,9 @@
 
 NAME					= 	ft_nmap
 
-CC						= 	clang -g3 -gdwarf-4
+COMPILER				:= $(shell command -v clang >/dev/null 2>&1 && echo "clang" || echo "gcc")
+
+CC						= 	$(COMPILER) -g3 -gdwarf-4
 
 FFLAGS					=   -fsanitize=address
 
