@@ -212,7 +212,6 @@ typedef struct  s_sniffer
 typedef struct  s_data
 {
     // SOCKET
-    int                 socket;
     int                 icmp_socket_pool[SOCKET_POOL_SIZE]; //for now only one , it should be changing based on the number of targets;
     int                 udp_socket_pool[SOCKET_POOL_SIZE];
     int                 tcp_socket_pool[SOCKET_POOL_SIZE];

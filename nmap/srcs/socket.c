@@ -32,5 +32,4 @@ void    init_socket(t_data *dt)
         dt->fds[i].fd = dt->icmp_socket_pool[i];
         dt->fds[i].events = POLLOUT;
     }
-    dt->socket = dt->icmp_socket_pool[0];
 }

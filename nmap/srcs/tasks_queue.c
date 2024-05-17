@@ -67,6 +67,7 @@ void init_queue(t_data *dt)
 {
     int tmp_socket = -1;
     t_lst *curr_port = dt->host.ports;
+
     while (curr_port != NULL)
     {
         t_port *port = (t_port *)curr_port->content; // TO PROTECT

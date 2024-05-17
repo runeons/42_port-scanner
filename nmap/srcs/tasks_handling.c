@@ -147,8 +147,8 @@ void    handle_send_task(t_data *dt, t_task *task)
             continue;
         }
         if (!(dt->fds[i].revents & POLLOUT))
-            exit_error_close_socket("Poll unexpected result", dt->socket);
-        if (dt->fds[i].fd == dt->socket)
+            exit_error_close_socket("Poll unexpected result", task->socket);
+        if (dt->fds[i].fd == task->socket)
         {
             t_packet packet;
 

@@ -101,7 +101,6 @@ static void     init_host(t_host *host)
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
     dt->act_options         = parsed_cmd->act_options;
-    dt->socket              = 0;
     dt->src_port            = (getpid() & 0xffff) | 0x8000;
     ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
     dt->src_address.sin_family        = AF_INET;
