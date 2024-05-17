@@ -11,6 +11,18 @@ int g_sent             = 0;
 int g_queued           = 0;
 int g_verbose          = FALSE;
 
+static void    close_all_sockets(t_data *dt){
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+        close(dt->icmp_socket_pool[i]);
+    }
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+        close(dt->udp_socket_pool[i]);
+    }
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+        close(dt->tcp_socket_pool[i]);
+    }
+}
+
 static void    option_h()
 {
     display_help();
@@ -97,7 +109,7 @@ int     main(int ac, char **av)
     debug_host(dt.host);
     debug_end(dt);
 	pcap_close(dt.sniffer.handle);
-    close(dt.socket);
+    close_all_sockets(&dt);
     free_all_malloc();
     return (0);
 }
