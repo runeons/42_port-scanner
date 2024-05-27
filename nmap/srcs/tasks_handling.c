@@ -152,7 +152,6 @@ void    handle_send_task(t_data *dt, t_task *task)
         if (dt->fds[i].fd == dt->socket)
         {
             t_packet packet;
-
             switch (task->scan_type){
                 case ICMP:
                     craft_icmp_packet(&packet, task);
@@ -163,7 +162,7 @@ void    handle_send_task(t_data *dt, t_task *task)
                 case FIN:
                 case NUL:
                 case XMAS:
-                    construct_tcp_packet(&packet, task);
+                    // construct_tcp_packet(&packet, task);
                     break;
                 case UDP:
                     construct_udp_packet(&packet, task);
@@ -172,7 +171,9 @@ void    handle_send_task(t_data *dt, t_task *task)
                     warning("Unknown SCAN");
                     continue;
             }
-            printf(TEST);
+            struct tcphdr *tcph = &packet.packet(tcp).h;
+            display_tcphdr(tcph);
+            display_tcp_packet(packet);
             send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else

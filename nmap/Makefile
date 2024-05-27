@@ -91,7 +91,7 @@ clean:
 	@ rm -rf $(OBJS_DIR)
 
 fclean:
-	@ make fclean -C libft/
+#	@ make fclean -C libft/
 	@ rm -f $(NAME)
 	@ rm -rf $(OBJS_DIR)
 

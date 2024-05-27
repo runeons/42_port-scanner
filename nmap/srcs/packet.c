@@ -65,21 +65,23 @@ void construct_udp_packet(t_packet *packet, t_task *task) {
     packet->packet(udp).h.check = checksum(&packet->packet(udp), packet->size);
 }
 
-void construct_tcp_packet(t_packet *packet, t_task *task) {
-    packet->type = task->scan_type ;
-    packet->size = sizeof(struct tcphdr) + 2* sizeof(uint8_t) + sizeof(uint16_t);
+void construct_tcp_packet(t_packet *packet, t_task *task)
+{
+    printf(TEST);
+    packet->type = task->scan_type;
+    packet->size = sizeof(struct tcphdr) + 2 * sizeof(uint8_t) + sizeof(uint16_t);
 
     struct tcphdr *tcph = &packet->packet(tcp).h;
-
     ft_bzero(&packet->packet(tcp), packet->size);
 
     // TCP header
-    tcph->source = htons( (getpid() & 0xffff) | 0x8000);
-    tcph->dest = htons(task->dst_port);
-    tcph->seq = htonl(g_sequence++); // all the globals need mutex when used in threads;
-    //tcph->ack_seq = 0;
-    tcph->doff = (sizeof(struct tcphdr))/4 + 1; // TCP header size
-    switch (packet->type){
+    tcph->source    = htons( (getpid() & 0xffff) | 0x8000);
+    tcph->dest      = htons(task->dst_port);
+    tcph->seq       = htonl(g_sequence++); // all the globals need mutex when used in threads;
+    tcph->ack_seq   = 0;
+    tcph->doff      = (sizeof(struct tcphdr))/4 + 1; // TCP header size
+    switch (packet->type)
+    {
         case PACKET_TYPE_ACK:
             tcph->th_flags |= TH_ACK;
             break;
@@ -97,19 +99,21 @@ void construct_tcp_packet(t_packet *packet, t_task *task) {
         default:
             break;
     }
-    tcph->window = htons(1024);
-    tcph->urg_ptr = 0;
-   
+    tcph->window    = htons(1024);
+    tcph->urg_ptr   = 0;
 
     uint8_t *options = (uint8_t *)tcph + sizeof(struct tcphdr);
     options[0] = 2; // Kind
     options[1] = 4; // Length
     *(uint16_t *)(options + 2) = htons(1460); // Value (MSS)
-     tcph->check = checksum(&packet->packet(tcp), packet->size );
+    tcph->check = checksum(&packet->packet(tcp), packet->size);
+    display_tcphdr(tcph);
+    display_tcp_packet(*packet);
 }
 
 void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
 {
+    printf(TEST);
     int r = 0;
 
     // print_info("Main socket is readable");
@@ -119,8 +123,6 @@ void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_add
         return;
     }
     print_info_int("Packet sent (bytes):", sizeof(*packet));
-    printf(TEST);
-    display_icmp_packet(*packet);
-    printf(TEST);
+    // display_icmp_packet(*packet);
     g_sent++;
 }

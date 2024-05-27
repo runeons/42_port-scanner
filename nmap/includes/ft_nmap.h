@@ -52,6 +52,8 @@
 # define PROMISCUOUS            1
 // PACKETS SIZES
 # define ICMP_LEN               64
+# define TCP_LEN              20
+
 # define ETH_H_LEN              14
 # define IP_H_LEN               20              // sizeof(struct iphdr)
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
@@ -306,4 +308,6 @@ char            *conclusion_string(e_conclusion conclusion);
 // display.c
 void            display_hex_packet(unsigned char *bytes, int size);
 void            display_icmp_packet(t_packet packet);
+void            display_tcphdr(const struct tcphdr *tcp_header);
+void            display_tcp_packet(t_packet packet);
 #endif
