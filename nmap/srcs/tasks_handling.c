@@ -138,6 +138,7 @@ void    handle_recv_task(t_data *dt, t_task *task)
 
 void    handle_send_task(t_data *dt, t_task *task)
 {
+    printf(TEST);
     for (int i = 0; i < NFDS; i++) // only one for now
     {
         if (dt->fds[i].revents == 0)
@@ -157,6 +158,7 @@ void    handle_send_task(t_data *dt, t_task *task)
                     craft_icmp_packet(&packet, task);
                     break;
                 case SYN:
+                    construct_tcp_packet(&packet, task);
                 case ACK:
                 case FIN:
                 case NUL:
@@ -170,6 +172,7 @@ void    handle_send_task(t_data *dt, t_task *task)
                     warning("Unknown SCAN");
                     continue;
             }
+            printf(TEST);
             send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else

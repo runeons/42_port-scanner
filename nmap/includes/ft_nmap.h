@@ -51,6 +51,7 @@
 // PCAP
 # define PROMISCUOUS            1
 // PACKETS SIZES
+# define ICMP_LEN               64
 # define ETH_H_LEN              14
 # define IP_H_LEN               20              // sizeof(struct iphdr)
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
@@ -302,4 +303,7 @@ char            *scan_type_string(e_scan_type scan_type);
 char            *response_string(e_response response);
 char            *conclusion_string(e_conclusion conclusion);
 
+// display.c
+void            display_hex_packet(unsigned char *bytes, int size);
+void            display_icmp_packet(t_packet packet);
 #endif

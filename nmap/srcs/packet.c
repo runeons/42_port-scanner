@@ -119,6 +119,8 @@ void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_add
         return;
     }
     print_info_int("Packet sent (bytes):", sizeof(*packet));
+    printf(TEST);
+    display_icmp_packet(*packet);
+    printf(TEST);
     g_sent++;
-    // debug_icmp_packet(*packet);
 }
