@@ -56,7 +56,7 @@ void construct_udp_packet(t_packet *packet, t_task *task) {
     for  (int i = 0; i  < UDP_P_LEN; i++)
     {
 		packet->packet(udp).payload[i] = 'A';
-        i++;
+        // i++;
     }
 
     packet->packet(udp).h.source = htons( (getpid() & 0xffff) | 0x8000);
