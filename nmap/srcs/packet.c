@@ -47,22 +47,35 @@ void    craft_icmp_packet(t_packet *packet, t_task *task)
     packet->packet(icmp).h.checksum = checksum(&packet->packet(icmp), packet->size);
 }
 
-void construct_udp_packet(t_packet *packet, t_task *task) {
+void    craft_ip_header(struct ip *ip_h, t_task *task)
+{
+    ip_h->ip_hl         = IP_HL;
+    ip_h->ip_v          = IP_VERSION;
+    ip_h->ip_ttl        = 64; // curr_ttl
+    ip_h->ip_p          = IPPROTO_UDP;
+    ip_h->ip_src.s_addr = INADDR_ANY;
+    ip_h->ip_dst        = task->target_address.sin_addr;
+}
+
+void    craft_udp_header(struct udphdr *udp_h, t_task *task)
+{
+    udp_h->uh_sport = htons(12345); // src_port
+    udp_h->uh_dport = htons(task->dst_port);
+    udp_h->uh_ulen  = htons(UDP_H_LEN + UDP_P_LEN);
+}
+
+void construct_udp_packet(t_packet *packet, t_task *task)
+{
+    printf(TEST);
     packet->type = task->scan_type ;
-    packet->size = sizeof(struct udphdr) + UDP_P_LEN;
-    // Clear packet data
+    packet->size = sizeof(struct ip) + sizeof(struct udphdr) + UDP_P_LEN;
     ft_bzero(&packet->packet(udp), packet->size + UDP_P_LEN);
 
-    for  (int i = 0; i  < UDP_P_LEN; i++)
-    {
-		packet->packet(udp).payload[i] = 'A';
-        // i++;
-    }
+    craft_ip_header(&packet->packet(udp).iph, task);
+    craft_udp_header(&packet->packet(udp).h, task);
 
-    packet->packet(udp).h.source = htons( (getpid() & 0xffff) | 0x8000);
-    packet->packet(udp).h.dest = htons(task->dst_port);
-    packet->packet(udp).h.len = htons(packet->size);
-    packet->packet(udp).h.check = checksum(&packet->packet(udp), packet->size);
+    for (int i = 0; i  < UDP_P_LEN; i++)
+		packet->packet(udp).payload[i] = 'A';
 }
 
 void construct_tcp_packet(t_packet *packet, t_task *task)

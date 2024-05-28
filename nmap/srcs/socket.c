@@ -12,11 +12,15 @@ void    bind_socket_to_src_port(t_data *dt, int src_port)
 void    init_socket(t_data *dt)
 {
     int optval = 64; // TTL_VALUE for IP_TTL socket
+    // int optval = 1; // TTL_VALUE for IP_HDRINCL socket
 
-    dt->socket = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    // dt->socket = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    // dt->socket = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+    dt->socket = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
     if (dt->socket < 0)
         exit_error("ft_nmap: socket error: Check that you have the correct rights.\n");
     if (setsockopt(dt->socket, IPPROTO_IP, IP_TTL, &optval, sizeof(optval)) < 0)
+    // if (setsockopt(dt->socket, IPPROTO_IP, IP_HDRINCL, &optval, sizeof(optval)) < 0)
         exit_error_close(dt->socket, "ft_nmap: socket error in setting option: Exiting program.%s\n");
     bind_socket_to_src_port(dt, dt->src_port);
     dt->fds[0].fd = dt->socket;

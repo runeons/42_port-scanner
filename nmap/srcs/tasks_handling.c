@@ -171,9 +171,9 @@ void    handle_send_task(t_data *dt, t_task *task)
                     warning("Unknown SCAN");
                     continue;
             }
-            struct tcphdr *tcph = &packet.packet(tcp).h;
-            display_tcphdr(tcph);
-            display_tcp_packet(packet);
+            // struct tcphdr *tcph = &packet.packet(tcp).h;
+            // display_tcphdr(tcph);
+            // display_tcp_packet(packet);
             send_packet(g_socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else

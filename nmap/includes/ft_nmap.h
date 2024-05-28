@@ -59,7 +59,11 @@
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
 # define TCP_P_LEN              20
-# define UDP_P_LEN              14              //based on nmap
+# define UDP_P_LEN              14              // based on nmap
+# define UDP_H_LEN              8               // based on nmap
+# define IP_HL                  5
+# define IP_VERSION             4
+
 // PACKET FLAGS
 # define ICMP_ECHO_REPLY        0               // tmp (initial test only)
 
@@ -130,6 +134,7 @@ struct tcp_packet{
 };
 
 struct udp_packet{
+    struct ip           iph;
     struct udphdr       h;
     char                payload[UDP_P_LEN];
 };
