@@ -33,7 +33,7 @@ t_task *dequeue_task()
     return task;
 };
 
-t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket)
+t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket, int src_ip)
 {
     task->socket            = socket;
     task->scan_tracker_id   = id;
@@ -41,6 +41,7 @@ t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_addres
     task->scan_type         = scan_type;
     task->dst_port          = dst_port;
     task->target_address    = target_address;
+    task->src_ip            = src_ip;
     return task;
 }
 
@@ -56,6 +57,7 @@ t_task    *create_task()
     task->socket            = -1;
     task->scan_type         = UNKNOWN;
     task->dst_port          = 0;
+    task->src_ip            = 0;
     task->args              = NULL;
     task->header            = NULL;
     task->packet            = NULL;
@@ -89,7 +91,7 @@ void init_queue(t_data *dt)
                     printf("Invalid scan type | just skip this task");
                     continue;
             } //bad code , I'll update it as soon as we make proper socket_pools
-            fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket);
+            fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket, dt->src_ip);
             enqueue_task(task);
             debug_task(*task);
             g_remaining_scans++;

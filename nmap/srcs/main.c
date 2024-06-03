@@ -11,6 +11,20 @@ int g_sent             = 0;
 int g_queued           = 0;
 int g_verbose          = FALSE;
 
+static int get_source_numeric_ip(pcap_if_t *interfaces){
+    pcap_addr_t *addr;
+
+    for (addr = interfaces->addresses; addr != NULL; addr = addr->next) {
+        if (addr->addr != NULL) {
+            if (addr->addr->sa_family == AF_INET) {
+                struct sockaddr_in *sa = (struct sockaddr_in *)addr->addr;
+                return sa->sin_addr.s_addr;
+            }
+        }
+    }
+    return -1;
+}
+
 static void    close_all_sockets(t_data *dt){
     for (int i = 0; i < SOCKET_POOL_SIZE; i++){
         close(dt->icmp_socket_pool[i]);
@@ -84,6 +98,7 @@ void    nmap(t_data *dt)
 
 int     main(int ac, char **av)
 {
+    int             numeric_src_ip;
     t_data          dt;
     t_parsed_cmd    parsed_cmd;
     pcap_if_t       *interfaces = NULL;
@@ -96,9 +111,13 @@ int     main(int ac, char **av)
     init_socket(&dt);
     fill_host(&dt, parsed_cmd.not_options->content);
     debug_host(dt.host);
-    init_queue(&dt);
     interfaces = find_devices();
     debug_interfaces(interfaces);
+    numeric_src_ip = get_source_numeric_ip(interfaces);
+    printf("%d\n", numeric_src_ip);
+    assert( numeric_src_ip != -1 && "numeric src ip is -1");
+    dt.src_ip = numeric_src_ip;
+    init_queue(&dt);
     sprintf(filter, "src host %s", dt.host.resolved_address);
     init_sniffer(&dt.sniffer, interfaces->name, filter);
     pcap_freealldevs(interfaces);

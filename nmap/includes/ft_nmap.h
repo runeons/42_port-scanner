@@ -20,6 +20,7 @@
 # include <utils_colors.h>
 # include <utils_options.h>
 # include "../libft/includes/libft.h"
+# include <assert.h>
 # include <pcap.h>
 # include <pthread.h>
 
@@ -56,7 +57,7 @@
 # define IP_H_LEN               20              // sizeof(struct iphdr)
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
-# define TCP_P_LEN              20
+# define TCP_P_LEN              4
 # define UDP_P_LEN              14              //based on nmap
 // PACKET FLAGS
 # define ICMP_ECHO_REPLY        0               // tmp (initial test only)
@@ -164,6 +165,7 @@ typedef struct  s_task //if there is a clear distinction between the T_SEND and 
     struct sockaddr_in  target_address;
     int                 dst_port;
     int                 socket;
+    int                 src_ip;
     // T_RECV
     u_char              *args;
     struct pcap_pkthdr  *header;
@@ -217,6 +219,7 @@ typedef struct  s_data
     int                 tcp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;
     int                 src_port;
+    int                 src_ip;
     struct pollfd       fds[SOCKET_POOL_SIZE * 3];
     // SCANS
     t_lst               *queue;
@@ -286,7 +289,7 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 void            decr_remaining_scans();
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
-t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket);
+t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket, int src_ip);
 t_task          *create_task();
 void            init_queue(t_data *dt);
 
