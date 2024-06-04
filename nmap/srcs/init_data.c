@@ -5,7 +5,6 @@ void     resolve_address(t_host *host) // check that dest exists and resolve add
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
 
-    fprintf(stderr, "<%s>\n", host->input_dest);
     if (getaddrinfo(host->input_dest, NULL, NULL, &resolved_add) != 0)
         exit_error("ft_nmap: unknown host\n");
     // debug_addrinfo(*resolved_add);

@@ -70,11 +70,21 @@ void    *worker_function(void *dt)
     return NULL;
 }
 
-void    nmap(t_data *dt)
+static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
 {
-    pthread_t   workers[dt->threads];
+    char        filter[sizeof("src host xxx.xxx.xxx.xxx")];
     int         r = 0;
-    
+    pthread_t   workers[dt->threads];
+
+    init_socket(dt);
+    fill_host(dt, target);
+    debug_host(dt->host);
+    dt->src_ip = numeric_src_ip;
+    init_queue(dt);
+    sprintf(filter, "src host %s", dt->host.resolved_address);
+    init_sniffer(&dt->sniffer, interface_name, filter);
+    init_handle(&dt->sniffer);
+
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");
@@ -94,17 +104,22 @@ void    nmap(t_data *dt)
         pthread_join(workers[i], NULL);
     }
     print_info_thread("ENDING MAIN THREAD");
+
+    debug_host(dt->host);
+    debug_end(*dt);
+    pcap_close(dt->sniffer.handle);
+    close_all_sockets(dt);
 }
 
 int     main(int ac, char **av)
 {
+    t_data          dt;
     int             file_input;
     int             one_target;
     int             numeric_src_ip;
-    t_data          dt;
     t_parsed_cmd    parsed_cmd;
+    char            first_interface_name[255];
     pcap_if_t       *interfaces = NULL;
-    char            filter[sizeof("src host xxx.xxx.xxx.xxx")];
 
     parse_input(&parsed_cmd, ac, av);
 
@@ -119,8 +134,11 @@ int     main(int ac, char **av)
     interfaces = find_devices();
     debug_interfaces(interfaces);
     numeric_src_ip = get_source_numeric_ip(interfaces);
-    printf("%d\n", numeric_src_ip);
+    ft_strcpy(first_interface_name,  interfaces->name);
+    pcap_freealldevs(interfaces);
     assert( numeric_src_ip != -1 && "numeric src ip is -1");
+
+    init_data(&dt, &parsed_cmd); // this needs to be done only once
 
     if (is_activated_option(parsed_cmd.act_options, 'f'))
     {
@@ -136,23 +154,7 @@ int     main(int ac, char **av)
         while ((err = get_next_line(file->_fileno, line)) >= 0){
             if (err == 0 && *line[0] == '\0')
                 break;
-
-            init_data(&dt, &parsed_cmd);
-            init_socket(&dt);
-            fill_host(&dt, *line);
-            debug_host(dt.host);
-            dt.src_ip = numeric_src_ip;
-            init_queue(&dt);
-            sprintf(filter, "src host %s", dt.host.resolved_address);
-            init_sniffer(&dt.sniffer, interfaces->name, filter);
-            init_handle(&dt.sniffer);
-
-            nmap(&dt);
-
-            debug_host(dt.host);
-            debug_end(dt);
-            pcap_close(dt.sniffer.handle);
-            close_all_sockets(&dt);
+            nmap(*line, first_interface_name, numeric_src_ip, &dt);
         }
         if (err == -1){
             fprintf(stderr, "get_next_line: error\n");
@@ -160,24 +162,8 @@ int     main(int ac, char **av)
         }
         fclose(file);
     } else {
-        init_data(&dt, &parsed_cmd);
-        init_socket(&dt);
-        fill_host(&dt, parsed_cmd.not_options->content);
-        debug_host(dt.host);
-        dt.src_ip = numeric_src_ip;
-        init_queue(&dt);
-        sprintf(filter, "src host %s", dt.host.resolved_address);
-        init_sniffer(&dt.sniffer, interfaces->name, filter);
-        init_handle(&dt.sniffer);
-
-        nmap(&dt);
-
-        debug_host(dt.host);
-        debug_end(dt);
-        pcap_close(dt.sniffer.handle);
-        close_all_sockets(&dt);
+        nmap(parsed_cmd.not_options->content, first_interface_name, numeric_src_ip, &dt);
     }
-    pcap_freealldevs(interfaces);
     free_all_malloc();
     return (0);
 }
