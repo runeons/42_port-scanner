@@ -284,6 +284,9 @@ void            sniff_packets(pcap_t *handle, t_data *dt);
 // init_data.c
 void            fill_host(t_data *dt, char *curr_arg);
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
+void            resolve_address(t_host *host);
+void            resolve_hostname(t_host *host);
+void            init_host(t_host *host);
 
 // tasks_queue.c
 void            decr_remaining_scans();

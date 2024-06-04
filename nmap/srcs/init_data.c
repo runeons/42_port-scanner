@@ -1,10 +1,11 @@
 #include "../includes/ft_nmap.h"
 
-static void     resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
+void     resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
 {
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
 
+    fprintf(stderr, "<%s>\n", host->input_dest);
     if (getaddrinfo(host->input_dest, NULL, NULL, &resolved_add) != 0)
         exit_error("ft_nmap: unknown host\n");
     // debug_addrinfo(*resolved_add);
@@ -21,7 +22,7 @@ static void     resolve_address(t_host *host) // check that dest exists and reso
     freeaddrinfo(resolved_add);
 }
 
-static void     resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
+void     resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
 {
     char    hostname[MAX_HOSTNAME_LEN];
 
@@ -86,7 +87,7 @@ void            fill_host(t_data *dt, char *curr_arg)
     }
 }
 
-static void     init_host(t_host *host)
+void            init_host(t_host *host)
 {
     host->input_dest                        = "";
     host->resolved_address                  = NULL;
@@ -107,7 +108,7 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->src_address.sin_addr.s_addr   = INADDR_ANY;
     dt->src_address.sin_port          = htons(dt->src_port);
     ft_memset(dt->fds, 0, sizeof(dt->fds));
-    dt->fds[0].events       = POLLOUT;
+    //dt->fds[0].events       = POLLOUT;
     // dt->queue            = NULL;
     dt->threads             = THREADS_NB;
     ft_memset(&dt->host, 0, sizeof(dt->host));
@@ -125,6 +126,4 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
     init_data_struct(dt, parsed_cmd);
     init_options_params(dt);
-    if (ft_lst_size(parsed_cmd->not_options) != 1)
-        exit_error("ft_nmap: usage error: Destination required and only one.\n");
 }

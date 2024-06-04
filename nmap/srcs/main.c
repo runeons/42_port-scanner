@@ -98,6 +98,8 @@ void    nmap(t_data *dt)
 
 int     main(int ac, char **av)
 {
+    int             file_input;
+    int             one_target;
     int             numeric_src_ip;
     t_data          dt;
     t_parsed_cmd    parsed_cmd;
@@ -105,30 +107,77 @@ int     main(int ac, char **av)
     char            filter[sizeof("src host xxx.xxx.xxx.xxx")];
 
     parse_input(&parsed_cmd, ac, av);
+
     if (is_activated_option(parsed_cmd.act_options, 'h'))
         option_h();
-    init_data(&dt, &parsed_cmd);
-    init_socket(&dt);
-    fill_host(&dt, parsed_cmd.not_options->content);
-    debug_host(dt.host);
+    file_input = is_activated_option(parsed_cmd.act_options, 'f');
+    one_target = ft_lst_size(parsed_cmd.not_options);
+
+    if ((!file_input && one_target != 1)  || (file_input && one_target >=1))
+        exit_error("ft_nmap: usage error: You can only supply either a file or a single target address as inputs");
+
     interfaces = find_devices();
     debug_interfaces(interfaces);
     numeric_src_ip = get_source_numeric_ip(interfaces);
     printf("%d\n", numeric_src_ip);
     assert( numeric_src_ip != -1 && "numeric src ip is -1");
-    dt.src_ip = numeric_src_ip;
-    init_queue(&dt);
-    sprintf(filter, "src host %s", dt.host.resolved_address);
-    init_sniffer(&dt.sniffer, interfaces->name, filter);
+
+    if (is_activated_option(parsed_cmd.act_options, 'f'))
+    {
+        t_option *file_option = get_option(parsed_cmd.act_options, 'f');
+        FILE *file = fopen(file_option->param, "r");
+        if (!file)
+        {
+            perror("fopen: error");
+            exit(1);
+        }
+        char *line[255];
+        int err = 0;
+        while ((err = get_next_line(file->_fileno, line)) >= 0){
+            if (err == 0 && *line[0] == '\0')
+                break;
+
+            init_data(&dt, &parsed_cmd);
+            init_socket(&dt);
+            fill_host(&dt, *line);
+            debug_host(dt.host);
+            dt.src_ip = numeric_src_ip;
+            init_queue(&dt);
+            sprintf(filter, "src host %s", dt.host.resolved_address);
+            init_sniffer(&dt.sniffer, interfaces->name, filter);
+            init_handle(&dt.sniffer);
+
+            nmap(&dt);
+
+            debug_host(dt.host);
+            debug_end(dt);
+            pcap_close(dt.sniffer.handle);
+            close_all_sockets(&dt);
+        }
+        if (err == -1){
+            fprintf(stderr, "get_next_line: error\n");
+            exit(err);
+        }
+        fclose(file);
+    } else {
+        init_data(&dt, &parsed_cmd);
+        init_socket(&dt);
+        fill_host(&dt, parsed_cmd.not_options->content);
+        debug_host(dt.host);
+        dt.src_ip = numeric_src_ip;
+        init_queue(&dt);
+        sprintf(filter, "src host %s", dt.host.resolved_address);
+        init_sniffer(&dt.sniffer, interfaces->name, filter);
+        init_handle(&dt.sniffer);
+
+        nmap(&dt);
+
+        debug_host(dt.host);
+        debug_end(dt);
+        pcap_close(dt.sniffer.handle);
+        close_all_sockets(&dt);
+    }
     pcap_freealldevs(interfaces);
-    init_handle(&dt.sniffer);
-
-    nmap(&dt);
-
-    debug_host(dt.host);
-    debug_end(dt);
-	pcap_close(dt.sniffer.handle);
-    close_all_sockets(&dt);
     free_all_malloc();
     return (0);
 }

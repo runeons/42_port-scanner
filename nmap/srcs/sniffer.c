@@ -25,8 +25,10 @@ void    init_handle(t_sniffer *sniffer)
 
 void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
 {
+    fprintf(stderr, "<%s>\n", device);
     if (!(sniffer->device = ft_strdup(device)))
         exit_error("Malloc failure.");
+    fprintf(stderr, "<%s>\n", filter);
     if (!(sniffer->filter = ft_strdup(filter)))
         exit_error("Malloc failure.");
 }

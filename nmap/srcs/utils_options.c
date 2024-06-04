@@ -12,7 +12,7 @@ t_option allowed_options[] =
     // {'n', "no-dns",         0, "",              NULL, "do not perform DNS lookup"},
     {'v', "verbose",        0, "",              NULL, "display more information while scanning"},
     // {'i', "ip",             1, "IP",            NULL, "specify ipv4 to scan"},
-    // {'f', "file",           1, "FILE",          NULL, "specify file to get ip list"},
+    {'f', "file",           1, "FILE",          NULL, "specify file to get ip list"},
 };
 
 void exit_options_error(const char *msg, ...)
