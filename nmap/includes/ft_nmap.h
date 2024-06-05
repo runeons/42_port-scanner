@@ -58,7 +58,7 @@
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
 # define TCP_P_LEN              4
-# define UDP_P_LEN              14              //based on nmap
+# define UDP_P_LEN              29              //based on nmap
 // PACKET FLAGS
 # define ICMP_ECHO_REPLY        0               // tmp (initial test only)
 
@@ -160,6 +160,7 @@ typedef struct  s_task //if there is a clear distinction between the T_SEND and 
 {
     int                 scan_tracker_id;
     int                 task_type;
+    uint16_t            src_port;
     // T_SEND
     int                 scan_type;
     struct sockaddr_in  target_address;
@@ -185,6 +186,8 @@ typedef struct s_scan_tracker
     t_scan              scan;
     int                 count_sent;
     int                 max_send;
+    uint16_t            dst_port;
+
 }              t_scan_tracker;
 
 typedef struct  s_port
@@ -289,7 +292,7 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
 void            decr_remaining_scans();
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
-t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket, int src_ip);
+t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, uint16_t dst_port, e_scan_type scan_type, int socket, int src_ip, uint16_t src_port);
 t_task          *create_task();
 void            init_queue(t_data *dt);
 

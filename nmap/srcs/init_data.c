@@ -46,6 +46,7 @@ static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type sca
     scan_tracker->scan.conclusion     = NOT_CONCLUDED; 
     scan_tracker->count_sent          = 0;
     scan_tracker->max_send            = MAX_SEND;
+    scan_tracker->dst_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
 }
 
 static t_port    *create_port(int port_id, e_scan_type *unique_scans)
@@ -101,7 +102,7 @@ static void     init_host(t_host *host)
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
     dt->act_options         = parsed_cmd->act_options;
-    dt->src_port            = (getpid() & 0xffff) | 0x8000;
+    dt->src_port            = (getpid() & 0xffff) | 0x8000; // base port 
     ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
     dt->src_address.sin_family        = AF_INET;
     dt->src_address.sin_addr.s_addr   = INADDR_ANY;

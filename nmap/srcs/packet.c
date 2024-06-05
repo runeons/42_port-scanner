@@ -47,22 +47,64 @@ void    craft_icmp_packet(t_packet *packet, t_task *task)
     packet->packet(icmp).h.checksum = checksum(&packet->packet(icmp), packet->size);
 }
 
+struct pseudo_header {
+    uint32_t source_address;
+    uint32_t dest_address;
+    uint8_t placeholder;
+    uint8_t protocol;
+    uint16_t size;
+    };
+
+unsigned char dns_query_payload[] = {
+    0x1a, 0x2b, // Transaction ID
+    0x01, 0x00, // Flags (Standard query, recursion desired)
+    0x00, 0x01, // Questions (1)
+    0x00, 0x00, // Answer RRs (0)
+    0x00, 0x00, // Authority RRs (0)
+    0x00, 0x00, // Additional RRs (0)
+    0x07, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, // Query Name: "example"
+    0x03, 0x63, 0x6f, 0x6d, // Query Name: "com"
+    0x00, // End of Query Name
+    0x00, 0x01, // Query Type (A)
+    0x00, 0x01  // Query Class (IN)
+};
+
+
 void construct_udp_packet(t_packet *packet, t_task *task) {
-    packet->type = task->scan_type ;
+    packet->type = task->scan_type;
     packet->size = sizeof(struct udphdr) + UDP_P_LEN;
     // Clear packet data
-    ft_bzero(&packet->packet(udp), packet->size + UDP_P_LEN);
+    ft_bzero(&packet->packet(udp), packet->size);
 
     for  (int i = 0; i  < UDP_P_LEN; i++)
     {
 		packet->packet(udp).payload[i] = 'A';
         i++;
     }
+    ft_memcpy(packet->packet(udp).payload, dns_query_payload, sizeof(dns_query_payload));
 
-    packet->packet(udp).h.source = htons( (getpid() & 0xffff) | 0x8000);  //TO BE REPLACED with scan specific port based on sequence or something similar
+    packet->packet(udp).h.source = htons(task->src_port);
     packet->packet(udp).h.dest = htons(task->dst_port);
+    printf("%d %d \n", task->src_port, task->dst_port);
     packet->packet(udp).h.len = htons(packet->size);
-    packet->packet(udp).h.check = checksum(&packet->packet(udp), packet->size);
+    printf("%ld\n", packet->size);
+
+    struct pseudo_header ps;
+    ps.source_address = task->src_ip;
+    ps.dest_address = task->target_address.sin_addr.s_addr;
+    ps.placeholder = 0;
+    ps.protocol = IPPROTO_UDP;
+    ps.size = htons(packet->size);
+
+    // Calculate the checksum
+    int pseudo_packet_size = sizeof(struct pseudo_header) + packet->size;
+    uint8_t pseudo_packet[sizeof(struct pseudo_header) + packet->size]; 
+
+    //uint8_t *pseudo_packet = malloc(pseudo_packet_size);
+    memcpy(pseudo_packet, &ps, sizeof(struct pseudo_header));
+    memcpy(pseudo_packet + sizeof(struct pseudo_header), &packet->packet(udp), packet->size);
+
+    packet->packet(udp).h.check = checksum(pseudo_packet, pseudo_packet_size);;
 }
 
 void construct_tcp_packet(t_packet *packet, t_task *task) {
@@ -74,10 +116,12 @@ void construct_tcp_packet(t_packet *packet, t_task *task) {
     ft_bzero(&packet->packet(tcp), packet->size);
 
     // TCP header
-    tcph->source = htons((getpid() & 0xffff) | 0x8000); //TO BE REPLACED
+    tcph->source = htons(task->src_port);
     tcph->dest = htons(task->dst_port);
-    tcph->seq = htonl(g_sequence++); // all the globals need mutex when used in threads;
-    // tcph->ack_seq = 0;
+    //tcph->seq = task->scan_tracker_id; // all the globals need mutex when used in threads;
+    //tcph->ack_seq = htonl(task->scan_tracker_id);
+    printf("Send seq %d\n", htonl(tcph->ack_seq));
+    printf("%d\n", tcph->ack_seq);
     tcph->doff = (sizeof(struct tcphdr)) / 4 + 1; // TCP header size + 1 for the options
     switch (packet->type) {
         case PACKET_TYPE_ACK:
@@ -105,20 +149,13 @@ void construct_tcp_packet(t_packet *packet, t_task *task) {
     *(uint16_t *)(options + 2) = htons(1460); // Value (MSS)
 
 
-    struct pseudo_header {
-    uint32_t source_address;
-    uint32_t dest_address;
-    uint8_t placeholder;
-    uint8_t protocol;
-    uint16_t tcp_length;
-    };
     // Pseudo header
     struct pseudo_header ps;
     ps.source_address = task->src_ip;
     ps.dest_address = task->target_address.sin_addr.s_addr;
     ps.placeholder = 0;
     ps.protocol = IPPROTO_TCP;
-    ps.tcp_length = htons(packet->size);
+    ps.size = htons(packet->size);
 
     // Calculate the checksum
     int pseudo_packet_size = sizeof(struct pseudo_header) + packet->size;

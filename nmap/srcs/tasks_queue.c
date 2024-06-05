@@ -33,10 +33,11 @@ t_task *dequeue_task()
     return task;
 };
 
-t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, int dst_port, e_scan_type scan_type, int socket, int src_ip)
+t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, uint16_t dst_port, e_scan_type scan_type, int socket, int src_ip, uint16_t src_port)
 {
     task->socket            = socket;
     task->scan_tracker_id   = id;
+    task->src_port          = src_port;
     task->task_type         = T_SEND;
     task->scan_type         = scan_type;
     task->dst_port          = dst_port;
@@ -54,6 +55,7 @@ t_task    *create_task()
         exit_error("ft_nmap: malloc failure.");
     task->scan_tracker_id   = 0;
     task->task_type         = T_EMPTY;
+    task->src_port          = 0;
     task->socket            = -1;
     task->scan_type         = UNKNOWN;
     task->dst_port          = 0;
@@ -91,7 +93,7 @@ void init_queue(t_data *dt)
                     printf("Invalid scan type | just skip this task");
                     continue;
             } //bad code , I'll update it as soon as we make proper socket_pools
-            fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket, dt->src_ip);
+            fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket, dt->src_ip, curr_tracker->dst_port);
             enqueue_task(task);
             debug_task(*task);
             g_remaining_scans++;
