@@ -141,28 +141,20 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
             if (icmp_hdr)
                 id = icmp_hdr->icmp_id;
             break;
-        case TCP_SYN_ACK:
+        case TCP_SYN_ACK: case TCP_RST:
             struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (tcp_hdr){
-                t_scan_tracker *tracker =  find_tracker(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source));
-                if (tracker){
-                    printf("TRACKER IS FOUND\n");
+                t_scan_tracker *tracker = find_tracker(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source)); //identification is based on our source port
+                if (tracker)
                     id = tracker->id;
-                }
-                // //uint16_t dst_port = htons(tcp_hdr->source);
-                // printf("SRC PORT %d\n", htons(tcp_hdr->dest));
-                // id = htons(tcp_hdr->source); // cannot use seq to identify, we need to match src port- dst port - target address - source address - (seq)
-                // printf("DST PORT : %d\n", id);
             }
             break;
         case UDP_ANY:
             struct tcphdr *udp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
                 if (udp_hdr){
                     t_scan_tracker *tracker =  find_tracker(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
-                    if (tracker){
-                        printf("TRACKER IS FOUND\n");
+                    if (tracker)
                         id = tracker->id;
-                    }
                     // //uint16_t dst_port = htons(udp_hdr->source);
                     // printf("SRC PORT %d\n", htons(udp_hdr->dest));
                     // id = htons(udp_hdr->source); // cannot use seq to identify, we need to match src port- dst port - target address - source address - (seq)
