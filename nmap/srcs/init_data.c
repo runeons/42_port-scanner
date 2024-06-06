@@ -1,12 +1,14 @@
 #include "../includes/ft_nmap.h"
 
-void     resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
+int     resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
 {
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
 
-    if (getaddrinfo(host->input_dest, NULL, NULL, &resolved_add) != 0)
-        exit_error("ft_nmap: unknown host\n");
+    if (getaddrinfo(host->input_dest, NULL, NULL, &resolved_add) != 0){
+        fprintf(stderr, "ft_nmap: unknown host <%s>\n", host->input_dest);
+        return 0;
+    }
     // debug_addrinfo(*resolved_add);
     tmp = resolved_add;
     while (tmp != NULL)
@@ -19,23 +21,29 @@ void     resolve_address(t_host *host) // check that dest exists and resolve add
         break; // useful if many
     }
     freeaddrinfo(resolved_add);
+    return 1;
 }
 
-void     resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
+int     resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
 {
     char    hostname[MAX_HOSTNAME_LEN];
 
     ft_bzero(hostname, MAX_HOSTNAME_LEN);
-    if (inet_pton(AF_INET, host->resolved_address, &(host->target_address.sin_addr)) <= 0)
-        exit_error("ft_nmap: address error: Invalid IPv4 address.\n");
-    if (getnameinfo((struct sockaddr*)&(host->target_address), sizeof(host->target_address), hostname, sizeof(hostname), NULL, 0, 0) != 0)
-        exit_error("ft_nmap: address error: The hostname could not be resolved.\n");
+    if (inet_pton(AF_INET, host->resolved_address, &(host->target_address.sin_addr)) <= 0){
+        fprintf(stderr, "ft_nmap: address error: Invalid IPv4 address <%s>.\n", host->input_dest);
+        return 0;
+    }
+    if (getnameinfo((struct sockaddr*)&(host->target_address), sizeof(host->target_address), hostname, sizeof(hostname), NULL, 0, 0) != 0){
+        fprintf(stderr, "ft_nmap: address error: The hostname could not be resolved <%s>.\n",  host->input_dest);
+        return 0;
+    }
     else
     {
         host->resolved_hostname = ft_strdup(hostname);
         if (host->resolved_hostname == NULL)
             exit_error("ft_nmap: malloc failure.\n");
     }
+    return 1;
 }
 
 static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type)
@@ -47,6 +55,7 @@ static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type sca
     scan_tracker->count_sent          = 0;
     scan_tracker->max_send            = MAX_SEND;
     scan_tracker->dst_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
+    gettimeofday(&scan_tracker->last_send, NULL);
 }
 
 static t_port    *create_port(int port_id, e_scan_type *unique_scans)
@@ -75,16 +84,19 @@ static void     add_port(t_host *host, int port_id, e_scan_type *unique_scans)
     // debug_port(*port);
 }
 
-void            fill_host(t_data *dt, char *curr_arg)
+int            fill_host(t_data *dt, char *curr_arg)
 {
     if (dt)
     {
         dt->host.input_dest = curr_arg;
-        resolve_address(&dt->host);
-        resolve_hostname(&dt->host);
+        if (!resolve_address(&dt->host))
+            return 0;
+        if (!resolve_hostname(&dt->host))
+            return 0;
         for (uint16_t *port_id = dt->first_port; port_id <= dt->last_port; port_id++)
             add_port(&dt->host, *port_id, dt->unique_scans);
     }
+    return 1;
 }
 
 void            init_host(t_host *host)

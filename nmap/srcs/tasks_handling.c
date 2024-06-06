@@ -114,6 +114,8 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
             {
                 tracker->scan.response = response;
                 tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, response);
+                if (port->conclusion < tracker->scan.conclusion)
+                    port->conclusion = tracker->scan.conclusion;
                 if (tracker->scan.conclusion != NOT_CONCLUDED)
                 {
                     decr_remaining_scans();

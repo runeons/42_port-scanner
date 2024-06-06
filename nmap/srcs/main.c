@@ -77,7 +77,8 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     pthread_t   workers[dt->threads];
 
     init_socket(dt);
-    fill_host(dt, target);
+    if (!fill_host(dt, target))
+        goto clean_ret;
     debug_host(dt->host);
     dt->src_ip = numeric_src_ip;
     init_queue(dt);
@@ -97,6 +98,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
         if (r == 0)
             exit_error("Poll timed out.");
         sniff_packets(dt->sniffer.handle, dt);
+        fprintf(stderr, "WAIT TO JOIN\n");
     }
     for (int i = 0; i < dt->threads; i++)
     {
@@ -105,9 +107,26 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     }
     print_info_thread("ENDING MAIN THREAD");
 
+    t_lst *curr_port = dt->host.ports;
+    printf("Conclusions\n");
+    while (curr_port != NULL)
+    {
+        t_port *port = curr_port->content;
+        printf("Port: %d Conclusion: %s\n",port->port_id,conclusion_string(port->conclusion));
+        curr_port = curr_port->next;
+        continue;
+        for (int i = 0; i < g_scan_types_nb; i++)
+        {
+            t_scan_tracker *tracker = &(port->scan_trackers[i]);
+            if (tracker == NULL) // TO PROTECT
+                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+        }
+        curr_port = curr_port->next;
+    }
     debug_host(dt->host);
     debug_end(*dt);
     pcap_close(dt->sniffer.handle);
+    clean_ret:
     close_all_sockets(dt);
 }
 
@@ -161,7 +180,9 @@ int     main(int ac, char **av)
             exit(err);
         }
         fclose(file);
-    } else {
+    }
+    else
+    {
         nmap(parsed_cmd.not_options->content, first_interface_name, numeric_src_ip, &dt);
     }
     free_all_malloc();

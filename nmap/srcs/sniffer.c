@@ -42,6 +42,7 @@ pcap_if_t *find_devices(){
 
 void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
+    printf("in callback\n");
     t_task  *task = create_task();
 
     task->scan_tracker_id   = 0; // TO DO
@@ -58,8 +59,10 @@ void    sniff_packets(pcap_t *handle, t_data *dt)
 {
     (void)dt;
     printf(C_G_BLUE"[INFO]"C_RES"     Ready to sniff...\n");
-    while (g_remaining_scans != 0)
-        pcap_dispatch(handle, 0, packet_handler, 0);
-    debug_queue(*dt);
+    while (g_remaining_scans != 0){
+        fprintf(stderr, "before pcap_dispatch: %d remaining scans\n", g_remaining_scans);
+        fprintf(stderr, "dispatch:::: %d\n", pcap_dispatch(handle, 0, packet_handler, 0));
+    }
+    //debug_queue(*dt);
     // printf(C_G_BLUE"[INFO]"C_RES"     Capture completed\n");
 }

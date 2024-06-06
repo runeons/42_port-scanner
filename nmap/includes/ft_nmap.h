@@ -5,8 +5,8 @@
 # include <stdlib.h>
 # include <stdio.h>
 # include <string.h>
-// # include <signal.h>
-// # include <sys/time.h>
+# include <signal.h>
+# include <sys/time.h>
 // # include <sys/socket.h>
 # include <arpa/inet.h>         // inet_ntoa
 # include <netdb.h>             // addrinfo
@@ -108,11 +108,11 @@ typedef enum
 typedef enum
 {
     NOT_CONCLUDED,
-    OPEN,
     CLOSED,
-    FILTERED,
     OPEN_FILTERED,
-    UNFILTERED,         // tmp (may not use it)
+    FILTERED,
+    UNFILTERED,
+    OPEN,
 }       e_conclusion;
 
 #define packet(x) packet.x
@@ -187,13 +187,14 @@ typedef struct s_scan_tracker
     int                 count_sent;
     int                 max_send;
     uint16_t            dst_port;
+    struct timeval      last_send;
 
 }              t_scan_tracker;
 
 typedef struct  s_port
 {
     int                 port_id;
-    int                 conclusion;
+    e_conclusion        conclusion;
     t_scan_tracker      *scan_trackers;
 }               t_port;
 
@@ -287,10 +288,10 @@ void            packet_handler(u_char *args, const struct pcap_pkthdr *header, c
 void            sniff_packets(pcap_t *handle, t_data *dt);
 
 // init_data.c
-void            fill_host(t_data *dt, char *curr_arg);
+int             fill_host(t_data *dt, char *curr_arg);
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd);
-void            resolve_address(t_host *host);
-void            resolve_hostname(t_host *host);
+int             resolve_address(t_host *host);
+int             resolve_hostname(t_host *host);
 void            init_host(t_host *host);
 
 // tasks_queue.c
@@ -310,5 +311,9 @@ char            *task_type_string(e_task_type task_type);
 char            *scan_type_string(e_scan_type scan_type);
 char            *response_string(e_response response);
 char            *conclusion_string(e_conclusion conclusion);
+
+// utils_time.c
+
+double          deltaT(struct timeval *t1p, struct timeval *t2p);
 
 #endif
