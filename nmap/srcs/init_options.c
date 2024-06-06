@@ -182,46 +182,138 @@ void   option_s(t_data *dt)
         g_scan_types_nb = MAX_SCANS;
     }
 }
+#include <ctype.h>
+//check for duplicated and don't insert them, just warn
+void option_p(t_data *dt){//, int *output, int *output_size) {
+    int n_dup = 0;
 
-void   option_p(t_data *dt)
-{
-    char    *param     = NULL;
-    char    **tmp      = NULL;
-    int     first_port = FIRST_PORT;
-    int     last_port  = LAST_PORT;
+    if (is_activated_option(dt->act_options, 'p')){
+        const char *ptr = get_option(dt->act_options, 'p')->param;
 
-    if (is_activated_option(dt->act_options, 'p'))
-    {
-        param = ft_strdup(get_option(dt->act_options, 'p')->param);
-        if (param == NULL)
-            exit_options_error("ft_nmap: malloc failure.\n");
-        tmp = ft_split(param, '-');
-        if (tmp == NULL)
-            exit_options_error("ft_nmap: malloc failure.\n");
-        if (ft_tablen(tmp) != 1 && ft_tablen(tmp) != 2)
-            exit_options_error("ft_nmap: invalid ports range.\n");
-        for (int i = 0; tmp && tmp[i]; i++)
-            if (ft_isstrnum(tmp[i]) == 0)
-                exit_options_error("ft_nmap: invalid port value '%s'\n", tmp[i]);
-        first_port = ft_atoi(tmp[0]);
-        if (first_port < MIN_PORT || first_port > MAX_PORT)
-            exit_options_error("ft_nmap: port value out of range: %d\n", first_port);
-        if (tmp[1])
-        {
-            last_port = ft_atoi(tmp[1]);
-            if (last_port < MIN_PORT || last_port > MAX_PORT)
-                exit_options_error("ft_nmap: port value out of range: %d\n", last_port);
+        dt->n_ports = 0;
+
+        printf("%s\n", ptr);
+        
+        while (*ptr != '\0') {
+            if (isspace(*ptr)) {
+                return ;
+            }
+
+            // Parse single integer or range
+            int start, end;
+            if (isdigit(*ptr)) {
+                printf("%s\n", ptr);
+                start = ft_atoi(ptr);
+                end = start;
+
+                if (start <= 0 || start > 65535 ){
+                    printf("Invalid port number <%d>\n", start);
+                    exit(1);
+                }
+
+                while (ft_isdigit(*ptr))
+                    ptr++;
+                if (*ptr == '-') {
+                    ptr++;
+                    if (isdigit(*ptr)) {
+                        end = ft_atoi(ptr);
+                    }
+                    else
+                    {
+                        exit_error("Missing end of range\n");
+                    }
+                }
+                
+                printf("%d-%d\n", start, end );
+
+                for (int i = start; i <= end ; i++) {
+                    int dup = 0;
+                    for (int ii = 0; ii < dt->n_ports; ii++){
+                            if (dt->arg_ports[ii] == i){
+                                dup = 1;
+                                n_dup++;
+                                break;
+                            }
+                        }
+                    if (!dup) {
+                        if (dt->n_ports < 1024)
+                            dt->arg_ports[dt->n_ports++] = i;
+                        else{
+                            printf("TOO MANY PORTS\n");
+                            exit(1);
+                        }
+                    }
+
+                    while (ft_isdigit(*ptr))
+                        ptr++;
+                }
+                printf("\n");
+            } 
+            else{
+                printf("Invalid token <%c> in port arg\n", *ptr);
+                exit(1);
+            }
+
+            // If there's a comma, move to the next segment
+            if (*ptr == ',') {
+                ptr++;
+            }
         }
-        else
-            last_port = first_port;
-        if (first_port > last_port)
-            exit_options_error("ft_nmap: port range not ordered.\n");
-        if ((last_port - first_port) >= MAX_PORT_RANGE)
-            exit_options_error("ft_nmap: port range too high (max 1024).\n");
-        dt->first_port = first_port;
-        dt->last_port = last_port;
+    }else{
+        dt->n_ports = MAX_PORTS;
+        for (int i = 0; i < MAX_PORTS; i++)
+            dt->arg_ports[i] = i+1;
     }
+    dt->first_port = &dt->arg_ports[0];
+    dt->last_port = &dt->arg_ports[dt->n_ports - 1];
+
+    if (n_dup > 0)
+        printf("Warning: duplicate ports detected\n");
 }
+
+// void   option_p(t_data *dt)
+// {
+//     char    *param     = NULL;
+//     char    **tmp      = NULL;
+//     int     first_port = FIRST_PORT;
+//     int     last_port  = LAST_PORT;
+//     //int     n_ports    = 0;
+
+//     if (is_activated_option(dt->act_options, 'p'))
+//     {
+//         param = ft_strdup(get_option(dt->act_options, 'p')->param);
+//         printf("Port Input: %s\n", param);
+//         if (param == NULL)
+//             exit_options_error("ft_nmap: malloc failure.\n");
+//         tmp = ft_split(param, '-');
+//         for 
+//         if (tmp == NULL)
+//             exit_options_error("ft_nmap: malloc failure.\n");
+//         if (ft_tablen(tmp) != 1 && ft_tablen(tmp) != 2)
+//             exit_options_error("ft_nmap: invalid ports range.\n");
+//         for (int i = 0; tmp && tmp[i]; i++)
+//             if (ft_isstrnum(tmp[i]) == 0)
+//                 exit_options_error("ft_nmap: invalid port value '%s'\n", tmp[i]);
+//         first_port = ft_atoi(tmp[0]);
+//         if (first_port < MIN_PORT || first_port > MAX_PORT)
+//             exit_options_error("ft_nmap: port value out of range: %d\n", first_port);
+//         if (tmp[1])
+//         {
+//             last_port = ft_atoi(tmp[1]);
+//             if (last_port < MIN_PORT || last_port > MAX_PORT)
+//                 exit_options_error("ft_nmap: port value out of range: %d\n", last_port);
+//         }
+//         else
+//             last_port = first_port;
+//         if (first_port > last_port)
+//             exit_options_error("ft_nmap: port range not ordered.\n");
+//         if ((last_port - first_port) >= MAX_PORT_RANGE)
+//             exit_options_error("ft_nmap: port range too high (max 1024).\n");
+//         dt->first_port = first_port;
+//         dt->last_port = last_port;
+//     }
+//     exit(0);
+// }
 
 void   option_v(t_data *dt)
 {

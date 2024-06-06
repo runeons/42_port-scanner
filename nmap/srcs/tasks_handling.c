@@ -47,7 +47,7 @@ static t_scan_tracker *find_tracker(t_data *dt, uint16_t src_port, uint16_t dst_
     {
         t_port *port = curr_port->content;
         if (port->port_id != dst_port)
-            continue;
+            goto next_port;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
@@ -56,6 +56,7 @@ static t_scan_tracker *find_tracker(t_data *dt, uint16_t src_port, uint16_t dst_
             if (tracker->dst_port == src_port)
                 return tracker;
         }
+        next_port:
         curr_port = curr_port->next;
     }
     return NULL;
@@ -132,9 +133,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
 
 int     extract_response_id(t_data *dt, t_task *task, e_response response)
 {
-    (void)dt;
     int id = -1;
-    printf("RESPONSE %d\n", response);
     switch (response){
         case ICMP_ECHO_OK:
             struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
@@ -155,10 +154,6 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
                     t_scan_tracker *tracker =  find_tracker(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
                     if (tracker)
                         id = tracker->id;
-                    // //uint16_t dst_port = htons(udp_hdr->source);
-                    // printf("SRC PORT %d\n", htons(udp_hdr->dest));
-                    // id = htons(udp_hdr->source); // cannot use seq to identify, we need to match src port- dst port - target address - source address - (seq)
-                    // printf("DST PORT : %d\n", id);
                 }
             break;
         default:

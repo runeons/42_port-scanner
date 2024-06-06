@@ -232,8 +232,10 @@ typedef struct  s_data
     t_lst               *act_options;
     int                 threads;
     int                 verbose;
-    int                 first_port;
-    int                 last_port;
+    uint16_t            *first_port;
+    uint16_t            *last_port;
+    uint16_t            arg_ports[1024];
+    int                 n_ports;
     e_scan_type         unique_scans[MAX_SCANS];
 }				t_data;
 

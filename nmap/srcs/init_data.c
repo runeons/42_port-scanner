@@ -82,8 +82,8 @@ void            fill_host(t_data *dt, char *curr_arg)
         dt->host.input_dest = curr_arg;
         resolve_address(&dt->host);
         resolve_hostname(&dt->host);
-        for (int port_id = dt->first_port; port_id <= dt->last_port; port_id++)
-            add_port(&dt->host, port_id, dt->unique_scans);
+        for (uint16_t *port_id = dt->first_port; port_id <= dt->last_port; port_id++)
+            add_port(&dt->host, *port_id, dt->unique_scans);
     }
 }
 
@@ -113,8 +113,8 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->threads             = THREADS_NB;
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
-    dt->first_port           = FIRST_PORT;
-    dt->last_port           = LAST_PORT;
+    dt->first_port           = NULL;
+    dt->last_port           = NULL;
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
     ft_memset(&dt->sniffer, 0, sizeof(dt->sniffer));
     dt->sniffer.handle      = NULL;          
