@@ -191,16 +191,17 @@ void    handle_send_task(t_data *dt, t_task *task)
 {
     for (int i = 0; i < NFDS; i++)
     {
-        if (dt->fds[i].revents == 0)
-        {
-            enqueue_task(task);
-            printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->scan_tracker_id);
-            continue;
-        }
-        if (!(dt->fds[i].revents & POLLOUT))
-            exit_error_close_socket("Poll unexpected result", task->socket);
-        if (dt->fds[i].fd == task->socket)
-        {
+        if (dt->fds[i].fd == task->socket){
+            if (dt->fds[i].revents == 0)
+            {
+                enqueue_task(task);
+                printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->scan_tracker_id);
+                continue;
+            }
+            
+            if (!(dt->fds[i].revents & POLLOUT))
+                exit_error_close_socket("Poll unexpected result", task->socket);
+
             t_packet packet;
 
             switch (task->scan_type){
