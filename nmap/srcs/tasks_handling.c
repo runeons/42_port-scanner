@@ -198,7 +198,7 @@ void    handle_send_task(t_data *dt, t_task *task)
                 printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->scan_tracker_id);
                 continue;
             }
-            
+
             if (!(dt->fds[i].revents & POLLOUT))
                 exit_error_close_socket("Poll unexpected result", task->socket);
 
@@ -223,16 +223,17 @@ void    handle_send_task(t_data *dt, t_task *task)
                     continue;
             }
             //printf("Searching port: %d || ", task->dst_port);
+            send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
             t_scan_tracker *this_scan_tracker = find_tracker(dt, task->src_port,task->dst_port);
+            assert(this_scan_tracker && "couldn't find the scan tracker in handle_send_task");
             if (this_scan_tracker){
                 //printf("dst_port : %d\n", this_scan_tracker->dst_port);
                 gettimeofday(&this_scan_tracker->last_send, NULL);
-                if (this_scan_tracker->count_sent >= this_scan_tracker->max_send)
-                    continue;
+                //if (this_scan_tracker->count_sent >= this_scan_tracker->max_send)
+                //    continue;
                 this_scan_tracker->count_sent++;
                 //printf("COUNT_SENT: %d\n", this_scan_tracker->count_sent);
             }
-            send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else
             warning("Unknown fd is readable.");
@@ -276,6 +277,7 @@ static void handle_check_task(t_data *dt, t_task *task){
                                 printf("Invalid scan type | just skip this task");
                                 continue;
                         }
+                        tracker->dst_port = ((getpid() + g_sequence++) & 0xffff) | 0x8000; //add mutex
                         fill_send_task(send_task, tracker->id, dt->host.target_address, port->port_id, tracker->scan.scan_type, tmp_socket, dt->src_ip, tracker->dst_port);
                         //printf("dst_port: %d src_port: %d\n", port->port_id, tracker->dst_port);
                         //printf("It should be recycled\n");
