@@ -41,6 +41,18 @@ e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
     return NOT_CONCLUDED;
 }
 
+// static t_port *find_tport(t_data *dt, uint16_t dst_port){
+//     t_lst *curr_port = dt->host.ports;
+//     while (curr_port != NULL)
+//     {
+//         t_port *port = curr_port->content;
+//         if (port->port_id == dst_port)
+//             return port;
+//         curr_port = curr_port->next;
+//     }
+//     return NULL;
+// }
+
 static t_scan_tracker *find_tracker(t_data *dt, uint16_t src_port, uint16_t dst_port){
     t_lst *curr_port = dt->host.ports;
     while (curr_port != NULL)
@@ -209,10 +221,78 @@ void    handle_send_task(t_data *dt, t_task *task)
                     warning("Unknown SCAN");
                     continue;
             }
+            //printf("Searching port: %d || ", task->dst_port);
+            t_scan_tracker *this_scan_tracker = find_tracker(dt, task->src_port,task->dst_port);
+            if (this_scan_tracker){
+                //printf("dst_port : %d\n", this_scan_tracker->dst_port);
+                gettimeofday(&this_scan_tracker->last_send, NULL);
+                if (this_scan_tracker->count_sent >= this_scan_tracker->max_send)
+                    continue;
+                this_scan_tracker->count_sent++;
+                //printf("COUNT_SENT: %d\n", this_scan_tracker->count_sent);
+            }
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
         }
         else
             warning("Unknown fd is readable.");
+    }
+}
+
+static void handle_check_task(t_data *dt, t_task *task){
+    (void) task;
+    int tmp_socket = -1;
+    struct timeval      time_now = {0,0};
+    gettimeofday(&time_now, NULL);
+
+    t_lst *curr_port = dt->host.ports;
+    while (curr_port != NULL)
+    {
+        t_port *port = curr_port->content;
+        for (int i = 0; i < g_scan_types_nb; i++)
+        {
+            t_scan_tracker *tracker = &(port->scan_trackers[i]);
+            if (tracker == NULL) // TO PROTECT
+                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            
+            //if (tracker->count_sent)
+            //simplistic check in order to skip concluded, maybe we gonna need to skip only if the strongest scan type if done.
+            if (tracker->scan.conclusion == NOT_CONCLUDED){
+                if (tracker->count_sent > 0 && tracker->count_sent < tracker->max_send){
+                    //printf("-----------------------------------------/nlast send %ld\n", tracker->last_send.tv_sec);
+                    if (deltaT(&tracker->last_send ,&time_now) > 5000){
+                        t_task          *send_task = create_task();
+                        switch (tracker->scan.scan_type){
+                            case ICMP:
+                                tmp_socket = dt->fds[0].fd;
+                                break;
+                            case UDP:
+                                tmp_socket = dt->fds[1].fd;
+                                break;
+                            case SYN:case ACK:case FIN:case NUL:case XMAS:
+                                tmp_socket = dt->fds[2].fd;
+                                break;
+                            default:
+                                printf("Invalid scan type | just skip this task");
+                                continue;
+                        }
+                        fill_send_task(send_task, tracker->id, dt->host.target_address, port->port_id, tracker->scan.scan_type, tmp_socket, dt->src_ip, tracker->dst_port);
+                        //printf("dst_port: %d src_port: %d\n", port->port_id, tracker->dst_port);
+                        //printf("It should be recycled\n");
+                        //printf("sent_count : %d\n", tracker->count_sent);
+                        enqueue_task(send_task);
+                        //debug_task(*task);
+                        //g_remaining_scans++;
+                    }
+                    
+                }
+                else
+                {
+                    decr_remaining_scans();
+                    //printf("Remaining scans : %d\n", g_remaining_scans);
+                }
+            }
+        }
+        curr_port = curr_port->next;
     }
 }
 
@@ -222,4 +302,6 @@ void    handle_task(t_data *dt, t_task *task)
         handle_send_task(dt, task);
     else if (task->task_type == T_RECV)
         handle_recv_task(dt, task);
+    else if (task->task_type == T_CHECK)
+        handle_check_task(dt, task);
 }

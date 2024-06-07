@@ -54,6 +54,7 @@ SRCS_LIST					=	\
 							utils_error.c \
 							utils_options.c \
 							utils_print.c \
+							utils_time.c \
 
 SRCS					=	$(addprefix $(SRCS_DIR), $(SRCS_LIST))
 

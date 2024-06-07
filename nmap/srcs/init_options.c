@@ -191,8 +191,6 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
         const char *ptr = get_option(dt->act_options, 'p')->param;
 
         dt->n_ports = 0;
-
-        printf("%s\n", ptr);
         
         while (*ptr != '\0') {
             if (isspace(*ptr)) {
@@ -202,7 +200,6 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
             // Parse single integer or range
             int start, end;
             if (isdigit(*ptr)) {
-                printf("%s\n", ptr);
                 start = ft_atoi(ptr);
                 end = start;
 
@@ -223,8 +220,6 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
                         exit_error("Missing end of range\n");
                     }
                 }
-                
-                printf("%d-%d\n", start, end );
 
                 for (int i = start; i <= end ; i++) {
                     int dup = 0;

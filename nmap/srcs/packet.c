@@ -85,9 +85,7 @@ void construct_udp_packet(t_packet *packet, t_task *task) {
 
     packet->packet(udp).h.source = htons(task->src_port);
     packet->packet(udp).h.dest = htons(task->dst_port);
-    printf("%d %d \n", task->src_port, task->dst_port);
     packet->packet(udp).h.len = htons(packet->size);
-    printf("%ld\n", packet->size);
 
     struct pseudo_header ps;
     ps.source_address = task->src_ip;
@@ -100,7 +98,6 @@ void construct_udp_packet(t_packet *packet, t_task *task) {
     int pseudo_packet_size = sizeof(struct pseudo_header) + packet->size;
     uint8_t pseudo_packet[sizeof(struct pseudo_header) + packet->size]; 
 
-    //uint8_t *pseudo_packet = malloc(pseudo_packet_size);
     memcpy(pseudo_packet, &ps, sizeof(struct pseudo_header));
     memcpy(pseudo_packet + sizeof(struct pseudo_header), &packet->packet(udp), packet->size);
 
@@ -120,8 +117,6 @@ void construct_tcp_packet(t_packet *packet, t_task *task) {
     tcph->dest = htons(task->dst_port);
     //tcph->seq = task->scan_tracker_id; // all the globals need mutex when used in threads;
     //tcph->ack_seq = htonl(task->scan_tracker_id);
-    printf("Send seq %d\n", htonl(tcph->ack_seq));
-    printf("%d\n", tcph->ack_seq);
     tcph->doff = (sizeof(struct tcphdr)) / 4 + 1; // TCP header size + 1 for the options
     switch (packet->type) {
         case PACKET_TYPE_ACK:

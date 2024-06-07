@@ -77,6 +77,7 @@ typedef enum
 {
     T_SEND,
     T_RECV,
+    T_CHECK,
     T_EMPTY,
 }       e_task_type;
 

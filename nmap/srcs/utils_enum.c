@@ -8,6 +8,8 @@ char  *task_type_string(e_task_type task_type)
             return "T_SEND";
         case T_RECV:
             return "T_RECV";
+        case T_CHECK:
+            return "T_CHECK";
         case T_EMPTY:
             return "T_EMPTY";
         default:

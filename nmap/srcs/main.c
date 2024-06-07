@@ -56,7 +56,7 @@ static void    parse_input(t_parsed_cmd *parsed_cmd, int ac, char **av)
 void    *worker_function(void *dt)
 {
     print_info_thread("STARTING NEW THREAD");
-    while (g_remaining_scans != 0)
+    while (g_remaining_scans > 0)
     {
         //debug_queue();
         t_task *task = dequeue_task();
@@ -86,10 +86,11 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     init_sniffer(&dt->sniffer, interface_name, filter);
     init_handle(&dt->sniffer);
 
+    alarm(3);
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");
-    while (g_remaining_scans != 0)
+    while (g_remaining_scans > 0)
     {
         printf(C_G_BLUE"[INFO]"C_RES"     Waiting on poll()...\n");
         r = poll(dt->fds, NFDS, POLL_TIMEOUT);
@@ -123,6 +124,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
         }
         curr_port = curr_port->next;
     }
+    alarm(0);
     debug_host(dt->host);
     debug_end(*dt);
     pcap_close(dt->sniffer.handle);
@@ -130,15 +132,39 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     close_all_sockets(dt);
 }
 
+static void alarm_handler(int signum) {
+    (void) signum;
+    //struct handler_data *data = info->si_value.sival_ptr;
+    //fprintf(stderr, "Alarm signal received! %d\n", signum);
+    t_task  *task = create_task();
+
+    task->scan_tracker_id   = 0; // TO DO
+    task->task_type         = T_CHECK;
+    enqueue_task(task);
+    //printf("", data->some_value, data->some_message);
+    alarm(5);
+}
+
 int     main(int ac, char **av)
 {
-    t_data          dt;
-    int             file_input;
-    int             one_target;
-    int             numeric_src_ip;
-    t_parsed_cmd    parsed_cmd;
-    char            first_interface_name[255];
-    pcap_if_t       *interfaces = NULL;
+    t_data              dt;
+    int                 file_input;
+    int                 one_target;
+    int                 numeric_src_ip;
+    t_parsed_cmd        parsed_cmd;
+    char                first_interface_name[255];
+    pcap_if_t           *interfaces = NULL;
+    struct sigaction    sa;
+    ft_bzero(&sa, sizeof(struct sigaction));
+    sa.sa_handler = alarm_handler; // Set the handler function
+    sa.sa_flags = 0; // Use default flags
+    sigemptyset(&sa.sa_mask); // No signals blocked during handler
+    if (sigaction(SIGALRM, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+
+
 
     parse_input(&parsed_cmd, ac, av);
 

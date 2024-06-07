@@ -63,7 +63,7 @@ t_task    *create_task()
     task->args              = NULL;
     task->header            = NULL;
     task->packet            = NULL;
-    ft_memset(&(task->target_address), 0, sizeof(struct sockaddr_in));
+    ft_memset(&(task->target_address), 0, sizeof(struct sockaddr_in)); //why not use a pointer ? 
     return task;
 }
 
