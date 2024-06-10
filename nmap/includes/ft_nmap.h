@@ -199,14 +199,27 @@ typedef struct  s_port
     t_scan_tracker      *scan_trackers;
 }               t_port;
 
+
+#define WINDOW_SIZE 5
+
+typedef struct s_moving_average{
+    double values[WINDOW_SIZE];
+    int index;
+    int count;
+    double sum;
+}               t_mavg;
+
+
 typedef struct  s_host
 {
     char                *input_dest;
     char                *resolved_address;
     char                *resolved_hostname;
-    struct sockaddr_in  target_address;
     int                 dst_port;
+    int                 approx_rtt_upper_bound;
     t_lst               *ports;
+    struct sockaddr_in  target_address;
+    t_mavg              ma;
 }               t_host;
 
 typedef struct  s_sniffer
@@ -296,10 +309,10 @@ int             resolve_hostname(t_host *host);
 void            init_host(t_host *host);
 
 // tasks_queue.c
-void            decr_remaining_scans();
+void            decr_remaining_scans(int n);
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
-t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, uint16_t dst_port, e_scan_type scan_type, int socket, int src_ip, uint16_t src_port);
+t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, uint16_t dst_port, e_scan_type scan_type, int socket, int src_ip, uint16_t src_port);
 t_task          *create_task();
 void            init_queue(t_data *dt);
 
@@ -316,5 +329,10 @@ char            *conclusion_string(e_conclusion conclusion);
 // utils_time.c
 
 double          deltaT(struct timeval *t1p, struct timeval *t2p);
+
+// moving_average.c
+
+void            add_value(t_mavg *ma, double value);
+double          get_moving_average(t_mavg *ma);
 
 #endif

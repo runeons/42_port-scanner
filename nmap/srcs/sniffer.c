@@ -1,5 +1,7 @@
 #include "../includes/ft_nmap.h"
 
+extern pthread_mutex_t mutex;
+
 void    init_handle(t_sniffer *sniffer)
 {
     struct bpf_program  compiled_filter;
@@ -50,7 +52,9 @@ void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_c
     task->header            = (struct pcap_pkthdr *)header;
     task->packet            = (u_char *)packet;
     enqueue_task(task);
+    //pthread_mutex_lock(&mutex);
     g_retrieved++;
+    //pthread_mutex_unlock(&mutex);
     debug_task(*task);
 }
 

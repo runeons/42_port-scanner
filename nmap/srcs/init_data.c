@@ -4,9 +4,10 @@ int     resolve_address(t_host *host) // check that dest exists and resolve addr
 {
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
+    int s = 1;
 
-    if (getaddrinfo(host->input_dest, NULL, NULL, &resolved_add) != 0){
-        fprintf(stderr, "ft_nmap: unknown host <%s>\n", host->input_dest);
+    if ((s = getaddrinfo(host->input_dest, NULL, NULL, &resolved_add)) != 0){
+        fprintf(stderr, "ft_nmap: unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
         return 0;
     }
     // debug_addrinfo(*resolved_add);
@@ -109,6 +110,8 @@ void            init_host(t_host *host)
     host->target_address.sin_port           = 0;
     host->target_address.sin_addr.s_addr    = INADDR_ANY;
     host->ports                             = NULL;
+    host->approx_rtt_upper_bound            =  5000;  // 5 seconds
+    ft_bzero(&host->ma, sizeof(t_mavg));
 }
 
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)

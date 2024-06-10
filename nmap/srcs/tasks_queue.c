@@ -2,9 +2,9 @@
 
 pthread_mutex_t mutex       = PTHREAD_MUTEX_INITIALIZER;
 
-inline void decr_remaining_scans(){
+inline void decr_remaining_scans(int n){
     pthread_mutex_lock(&mutex);
-    g_remaining_scans--;
+    g_remaining_scans -= n;
     pthread_mutex_unlock(&mutex);
 }
 

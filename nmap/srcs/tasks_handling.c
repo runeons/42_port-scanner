@@ -1,5 +1,7 @@
 #include "../includes/ft_nmap.h"
 
+extern pthread_mutex_t mutex;
+
 t_scan all_scans[] =
 {
     {SYN,   TCP_SYN_ACK,         OPEN},
@@ -112,6 +114,7 @@ e_response determine_response_type(t_data *dt, t_task *task)
 void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response)
 {
     t_lst *curr_port = dt->host.ports;
+    struct timeval recv_time;
 
     while (curr_port != NULL)
     {
@@ -130,13 +133,20 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
                     port->conclusion = tracker->scan.conclusion;
                 if (tracker->scan.conclusion != NOT_CONCLUDED)
                 {
-                    decr_remaining_scans();
+                    decr_remaining_scans(1);
                 }
                 else
                 {
                     printf(C_B_CYAN"[TO IMPLEMENT] - NOT CONCLUDED -> RESEND OR IGNORE / INCREMENT COUNTER"C_RES"\n");
-                    decr_remaining_scans(); // remove when all scans are implemented (now, avoid infinite looping)
+                    decr_remaining_scans(1); // remove when all scans are implemented (now, avoid infinite looping)
                 }
+                gettimeofday(&recv_time, NULL);
+                //mutex
+                printf("moving average %f\n", get_moving_average(&dt->host.ma));
+                add_value(&dt->host.ma, deltaT(&tracker->last_send, &recv_time));
+                printf("new moving average %f\n", get_moving_average(&dt->host.ma));
+                printf("Received in approx. %f ms\n", deltaT(&tracker->last_send, &recv_time));
+                printf("next approx. rtt %f\n",  (deltaT(&tracker->last_send, &recv_time) + 5000 )  /2);
                 return;
             }
         }
@@ -235,14 +245,15 @@ void    handle_send_task(t_data *dt, t_task *task)
                 //printf("COUNT_SENT: %d\n", this_scan_tracker->count_sent);
             }
         }
-        else
-            warning("Unknown fd is readable.");
+        //else
+          //  warning("Unknown fd is readable.");
     }
 }
 
 static void handle_check_task(t_data *dt, t_task *task){
     (void) task;
     int tmp_socket = -1;
+    int n_done = 0;
     struct timeval      time_now = {0,0};
     gettimeofday(&time_now, NULL);
 
@@ -261,8 +272,10 @@ static void handle_check_task(t_data *dt, t_task *task){
             if (tracker->scan.conclusion == NOT_CONCLUDED){
                 if (tracker->count_sent > 0 && tracker->count_sent < tracker->max_send){
                     //printf("-----------------------------------------/nlast send %ld\n", tracker->last_send.tv_sec);
-                    if (deltaT(&tracker->last_send ,&time_now) > 5000){
-                        t_task          *send_task = create_task();
+                    //printf("%f %f \n", deltaT(&tracker->last_send ,&time_now) , get_moving_average(&dt->host.ma));
+                    if (deltaT(&tracker->last_send ,&time_now) > (get_moving_average(&dt->host.ma) > 0 ? get_moving_average(&dt->host.ma):5000)){
+                        //add_value(&dt->host.ma, deltaT(&tracker->last_send ,&time_now));
+                        t_task  *send_task = create_task();
                         switch (tracker->scan.scan_type){
                             case ICMP:
                                 tmp_socket = dt->fds[0].fd;
@@ -277,26 +290,25 @@ static void handle_check_task(t_data *dt, t_task *task){
                                 printf("Invalid scan type | just skip this task");
                                 continue;
                         }
-                        tracker->dst_port = ((getpid() + g_sequence++) & 0xffff) | 0x8000; //add mutex
+                        //pthread_mutex_lock(&mutex);
+                        g_sequence++;
+                        //pthread_mutex_unlock(&mutex);
+                        tracker->dst_port = ((getpid() + g_sequence) & 0xffff) | 0x8000; //add mutex
                         fill_send_task(send_task, tracker->id, dt->host.target_address, port->port_id, tracker->scan.scan_type, tmp_socket, dt->src_ip, tracker->dst_port);
-                        //printf("dst_port: %d src_port: %d\n", port->port_id, tracker->dst_port);
-                        //printf("It should be recycled\n");
-                        //printf("sent_count : %d\n", tracker->count_sent);
                         enqueue_task(send_task);
-                        //debug_task(*task);
-                        //g_remaining_scans++;
                     }
-                    
                 }
                 else
                 {
-                    decr_remaining_scans();
-                    //printf("Remaining scans : %d\n", g_remaining_scans);
+                    n_done++;
                 }
             }
         }
         curr_port = curr_port->next;
     }
+    if (n_done > 0)
+        decr_remaining_scans(n_done);
+    alarm(get_moving_average(&dt->host.ma) > 1000 ? get_moving_average(&dt->host.ma) / 1000 : 1);
 }
 
 void    handle_task(t_data *dt, t_task *task)

@@ -77,6 +77,9 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     pthread_t   workers[dt->threads];
 
     init_socket(dt);
+    dt->host.ports = NULL;
+    dt->host.approx_rtt_upper_bound =  5000;  // 5 seconds
+    ft_bzero(&dt->host.ma, sizeof(t_mavg));
     if (!fill_host(dt, target))
         goto clean_ret;
     debug_host(dt->host);
@@ -107,13 +110,20 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
         pthread_join(workers[i], NULL);
     }
     print_info_thread("ENDING MAIN THREAD");
-
+    alarm(0);
     t_lst *curr_port = dt->host.ports;
+    printf("%d\n", g_remaining_scans);
     printf("Conclusions\n");
+    int n_not_concluded = 0;
     while (curr_port != NULL)
     {
         t_port *port = curr_port->content;
-        printf("Port: %d Conclusion: %s\n",port->port_id,conclusion_string(port->conclusion));
+        if (port->conclusion == NOT_CONCLUDED) {
+            n_not_concluded++;
+            curr_port = curr_port->next;
+            continue;
+        }
+        printf("Port: %d Conclusion: %s\n",port->port_id, conclusion_string(port->conclusion));
         curr_port = curr_port->next;
         continue;
         for (int i = 0; i < g_scan_types_nb; i++)
@@ -124,7 +134,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
         }
         curr_port = curr_port->next;
     }
-    alarm(0);
+    printf("No conlusion for %d ports\n", n_not_concluded);
     debug_host(dt->host);
     debug_end(*dt);
     pcap_close(dt->sniffer.handle);
@@ -134,6 +144,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
 
 static void alarm_handler(int signum) {
     (void) signum;
+    alarm(0);
     //struct handler_data *data = info->si_value.sival_ptr;
     //fprintf(stderr, "Alarm signal received! %d\n", signum);
     t_task  *task = create_task();
@@ -141,8 +152,6 @@ static void alarm_handler(int signum) {
     task->scan_tracker_id   = 0; // TO DO
     task->task_type         = T_CHECK;
     enqueue_task(task);
-    //printf("", data->some_value, data->some_message);
-    alarm(5);
 }
 
 int     main(int ac, char **av)

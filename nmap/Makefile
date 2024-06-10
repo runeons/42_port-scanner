@@ -55,6 +55,7 @@ SRCS_LIST					=	\
 							utils_options.c \
 							utils_print.c \
 							utils_time.c \
+							moving_average.c \
 
 SRCS					=	$(addprefix $(SRCS_DIR), $(SRCS_LIST))
 
