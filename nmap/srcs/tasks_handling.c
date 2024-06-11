@@ -55,7 +55,7 @@ e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
 //     return NULL;
 // }
 
-static t_scan_tracker *find_tracker(t_data *dt, uint16_t src_port, uint16_t dst_port){
+static t_scan_tracker *find_tracker_with_id(t_data *dt, int tracker_id, uint16_t dst_port){
     t_lst *curr_port = dt->host.ports;
     while (curr_port != NULL)
     {
@@ -67,7 +67,29 @@ static t_scan_tracker *find_tracker(t_data *dt, uint16_t src_port, uint16_t dst_
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
             if (tracker == NULL) // TO PROTECT
                 printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
-            if (tracker->dst_port == src_port)
+            if (tracker->id == tracker_id)
+                return tracker;
+        }
+        next_port:
+        curr_port = curr_port->next;
+    }
+    return NULL;
+}
+
+
+static t_scan_tracker *find_tracker_from_ports(t_data *dt, uint16_t src_port, uint16_t dst_port){
+    t_lst *curr_port = dt->host.ports;
+    while (curr_port != NULL)
+    {
+        t_port *port = curr_port->content;
+        if (port->port_id != dst_port)
+            goto next_port;
+        for (int i = 0; i < g_scan_types_nb; i++)
+        {
+            t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
+            if (tracker == NULL) // TO PROTECT
+                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            if (tracker->src_port == src_port)
                 return tracker;
         }
         next_port:
@@ -145,8 +167,6 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
                 printf("moving average %f\n", get_moving_average(&dt->host.ma));
                 add_value(&dt->host.ma, deltaT(&tracker->last_send, &recv_time));
                 printf("new moving average %f\n", get_moving_average(&dt->host.ma));
-                printf("Received in approx. %f ms\n", deltaT(&tracker->last_send, &recv_time));
-                printf("next approx. rtt %f\n",  (deltaT(&tracker->last_send, &recv_time) + 5000 )  /2);
                 return;
             }
         }
@@ -156,29 +176,33 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
 }
 
 int     extract_response_id(t_data *dt, t_task *task, e_response response)
-{
+{   
+    struct icmp *icmp_hdr = NULL;
+    struct tcphdr *tcp_hdr = NULL;
+    struct udphdr *udp_hdr = NULL;
+    
     int id = -1;
     switch (response){
         case ICMP_ECHO_OK:
-            struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+            icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (icmp_hdr)
                 id = icmp_hdr->icmp_id;
             break;
         case TCP_SYN_ACK: case TCP_RST:
-            struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+            tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (tcp_hdr){
-                t_scan_tracker *tracker = find_tracker(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source)); //identification is based on our source port
+                t_scan_tracker *tracker = find_tracker_from_ports(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source)); //identification is based on our source port
                 if (tracker)
                     id = tracker->id;
             }
             break;
         case UDP_ANY:
-            struct tcphdr *udp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
-                if (udp_hdr){
-                    t_scan_tracker *tracker =  find_tracker(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
-                    if (tracker)
-                        id = tracker->id;
-                }
+            udp_hdr = (struct udphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+            if (udp_hdr){
+                t_scan_tracker *tracker =   find_tracker_from_ports(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source));
+                if (tracker)
+                    id = tracker->id;
+            }
             break;
         default:
             printf(C_B_CYAN"[TO IMPLEMENT] - response != ICMP_ECHO_OK"C_RES"\n");
@@ -232,21 +256,14 @@ void    handle_send_task(t_data *dt, t_task *task)
                     warning("Unknown SCAN");
                     continue;
             }
-            //printf("Searching port: %d || ", task->dst_port);
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
-            t_scan_tracker *this_scan_tracker = find_tracker(dt, task->src_port,task->dst_port);
+            t_scan_tracker *this_scan_tracker = find_tracker_with_id(dt, task->scan_tracker_id,task->dst_port);
             assert(this_scan_tracker && "couldn't find the scan tracker in handle_send_task");
             if (this_scan_tracker){
-                //printf("dst_port : %d\n", this_scan_tracker->dst_port);
                 gettimeofday(&this_scan_tracker->last_send, NULL);
-                //if (this_scan_tracker->count_sent >= this_scan_tracker->max_send)
-                //    continue;
                 this_scan_tracker->count_sent++;
-                //printf("COUNT_SENT: %d\n", this_scan_tracker->count_sent);
             }
         }
-        //else
-          //  warning("Unknown fd is readable.");
     }
 }
 
@@ -267,12 +284,8 @@ static void handle_check_task(t_data *dt, t_task *task){
             if (tracker == NULL) // TO PROTECT
                 printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
             
-            //if (tracker->count_sent)
-            //simplistic check in order to skip concluded, maybe we gonna need to skip only if the strongest scan type if done.
             if (tracker->scan.conclusion == NOT_CONCLUDED){
                 if (tracker->count_sent > 0 && tracker->count_sent < tracker->max_send){
-                    //printf("-----------------------------------------/nlast send %ld\n", tracker->last_send.tv_sec);
-                    //printf("%f %f \n", deltaT(&tracker->last_send ,&time_now) , get_moving_average(&dt->host.ma));
                     if (deltaT(&tracker->last_send ,&time_now) > (get_moving_average(&dt->host.ma) > 0 ? get_moving_average(&dt->host.ma):5000)){
                         //add_value(&dt->host.ma, deltaT(&tracker->last_send ,&time_now));
                         t_task  *send_task = create_task();
@@ -290,10 +303,6 @@ static void handle_check_task(t_data *dt, t_task *task){
                                 printf("Invalid scan type | just skip this task");
                                 continue;
                         }
-                        //pthread_mutex_lock(&mutex);
-                        g_sequence++;
-                        //pthread_mutex_unlock(&mutex);
-                        tracker->dst_port = ((getpid() + g_sequence) & 0xffff) | 0x8000; //add mutex
                         fill_send_task(send_task, tracker->id, dt->host.target_address, port->port_id, tracker->scan.scan_type, tmp_socket, dt->src_ip, tracker->dst_port);
                         enqueue_task(send_task);
                     }

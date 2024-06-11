@@ -188,6 +188,7 @@ typedef struct s_scan_tracker
     int                 count_sent;
     int                 max_send;
     uint16_t            dst_port;
+    uint16_t            src_port;
     struct timeval      last_send;
 
 }              t_scan_tracker;

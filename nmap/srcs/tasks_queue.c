@@ -93,7 +93,7 @@ void init_queue(t_data *dt)
                     printf("Invalid scan type | just skip this task");
                     continue;
             } //bad code , I'll update it as soon as we make proper socket_pools
-            fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket, dt->src_ip, curr_tracker->dst_port);
+            fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket, dt->src_ip, curr_tracker->src_port);
             enqueue_task(task);
             debug_task(*task);
             g_remaining_scans++;

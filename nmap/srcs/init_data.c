@@ -47,7 +47,7 @@ int     resolve_hostname(t_host *host) // useful only when input_dest is ip addr
     return 1;
 }
 
-static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type)
+static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type, uint16_t dst_port)
 {
     scan_tracker->id                  = g_scan_tracker_id++;
     scan_tracker->scan.scan_type      = scan_type;
@@ -55,7 +55,8 @@ static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type sca
     scan_tracker->scan.conclusion     = NOT_CONCLUDED; 
     scan_tracker->count_sent          = 0;
     scan_tracker->max_send            = MAX_SEND;
-    scan_tracker->dst_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
+    scan_tracker->dst_port            = dst_port;
+    scan_tracker->src_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
     gettimeofday(&scan_tracker->last_send, NULL);
 }
 
@@ -71,7 +72,7 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans)
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
         exit_error("ft_nmap: malloc failure.");
     for (int i = 0; i < g_scan_types_nb; i++)
-        init_scan_tracker(&port->scan_trackers[i], unique_scans[i]);
+        init_scan_tracker(&port->scan_trackers[i], unique_scans[i], port->port_id);
     // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }

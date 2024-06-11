@@ -173,8 +173,6 @@ int     main(int ac, char **av)
         exit(EXIT_FAILURE);
     }
 
-
-
     parse_input(&parsed_cmd, ac, av);
 
     if (is_activated_option(parsed_cmd.act_options, 'h'))

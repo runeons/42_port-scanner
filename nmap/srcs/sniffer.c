@@ -63,7 +63,6 @@ void    sniff_packets(pcap_t *handle, t_data *dt)
     (void)dt;
     printf(C_G_BLUE"[INFO]"C_RES"     Ready to sniff...\n");
     while (g_remaining_scans > 0){
-        //fprintf(stderr, "before pcap_dispatch: %d remaining scans\n", g_remaining_scans);
         pcap_dispatch(handle, 0, packet_handler, 0);
     }
     //debug_queue(*dt);
