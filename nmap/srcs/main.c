@@ -70,6 +70,47 @@ void    *worker_function(void *dt)
     return NULL;
 }
 
+static void     print_empty_line(int len)
+{
+    printf("+-------+");
+    for (int i = 0; i <= len; i++)
+        printf("-");
+    printf("+------------+\n");
+}
+
+static void     print_header(int len)
+{
+    print_empty_line(len + 1);
+    printf("| %-5s | %-*s | %-10s |\n", "PORT", len, "RESULTS", "CONCLUSION");
+    print_empty_line(len + 1);
+}
+
+static void     display_conclusions(t_data *dt)
+{
+    t_lst *curr_port = dt->host.ports;
+    int pos = 0;
+    printf("Conclusions\n");
+    while (curr_port != NULL)
+    {
+        char results_buffer[128] = "";
+        ft_memset(results_buffer, 0, 128);
+        t_port *port = curr_port->content;
+        for (int i = 0; i < g_scan_types_nb; i++)
+        {
+            t_scan_tracker *tracker = &(port->scan_trackers[i]);
+            if (tracker == NULL) // TO PROTECT
+                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            pos += snprintf(results_buffer + pos, sizeof(results_buffer) - pos,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
+        }
+        if (pos < 50)
+            pos = 50;
+        print_header(pos);
+        printf("| %-5d | %-*s | %-10s |\n", port->port_id, pos, results_buffer, conclusion_string(port->conclusion));
+        curr_port = curr_port->next;
+    }
+    print_empty_line(pos + 1);
+}
+
 static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
 {
     char        filter[sizeof("src host xxx.xxx.xxx.xxx")];
@@ -80,6 +121,8 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     if (!fill_host(dt, target))
         goto clean_ret;
     debug_host(dt->host);
+    display_nmap_init(dt);
+    display_host_init(&dt->host);
     dt->src_ip = numeric_src_ip;
     init_queue(dt);
     sprintf(filter, "src host %s", dt->host.resolved_address);
@@ -107,23 +150,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
         pthread_join(workers[i], NULL);
     }
     print_info_thread("ENDING MAIN THREAD");
-
-    t_lst *curr_port = dt->host.ports;
-    printf("Conclusions\n");
-    while (curr_port != NULL)
-    {
-        t_port *port = curr_port->content;
-        printf("Port: %d Conclusion: %s\n",port->port_id,conclusion_string(port->conclusion));
-        curr_port = curr_port->next;
-        continue;
-        for (int i = 0; i < g_scan_types_nb; i++)
-        {
-            t_scan_tracker *tracker = &(port->scan_trackers[i]);
-            if (tracker == NULL) // TO PROTECT
-                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
-        }
-        curr_port = curr_port->next;
-    }
+    display_conclusions(dt);
     alarm(0);
     debug_host(dt->host);
     debug_end(*dt);

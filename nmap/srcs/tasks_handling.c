@@ -150,11 +150,14 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
     int id = -1;
     switch (response){
         case ICMP_ECHO_OK:
+        {
             struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (icmp_hdr)
                 id = icmp_hdr->icmp_id;
-            break;
+            break;            
+        }
         case TCP_SYN_ACK: case TCP_RST:
+        {
             struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (tcp_hdr){
                 t_scan_tracker *tracker = find_tracker(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source)); //identification is based on our source port
@@ -162,7 +165,9 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
                     id = tracker->id;
             }
             break;
+        }
         case UDP_ANY:
+        {
             struct tcphdr *udp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
                 if (udp_hdr){
                     t_scan_tracker *tracker =  find_tracker(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
@@ -170,6 +175,7 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
                         id = tracker->id;
                 }
             break;
+        }
         default:
             printf(C_B_CYAN"[TO IMPLEMENT] - response != ICMP_ECHO_OK"C_RES"\n");
     }
@@ -195,7 +201,7 @@ void    handle_send_task(t_data *dt, t_task *task)
             if (dt->fds[i].revents == 0)
             {
                 enqueue_task(task);
-                printf(C_B_RED"[REQUEUED] %d No revent / unavailable yet"C_RES"\n", task->scan_tracker_id);
+                printf(C_B_RED"[REQUEUED] %d No event detected for this socket"C_RES"\n", task->scan_tracker_id);
                 continue;
             }
 
@@ -236,7 +242,10 @@ void    handle_send_task(t_data *dt, t_task *task)
             }
         }
         else
-            warning("Unknown fd is readable.");
+        {
+            //warning("Unknown fd.");
+            //printf("fd: %d != %d --- %d/%d\n", dt->fds[i].fd, task->socket, i, NFDS);
+        }
     }
 }
 

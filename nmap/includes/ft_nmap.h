@@ -241,6 +241,11 @@ typedef struct  s_data
     e_scan_type         unique_scans[MAX_SCANS];
 }				t_data;
 
+// display.c
+void            display_nmap_init(t_data *dt);
+void            display_host_init(t_host *host);
+
+
 //  options.c
 void            init_options_params(t_data *dt);
 //  socket.c
@@ -299,7 +304,7 @@ void            init_host(t_host *host);
 void            decr_remaining_scans();
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
-t_task    *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, uint16_t dst_port, e_scan_type scan_type, int socket, int src_ip, uint16_t src_port);
+t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, uint16_t dst_port, e_scan_type scan_type, int socket, int src_ip, uint16_t src_port);
 t_task          *create_task();
 void            init_queue(t_data *dt);
 

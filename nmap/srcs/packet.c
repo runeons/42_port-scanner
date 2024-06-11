@@ -79,7 +79,7 @@ void construct_udp_packet(t_packet *packet, t_task *task) {
     for  (int i = 0; i  < UDP_P_LEN; i++)
     {
 		packet->packet(udp).payload[i] = 'A';
-        i++;
+        //i++;
     }
     ft_memcpy(packet->packet(udp).payload, dns_query_payload, sizeof(dns_query_payload));
 

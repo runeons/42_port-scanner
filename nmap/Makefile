@@ -41,6 +41,7 @@ HEADER					=	\
 SRCS_DIR					=	./srcs/
 
 SRCS_LIST					=	\
+							display.c \
 							init_data.c \
 							init_options.c \
 							main.c \
