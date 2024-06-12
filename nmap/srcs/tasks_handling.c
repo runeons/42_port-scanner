@@ -199,7 +199,8 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
         case UDP_ANY:
             udp_hdr = (struct udphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (udp_hdr){
-                t_scan_tracker *tracker =   find_tracker_from_ports(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source));
+                fprintf(stderr, "%d %d\n", htons(udp_hdr->dest), htons(udp_hdr->source));
+                t_scan_tracker *tracker =   find_tracker_from_ports(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
                 if (tracker)
                     id = tracker->id;
             }
