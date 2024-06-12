@@ -251,7 +251,6 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
                     while (ft_isdigit(*ptr))
                         ptr++;
                 }
-                printf("\n");
             } 
             else{
                 printf("Invalid token <%c> in port arg\n", *ptr);
