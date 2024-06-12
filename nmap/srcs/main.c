@@ -89,7 +89,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     init_sniffer(&dt->sniffer, interface_name, filter);
     init_handle(&dt->sniffer);
 
-    alarm(3);
+    alarm(1);
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");

@@ -164,9 +164,9 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
                 }
                 gettimeofday(&recv_time, NULL);
                 //mutex
-                printf("moving average %f\n", get_moving_average(&dt->host.ma));
+                //printf("moving average %f\n", get_moving_average(&dt->host.ma));
                 add_value(&dt->host.ma, deltaT(&tracker->last_send, &recv_time));
-                printf("new moving average %f\n", get_moving_average(&dt->host.ma));
+                //printf("new moving average %f\n", get_moving_average(&dt->host.ma));
                 return;
             }
         }
@@ -318,7 +318,8 @@ static void handle_check_task(t_data *dt, t_task *task){
     }
     if (n_done > 0)
         decr_remaining_scans(n_done);
-    alarm(get_moving_average(&dt->host.ma) > 1000 ? get_moving_average(&dt->host.ma) / 1000 : 1);
+    //alarm(get_moving_average(&dt->host.ma) > 1000 ? get_moving_average(&dt->host.ma) / 1000 : 1);
+    alarm(1);
 }
 
 void    handle_task(t_data *dt, t_task *task)
