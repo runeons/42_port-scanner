@@ -182,7 +182,16 @@ void   option_s(t_data *dt)
         g_scan_types_nb = MAX_SCANS;
     }
 }
-#include <ctype.h>
+
+static int my_isspace(int c) {
+    return (c == ' ' || // space
+            c == '\t' || // horizontal tab
+            c == '\n' || // newline
+            c == '\v' || // vertical tab
+            c == '\f' || // form feed
+            c == '\r');  // carriage return
+}
+
 //check for duplicated and don't insert them, just warn
 void option_p(t_data *dt){//, int *output, int *output_size) {
     int n_dup = 0;
@@ -193,13 +202,13 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
         dt->n_ports = 0;
         
         while (*ptr != '\0') {
-            if (isspace(*ptr)) {
+            if (my_isspace(*ptr)) {
                 return ;
             }
 
             // Parse single integer or range
             int start, end;
-            if (isdigit(*ptr)) {
+            if (ft_isdigit(*ptr)) {
                 start = ft_atoi(ptr);
                 end = start;
 
@@ -212,7 +221,7 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
                     ptr++;
                 if (*ptr == '-') {
                     ptr++;
-                    if (isdigit(*ptr)) {
+                    if (ft_isdigit(*ptr)) {
                         end = ft_atoi(ptr);
                     }
                     else

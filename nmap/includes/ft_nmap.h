@@ -47,7 +47,7 @@
 # define MAX_PORT               65535
 # define MAX_PORT_RANGE         1024
 // POLL
-# define SOCKET_POOL_SIZE       3
+# define SOCKET_POOL_SIZE       10
 # define NFDS                   3 * SOCKET_POOL_SIZE
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
 // PCAP
@@ -239,7 +239,7 @@ enum protocol_pool_index{
 typedef struct  s_data
 {
     // SOCKET
-    int                 icmp_socket_pool[SOCKET_POOL_SIZE]; //for now only one , it should be changing based on the number of targets;
+    int                 icmp_socket_pool[SOCKET_POOL_SIZE];
     int                 udp_socket_pool[SOCKET_POOL_SIZE];
     int                 tcp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;
