@@ -71,28 +71,17 @@ void init_queue(t_data *dt)
 {
     int tmp_socket = -1;
     t_lst *curr_port = dt->host.ports;
+    int  sock_index = 0;
 
     while (curr_port != NULL)
     {
         t_port *port = (t_port *)curr_port->content; // TO PROTECT
-        for (int i = 0; i < g_scan_types_nb; i++)
+        for (int i = 0; i < g_scan_types_nb; i++, sock_index++)
         {
             t_scan_tracker  *curr_tracker = &(port->scan_trackers[i]); // TO PROTECT
             t_task          *task = create_task();
-            switch (curr_tracker->scan.scan_type){
-                case ICMP:
-                    tmp_socket = dt->fds[0].fd;
-                    break;
-                case UDP:
-                    tmp_socket = dt->fds[1].fd;
-                    break;
-                case SYN:case ACK:case FIN:case NUL:case XMAS:
-                    tmp_socket = dt->fds[2].fd;
-                    break;
-                default:
-                    printf("Invalid scan type | just skip this task");
-                    continue;
-            } //bad code , I'll update it as soon as we make proper socket_pools
+            tmp_socket = select_socket_from_pool(dt, curr_tracker->scan.scan_type, sock_index);
+
             fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket, dt->src_ip, curr_tracker->src_port);
             enqueue_task(task);
             debug_task(*task);

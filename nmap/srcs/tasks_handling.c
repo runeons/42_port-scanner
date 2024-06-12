@@ -199,7 +199,6 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
         case UDP_ANY:
             udp_hdr = (struct udphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (udp_hdr){
-                fprintf(stderr, "%d %d\n", htons(udp_hdr->dest), htons(udp_hdr->source));
                 t_scan_tracker *tracker =   find_tracker_from_ports(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
                 if (tracker)
                     id = tracker->id;
@@ -273,13 +272,14 @@ static void handle_check_task(t_data *dt, t_task *task){
     int tmp_socket = -1;
     int n_done = 0;
     struct timeval      time_now = {0,0};
+    int  sock_index = 0;
     gettimeofday(&time_now, NULL);
 
     t_lst *curr_port = dt->host.ports;
     while (curr_port != NULL)
     {
         t_port *port = curr_port->content;
-        for (int i = 0; i < g_scan_types_nb; i++)
+        for (int i = 0; i < g_scan_types_nb; i++, sock_index++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]);
             if (tracker == NULL) // TO PROTECT
@@ -290,20 +290,7 @@ static void handle_check_task(t_data *dt, t_task *task){
                     if (deltaT(&tracker->last_send ,&time_now) > (get_moving_average(&dt->host.ma) > 0 ? get_moving_average(&dt->host.ma):5000)){
                         //add_value(&dt->host.ma, deltaT(&tracker->last_send ,&time_now));
                         t_task  *send_task = create_task();
-                        switch (tracker->scan.scan_type){
-                            case ICMP:
-                                tmp_socket = dt->fds[0].fd;
-                                break;
-                            case UDP:
-                                tmp_socket = dt->fds[1].fd;
-                                break;
-                            case SYN:case ACK:case FIN:case NUL:case XMAS:
-                                tmp_socket = dt->fds[2].fd;
-                                break;
-                            default:
-                                printf("Invalid scan type | just skip this task");
-                                continue;
-                        }
+                        tmp_socket = select_socket_from_pool(dt, tracker->scan.scan_type, sock_index);
                         fill_send_task(send_task, tracker->id, dt->host.target_address, port->port_id, tracker->scan.scan_type, tmp_socket, dt->src_ip, tracker->dst_port);
                         enqueue_task(send_task);
                     }

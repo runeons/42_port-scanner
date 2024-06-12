@@ -47,7 +47,7 @@
 # define MAX_PORT               65535
 # define MAX_PORT_RANGE         1024
 // POLL
-# define SOCKET_POOL_SIZE       1
+# define SOCKET_POOL_SIZE       3
 # define NFDS                   3 * SOCKET_POOL_SIZE
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
 // PCAP
@@ -230,6 +230,12 @@ typedef struct  s_sniffer
     char                *filter;
 }               t_sniffer;
 
+enum protocol_pool_index{
+    ICMP_INDEX,
+    UDP_INDEX,
+    TCP_INDEX
+};
+
 typedef struct  s_data
 {
     // SOCKET
@@ -239,7 +245,7 @@ typedef struct  s_data
     struct sockaddr_in  src_address;
     int                 src_port;
     int                 src_ip;
-    struct pollfd       fds[SOCKET_POOL_SIZE * 3];
+    struct pollfd       fds[NFDS];
     // SCANS
     t_lst               *queue;
     t_host              host;               // one for now
@@ -260,6 +266,7 @@ void            init_options_params(t_data *dt);
 //  socket.c
 //void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            init_socket(t_data *dt);
+int             select_socket_from_pool(t_data *dt, e_scan_type scan_type, int index);
 
 // packet.c
 void            send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id);
