@@ -35,3 +35,59 @@ void display_nmap_init(t_data *dt)
     printf("Starting ft_nmap at ");
     display_current_daytime();
 }
+
+static void     print_separator_line()
+{
+    printf("+-----------+");
+    for (int i = 0; i <= MAX_RESULTS_LEN + 1; i++)
+        printf("-");
+    printf("+----------------+\n");
+}
+
+static void     print_empty_line()
+{
+    printf("|           |");
+    for (int i = 0; i <= MAX_RESULTS_LEN + 1; i++)
+        printf(" ");
+    printf("|                |\n");
+}
+
+static void     print_header()
+{
+    print_separator_line();
+    printf("| %-9s | %-*s | %-14s |\n", "PORT", MAX_RESULTS_LEN, "RESULTS", "CONCLUSION");
+    print_separator_line();
+}
+
+void            display_conclusions(t_data *dt)
+{
+    t_lst *curr_port = dt->host.ports;
+    print_header();
+    while (curr_port != NULL)
+    {
+        int pos_tcp      = 0;
+        int pos_udp      = 0;
+        char tcp_buffer[MAX_RESULTS_LEN] = "";
+        char udp_buffer[MAX_RESULTS_LEN] = "";
+        ft_memset(tcp_buffer, 0, MAX_RESULTS_LEN);
+        ft_memset(udp_buffer, 0, MAX_RESULTS_LEN);
+        t_port *port = curr_port->content;
+        for (int i = 0; i < g_scan_types_nb; i++)
+        {
+            t_scan_tracker *tracker = &(port->scan_trackers[i]);
+            if (tracker == NULL) // TO PROTECT
+                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            if (tracker->scan.scan_type != UDP)
+                pos_tcp += snprintf(tcp_buffer + pos_tcp, sizeof(tcp_buffer) - pos_tcp,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
+            else
+                pos_udp += snprintf(udp_buffer, sizeof(udp_buffer),  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
+        }
+        if (pos_tcp != 0)
+            printf("| %5d/tcp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, tcp_buffer, conclusion_string(port->conclusion));
+        if (pos_udp != 0)
+            printf("| %5d/udp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, udp_buffer, conclusion_string(port->conclusion)); // conclusion to split in udp and tcp
+        curr_port = curr_port->next;
+        print_empty_line();
+    }
+    print_separator_line();
+}

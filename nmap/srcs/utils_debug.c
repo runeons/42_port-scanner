@@ -149,10 +149,12 @@ void    debug_queue()
 
 void    debug_end(t_data dt)
 {
-    printf(C_G_GRAY"[DEBUG] ft_nmap done: 1 IP address (%s)"C_RES"\n", dt.host.input_dest);
-        printf("        total_queued        %d\n", g_queued);
-        printf("        total_sent          %d\n", g_sent);
-        printf("        total_retrieved     %d\n", g_retrieved);
-    printf(C_G_GRAY"-------"C_RES"\n");
-
+    if (dt.host.input_dest)
+    {
+        printf(C_G_GRAY"[DEBUG] ft_nmap done: 1 IP address (%s)"C_RES"\n", dt.host.input_dest);
+            printf("        total_queued        %d\n", g_queued);
+            printf("        total_sent          %d\n", g_sent);
+            printf("        total_retrieved     %d\n", g_retrieved);
+        printf(C_G_GRAY"-------"C_RES"\n");
+    }
 }

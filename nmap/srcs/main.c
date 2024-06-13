@@ -70,58 +70,6 @@ void    *worker_function(void *dt)
     return NULL;
 }
 
-static void     print_empty_line(int len)
-{
-    printf("+-----------+");
-    for (int i = 0; i <= len; i++)
-        printf("-");
-    printf("+----------------+\n");
-}
-
-static void     print_header(int len)
-{
-    print_empty_line(len + 1);
-    printf("| %-9s | %-*s | %-14s |\n", "PORT", len, "RESULTS", "CONCLUSION");
-    print_empty_line(len + 1);
-}
-
-static void     display_conclusions(t_data *dt)
-{
-    t_lst *curr_port = dt->host.ports;
-    int pos_tcp      = 0;
-    int pos_udp      = 0;
-    int padding_len  = 0;
-    printf("Conclusions\n");
-    while (curr_port != NULL)
-    {
-        char tcp_buffer[128] = "";
-        char udp_buffer[128] = "";
-        ft_memset(tcp_buffer, 0, 128);
-        ft_memset(udp_buffer, 0, 128);
-        t_port *port = curr_port->content;
-        for (int i = 0; i < g_scan_types_nb; i++)
-        {
-            t_scan_tracker *tracker = &(port->scan_trackers[i]);
-            if (tracker == NULL) // TO PROTECT
-                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
-            if (tracker->scan.scan_type != UDP)
-                pos_tcp += snprintf(tcp_buffer + pos_tcp, sizeof(tcp_buffer) - pos_tcp,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
-            else
-                pos_udp += snprintf(udp_buffer, sizeof(udp_buffer),  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
-        }
-        padding_len = pos_tcp;
-        if (padding_len < 50)
-            padding_len = 50;
-        print_header(padding_len);
-        if (pos_tcp != 0)
-            printf("| %5d/tcp | %-*s | %-14s |\n", port->port_id, padding_len, tcp_buffer, conclusion_string(port->conclusion));
-        if (pos_udp != 0)
-            printf("| %5d/udp | %-*s | %-14s |\n", port->port_id, padding_len, udp_buffer, conclusion_string(port->conclusion)); // conclusion to split in udp and tcp
-        curr_port = curr_port->next;
-    }
-    print_empty_line(padding_len + 1);
-}
-
 static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
 {
     char        filter[sizeof("src host xxx.xxx.xxx.xxx")];
@@ -129,6 +77,9 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     pthread_t   workers[dt->threads];
 
     init_socket(dt);
+    dt->host.ports = NULL;
+    dt->host.approx_rtt_upper_bound =  5000;  // 5 seconds
+    ft_bzero(&dt->host.ma, sizeof(t_mavg));
     if (!fill_host(dt, target))
         goto clean_ret;
     debug_host(dt->host);
@@ -140,7 +91,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     init_sniffer(&dt->sniffer, interface_name, filter);
     init_handle(&dt->sniffer);
 
-    alarm(3);
+    alarm(1);
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");
@@ -172,6 +123,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
 
 static void alarm_handler(int signum) {
     (void) signum;
+    alarm(0);
     //struct handler_data *data = info->si_value.sival_ptr;
     //fprintf(stderr, "Alarm signal received! %d\n", signum);
     t_task  *task = create_task();
@@ -179,8 +131,6 @@ static void alarm_handler(int signum) {
     task->scan_tracker_id   = 0; // TO DO
     task->task_type         = T_CHECK;
     enqueue_task(task);
-    //printf("", data->some_value, data->some_message);
-    alarm(5);
 }
 
 int     main(int ac, char **av)
@@ -201,8 +151,6 @@ int     main(int ac, char **av)
         perror("sigaction");
         exit(EXIT_FAILURE);
     }
-
-
 
     parse_input(&parsed_cmd, ac, av);
 

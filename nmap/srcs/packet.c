@@ -1,5 +1,7 @@
 #include "../includes/ft_nmap.h"
 
+extern pthread_mutex_t mutex;
+
 static unsigned short checksum(void *packet, int len)
 {
     unsigned short  *tmp;
@@ -33,7 +35,9 @@ static void    craft_icmp_payload(t_packet *packet)
         i++;
     }
     packet->packet(icmp).payload[ICMP_P_LEN - 1] = '\0';
+    //pthread_mutex_lock(&mutex);
     g_sequence++;
+    //pthread_mutex_unlock(&mutex);
 }
 
 void    craft_icmp_packet(t_packet *packet, t_task *task)
@@ -172,10 +176,12 @@ void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_add
     // print_info("Main socket is readable");
     if ((r = sendto(socket, &packet->packet(generic), packet->size, 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
     {
+        printf("sendto:: %s\n", strerror(errno));
         warning_int("Packet sending failure.", task_id);
         return;
     }
     print_info_int("Packet sent (bytes):", sizeof(*packet));
+    //pthread_mutex_lock(&mutex);
     g_sent++;
-    // debug_icmp_packet(*packet);
+    //pthread_mutex_unlock(&mutex);
 }

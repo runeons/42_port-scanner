@@ -4,9 +4,10 @@ int     resolve_address(t_host *host) // check that dest exists and resolve addr
 {
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
+    int s = 1;
 
-    if (getaddrinfo(host->input_dest, NULL, NULL, &resolved_add) != 0){
-        fprintf(stderr, "ft_nmap: unknown host <%s>\n", host->input_dest);
+    if ((s = getaddrinfo(host->input_dest, NULL, NULL, &resolved_add)) != 0){
+        fprintf(stderr, "ft_nmap: unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
         return 0;
     }
     // debug_addrinfo(*resolved_add);
@@ -46,7 +47,7 @@ int     resolve_hostname(t_host *host) // useful only when input_dest is ip addr
     return 1;
 }
 
-static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type)
+static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type, uint16_t dst_port)
 {
     scan_tracker->id                  = g_scan_tracker_id++;
     scan_tracker->scan.scan_type      = scan_type;
@@ -54,7 +55,8 @@ static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type sca
     scan_tracker->scan.conclusion     = NOT_CONCLUDED; 
     scan_tracker->count_sent          = 0;
     scan_tracker->max_send            = MAX_SEND;
-    scan_tracker->dst_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
+    scan_tracker->dst_port            = dst_port;
+    scan_tracker->src_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
     gettimeofday(&scan_tracker->last_send, NULL);
 }
 
@@ -70,7 +72,7 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans)
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
         exit_error("ft_nmap: malloc failure.");
     for (int i = 0; i < g_scan_types_nb; i++)
-        init_scan_tracker(&port->scan_trackers[i], unique_scans[i]);
+        init_scan_tracker(&port->scan_trackers[i], unique_scans[i], port->port_id);
     // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
@@ -109,6 +111,8 @@ void            init_host(t_host *host)
     host->target_address.sin_port           = 0;
     host->target_address.sin_addr.s_addr    = INADDR_ANY;
     host->ports                             = NULL;
+    host->approx_rtt_upper_bound            =  5000;  // 5 seconds
+    ft_bzero(&host->ma, sizeof(t_mavg));
 }
 
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)

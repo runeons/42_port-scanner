@@ -33,6 +33,7 @@
 # define SCAN_CHARS             "SAUFNXI"       // I = tmp (initial test only)
 # define SOCKETS_NB             1               // tmp - 1 for now
 # define MAX_HOSTNAME_LEN       128
+# define MAX_RESULTS_LEN        128
 // DEBUG && VERBOSE
 # define DEBUG_PARSING          0
 # define DEBUG_STRUCT           0
@@ -47,7 +48,7 @@
 # define MAX_PORT               65535
 # define MAX_PORT_RANGE         1024
 // POLL
-# define SOCKET_POOL_SIZE       1
+# define SOCKET_POOL_SIZE       10
 # define NFDS                   3 * SOCKET_POOL_SIZE
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
 // PCAP
@@ -188,6 +189,7 @@ typedef struct s_scan_tracker
     int                 count_sent;
     int                 max_send;
     uint16_t            dst_port;
+    uint16_t            src_port;
     struct timeval      last_send;
 
 }              t_scan_tracker;
@@ -199,14 +201,27 @@ typedef struct  s_port
     t_scan_tracker      *scan_trackers;
 }               t_port;
 
+
+#define WINDOW_SIZE 5
+
+typedef struct s_moving_average{
+    double values[WINDOW_SIZE];
+    int index;
+    int count;
+    double sum;
+}               t_mavg;
+
+
 typedef struct  s_host
 {
     char                *input_dest;
     char                *resolved_address;
     char                *resolved_hostname;
-    struct sockaddr_in  target_address;
     int                 dst_port;
+    int                 approx_rtt_upper_bound;
     t_lst               *ports;
+    struct sockaddr_in  target_address;
+    t_mavg              ma;
 }               t_host;
 
 typedef struct  s_sniffer
@@ -216,16 +231,22 @@ typedef struct  s_sniffer
     char                *filter;
 }               t_sniffer;
 
+enum protocol_pool_index{
+    ICMP_INDEX,
+    UDP_INDEX,
+    TCP_INDEX
+};
+
 typedef struct  s_data
 {
     // SOCKET
-    int                 icmp_socket_pool[SOCKET_POOL_SIZE]; //for now only one , it should be changing based on the number of targets;
+    int                 icmp_socket_pool[SOCKET_POOL_SIZE];
     int                 udp_socket_pool[SOCKET_POOL_SIZE];
     int                 tcp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;
     int                 src_port;
     int                 src_ip;
-    struct pollfd       fds[SOCKET_POOL_SIZE * 3];
+    struct pollfd       fds[NFDS];
     // SCANS
     t_lst               *queue;
     t_host              host;               // one for now
@@ -244,13 +265,14 @@ typedef struct  s_data
 // display.c
 void            display_nmap_init(t_data *dt);
 void            display_host_init(t_host *host);
-
+void            display_conclusions(t_data *dt);
 
 //  options.c
 void            init_options_params(t_data *dt);
 //  socket.c
 //void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            init_socket(t_data *dt);
+int             select_socket_from_pool(t_data *dt, e_scan_type scan_type, int index);
 
 // packet.c
 void            send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id);
@@ -301,7 +323,7 @@ int             resolve_hostname(t_host *host);
 void            init_host(t_host *host);
 
 // tasks_queue.c
-void            decr_remaining_scans();
+void            decr_remaining_scans(int n);
 void            enqueue_task(t_task *task);
 t_task          *dequeue_task();
 t_task          *fill_send_task(t_task *task, int id, struct sockaddr_in target_address, uint16_t dst_port, e_scan_type scan_type, int socket, int src_ip, uint16_t src_port);
@@ -321,5 +343,10 @@ char            *conclusion_string(e_conclusion conclusion);
 // utils_time.c
 
 double          deltaT(struct timeval *t1p, struct timeval *t2p);
+
+// moving_average.c
+
+void            add_value(t_mavg *ma, double value);
+double          get_moving_average(t_mavg *ma);
 
 #endif
