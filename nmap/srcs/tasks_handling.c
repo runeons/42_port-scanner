@@ -132,6 +132,21 @@ e_response determine_response_type(t_data *dt, t_task *task)
     return OTHER;
 }
 
+void    update_port_conclusion(t_port *port, t_scan_tracker *tracker)
+{
+
+    if (tracker->scan.scan_type == UDP)
+    {
+        printf(TEST);
+        if (port->conclusion_udp < tracker->scan.conclusion)
+            port->conclusion_udp = tracker->scan.conclusion;
+    }
+    else
+    {
+        if (port->conclusion_tcp < tracker->scan.conclusion)
+            port->conclusion_tcp = tracker->scan.conclusion;                    
+    }
+}
 
 void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response)
 {
@@ -151,16 +166,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
             {
                 tracker->scan.response = response;
                 tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, response);
-                if (tracker->scan.scan_type == UDP)
-                {
-                    if (port->conclusion_udp < tracker->scan.conclusion)
-                        port->conclusion_udp = tracker->scan.conclusion;
-                }
-                else
-                {
-                    if (port->conclusion_tcp < tracker->scan.conclusion)
-                        port->conclusion_tcp = tracker->scan.conclusion;                    
-                }
+                update_port_conclusion(port, tracker);
                 if (tracker->scan.conclusion != NOT_CONCLUDED)
                 {
                     decr_remaining_scans(1);
@@ -185,22 +191,22 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
 
 int     extract_response_id(t_data *dt, t_task *task, e_response response)
 {   
-    // struct icmp *icmp_hdr = NULL;
-    // struct tcphdr *tcp_hdr = NULL;
-    // struct udphdr *udp_hdr = NULL;
-    
     int id = -1;
+    struct icmp     *icmp_hdr = NULL;
+    struct tcphdr   *tcp_hdr  = NULL;
+    struct udphdr   *udp_hdr  = NULL;
+
     switch (response){
         case ICMP_ECHO_OK:
         {
-            struct icmp *icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+            icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (icmp_hdr)
                 id = icmp_hdr->icmp_id;
             break;            
         }
         case TCP_SYN_ACK: case TCP_RST:
         {
-            struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+            tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (tcp_hdr){
                 t_scan_tracker *tracker = find_tracker_from_ports(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source)); //identification is based on our source port
                 if (tracker)
@@ -210,7 +216,7 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
         }
         case UDP_ANY:
         {
-            struct tcphdr *udp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+            udp_hdr = (struct udphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
                 if (udp_hdr){
                     t_scan_tracker *tracker =  find_tracker_from_ports(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
                     if (tracker)
@@ -311,6 +317,9 @@ static void handle_check_task(t_data *dt, t_task *task){
                 }
                 else
                 {
+                    // HERE TO UPDATE SCAN WHEN NO ANSWER / CLOSED FOR NOW BUT MAY BE FILTERED
+                    tracker->scan.conclusion = CLOSED;
+                    update_port_conclusion(port, tracker);
                     n_done++;
                 }
             }

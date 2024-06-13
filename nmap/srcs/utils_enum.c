@@ -76,15 +76,15 @@ char  *conclusion_string(e_conclusion conclusion)
         case NOT_CONCLUDED:
             return "NOT_CONCLUDED";
         case OPEN:
-            return "Open";
+            return "open";
         case CLOSED:
-            return "Closed";
+            return "closed";
         case FILTERED:
-            return "Filtered";
+            return "filtered";
         case OPEN_FILTERED:
-            return "Open|Filtered";
+            return "open|filtered";
         case UNFILTERED:
-            return "Unfiltered";
+            return "unfiltered";
         default:
             return "Invalid";
     }
