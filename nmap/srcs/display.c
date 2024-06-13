@@ -83,9 +83,9 @@ void            display_conclusions(t_data *dt)
                 pos_udp += snprintf(udp_buffer, sizeof(udp_buffer),  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
         }
         if (pos_tcp != 0)
-            printf("| %5d/tcp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, tcp_buffer, conclusion_string(port->conclusion));
+            printf("| %5d/tcp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, tcp_buffer, conclusion_string(port->conclusion_tcp));
         if (pos_udp != 0)
-            printf("| %5d/udp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, udp_buffer, conclusion_string(port->conclusion)); // conclusion to split in udp and tcp
+            printf("| %5d/udp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, udp_buffer, conclusion_string(port->conclusion_udp)); // conclusion to split in udp and tcp
         curr_port = curr_port->next;
         print_empty_line();
     }

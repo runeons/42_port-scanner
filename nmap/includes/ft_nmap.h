@@ -197,7 +197,8 @@ typedef struct s_scan_tracker
 typedef struct  s_port
 {
     int                 port_id;
-    e_conclusion        conclusion;
+    e_conclusion        conclusion_tcp;
+    e_conclusion        conclusion_udp;
     t_scan_tracker      *scan_trackers;
 }               t_port;
 

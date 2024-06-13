@@ -108,7 +108,8 @@ void    debug_port(t_port port)
     {
         printf(C_G_GREEN"[DEBUG] port %d"C_RES"\n", port.port_id);
         printf("        port_id     %d\n", port.port_id);
-        printf("        conclusion  %s\n", conclusion_string(port.conclusion));
+        printf("        conclusion_tcp  %s\n", conclusion_string(port.conclusion_tcp));
+        printf("        conclusion_udp  %s\n", conclusion_string(port.conclusion_udp));
         for (int i = 0; i < g_scan_types_nb; i++)
             debug_scan_tracker(port.scan_trackers[i]);
         printf(C_G_GREEN"-------"C_RES"\n");

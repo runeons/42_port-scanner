@@ -68,7 +68,8 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans)
     if (port == NULL)
         exit_error("ft_nmap: malloc failure.");
     port->port_id           = port_id;
-    port->conclusion        = NOT_CONCLUDED;
+    port->conclusion_udp        = NOT_CONCLUDED;
+    port->conclusion_tcp        = NOT_CONCLUDED;
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
         exit_error("ft_nmap: malloc failure.");
     for (int i = 0; i < g_scan_types_nb; i++)
