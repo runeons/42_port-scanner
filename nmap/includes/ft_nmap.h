@@ -104,7 +104,7 @@ typedef enum
     ICMP_UNR_C_NOT_3,   // type 3 unreachable | code 1, 2, 9, 10, 13
     NO_RESPONSE,
     OTHER,              // tmp (may not use it)
-    ICMP_ECHO_OK,       // tmp (initial test only)
+    ICMP_ECHO_OK,
 }       e_response;
 
 typedef enum

@@ -196,8 +196,9 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
     struct tcphdr   *tcp_hdr  = NULL;
     struct udphdr   *udp_hdr  = NULL;
 
+    printf(TEST);
     switch (response){
-        case ICMP_ECHO_OK:
+        case ICMP_ECHO_OK: case ICMP_UNR_C_NOT_3: case ICMP_UNR_C_3:
         {
             icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (icmp_hdr)
@@ -227,7 +228,6 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
         default:
             printf(C_B_CYAN"[TO IMPLEMENT] - response != ICMP_ECHO_OK"C_RES"\n");
     }
-        
     return id;
 }
 
@@ -289,6 +289,7 @@ void    handle_send_task(t_data *dt, t_task *task)
 
 void        handle_never_received(t_port *port, t_scan_tracker *tracker)
 {
+    printf(TEST);
     tracker->scan.response = NO_RESPONSE;
     debug_scan(tracker->scan);
     tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, tracker->scan.response);

@@ -22,12 +22,12 @@ run_test()
 declare -a tests=(
     # "1.1.1.1, 53, S, open"
     # "sapin.fr, 23, S, closed"
-    # "1.1.1.125, 53, S, filtered" # very long but OK
+    # "1.1.1.125, 53, S, filtered" # long but OK
 
     # "8.8.8.8, 53, U, open"
-    "sapin.fr, 161, U, open|filtered"   # comments TO IMPLEMENT but OK
-    "127.0.0.1, 60011, U, closed"       # very long and wrong
-    "freebsd.org, 44444, U, filtered"   # very long and wrong
+    # "sapin.fr, 161, U, closed"          # ICMP_UNREACH_3 implemented
+    "127.0.0.1, 60011, U, closed"       # long and wrong - should receive response
+    "freebsd.org, 44444, U, filtered"   # long and wrong - should receive response
 
     # "127.0.0.1, 22, F, open|filtered"
     # "google.fr, 443, F, closed"
