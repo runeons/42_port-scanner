@@ -40,6 +40,7 @@ e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
         if (all_scans[i].scan_type == scan_type && all_scans[i].response == response)
             return (all_scans[i].conclusion);
     }
+    printf(C_B_RED"[TO IMPLEMENT] Cannot conclude scan result from response"C_RES"\n");
     return NOT_CONCLUDED;
 }
 
@@ -137,7 +138,6 @@ void    update_port_conclusion(t_port *port, t_scan_tracker *tracker)
 
     if (tracker->scan.scan_type == UDP)
     {
-        printf(TEST);
         if (port->conclusion_udp < tracker->scan.conclusion)
             port->conclusion_udp = tracker->scan.conclusion;
     }
@@ -287,6 +287,14 @@ void    handle_send_task(t_data *dt, t_task *task)
     }
 }
 
+void        handle_never_received(t_port *port, t_scan_tracker *tracker)
+{
+    tracker->scan.response = NO_RESPONSE;
+    debug_scan(tracker->scan);
+    tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, tracker->scan.response);
+    update_port_conclusion(port, tracker);
+}
+
 static void handle_check_task(t_data *dt, t_task *task){
     (void) task;
     int tmp_socket = -1;
@@ -317,9 +325,7 @@ static void handle_check_task(t_data *dt, t_task *task){
                 }
                 else
                 {
-                    // HERE TO UPDATE SCAN WHEN NO ANSWER / CLOSED FOR NOW BUT MAY BE FILTERED
-                    tracker->scan.conclusion = CLOSED;
-                    update_port_conclusion(port, tracker);
+                    handle_never_received(port, tracker);
                     n_done++;
                 }
             }
