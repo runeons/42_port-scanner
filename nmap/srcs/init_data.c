@@ -15,11 +15,9 @@ int     resolve_address(t_host *host) // check that dest exists and resolve addr
     while (tmp != NULL)
     {
         if ((struct sockaddr_in *)tmp->ai_addr)
-            host->resolved_address = ft_strdup(inet_ntoa(((struct sockaddr_in *)tmp->ai_addr)->sin_addr));
-        if (host->resolved_address == NULL)
-            exit_error("ft_nmap: malloc failure.\n");
+            ft_strcpy(host->resolved_address, inet_ntoa(((struct sockaddr_in *)tmp->ai_addr)->sin_addr));
         tmp = tmp->ai_next;
-        break; // useful if many
+        break;
     }
     freeaddrinfo(resolved_add);
     return 1;
@@ -40,9 +38,7 @@ int     resolve_hostname(t_host *host) // useful only when input_dest is ip addr
     }
     else
     {
-        host->resolved_hostname = ft_strdup(hostname);
-        if (host->resolved_hostname == NULL)
-            exit_error("ft_nmap: malloc failure.\n");
+        ft_strcpy(host->resolved_hostname, hostname);
     }
     return 1;
 }
@@ -104,8 +100,6 @@ int            fill_host(t_data *dt, char *curr_arg)
 void            init_host(t_host *host)
 {
     host->input_dest                        = "";
-    host->resolved_address                  = NULL;
-    host->resolved_hostname                 = "";
     ft_memset(&(host->target_address), 0, sizeof(struct sockaddr_in));
     host->target_address.sin_family         = AF_INET;
     host->target_address.sin_port           = 0;
@@ -117,25 +111,24 @@ void            init_host(t_host *host)
 
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
-    dt->act_options         = parsed_cmd->act_options;
-    dt->src_port            = (getpid() & 0xffff) | 0x8000; // base port 
-    ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
-    dt->src_address.sin_family        = AF_INET;
-    dt->src_address.sin_addr.s_addr   = INADDR_ANY;
-    dt->src_address.sin_port          = htons(dt->src_port);
+    dt->act_options                         = parsed_cmd->act_options;
+    dt->src_port                            = (getpid() & 0xffff) | 0x8000; //base port
+
     ft_memset(dt->fds, 0, sizeof(dt->fds));
-    //dt->fds[0].events       = POLLOUT;
-    // dt->queue            = NULL;
-    dt->threads             = THREADS_NB;
+
+    dt->threads                             = THREADS_NB;
+
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
-    dt->first_port           = NULL;
-    dt->last_port           = NULL;
+    dt->first_port                           = NULL;
+    dt->last_port                           = NULL;
+
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
+
     ft_memset(&dt->sniffer, 0, sizeof(dt->sniffer));
-    dt->sniffer.handle      = NULL;          
-    dt->sniffer.device      = NULL;          
-    dt->sniffer.filter       = NULL;
+    dt->sniffer.handle                      = NULL;
+    dt->sniffer.device                      = NULL;
+    dt->sniffer.filter                       = NULL;
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)

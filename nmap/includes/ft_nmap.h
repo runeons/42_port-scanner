@@ -214,8 +214,8 @@ typedef struct s_moving_average{
 typedef struct  s_host
 {
     char                *input_dest;
-    char                *resolved_address;
-    char                *resolved_hostname;
+    char                resolved_address[sizeof("xxx.xxx.xxx.xxx")];
+    char                resolved_hostname[MAX_HOSTNAME_LEN];
     int                 dst_port;
     int                 approx_rtt_upper_bound;
     t_lst               *ports;
@@ -242,7 +242,6 @@ typedef struct  s_data
     int                 icmp_socket_pool[SOCKET_POOL_SIZE];
     int                 udp_socket_pool[SOCKET_POOL_SIZE];
     int                 tcp_socket_pool[SOCKET_POOL_SIZE];
-    struct sockaddr_in  src_address;
     int                 src_port;
     int                 src_ip;
     struct pollfd       fds[NFDS];
