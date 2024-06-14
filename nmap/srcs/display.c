@@ -36,41 +36,69 @@ void display_nmap_init(t_data *dt)
     display_current_daytime();
 }
 
-static void     print_separator_line()
+static void     print_separator_line(int padding)
 {
     printf("+-----------+");
-    for (int i = 0; i <= MAX_RESULTS_LEN + 1; i++)
+    for (int i = 0; i <= padding + 1; i++)
         printf("-");
     printf("+----------------+\n");
 }
 
-static void     print_empty_line()
+static void     print_empty_line(int padding)
 {
     printf("|           |");
-    for (int i = 0; i <= MAX_RESULTS_LEN + 1; i++)
+    for (int i = 0; i <= padding + 1; i++)
         printf(" ");
     printf("|                |\n");
 }
 
-static void     print_header()
+static void     print_header(int padding)
 {
-    print_separator_line();
-    printf("| %-9s | %-*s | %-14s |\n", "PORT", MAX_RESULTS_LEN, "RESULTS", "CONCLUSION");
-    print_separator_line();
+    print_separator_line(padding);
+    printf("| %-9s | %-*s | %-14s |\n", "PORT", padding, "RESULTS", "CONCLUSION");
+    print_separator_line(padding);
+}
+
+
+t_service all_services[] =
+{
+    {22,   P_TCP,         "ssh_tcp"},
+    {22,   P_UDP,         "ssh_udp"},
+};
+
+
+char *get_service(int port_id, e_protocol protocol)
+{
+    for (size_t i = 0; i < sizeof(all_services) / sizeof(all_services[0]); i++)
+    {
+        if (all_services[i].port_id == port_id && all_services[i].protocol == protocol)
+            return (all_services[i].name);
+    }
+    printf(C_B_RED"[TO IMPLEMENT] Service not found"C_RES"\n");
+    return "Unassigned";
+}
+
+char            *display_service(t_port *port, t_scan_tracker *tracker)
+{
+    if (tracker->scan.scan_type != UDP)
+        return (get_service(port->port_id, P_TCP));
+    else
+        return (get_service(port->port_id, P_UDP));
 }
 
 void            display_conclusions(t_data *dt)
 {
     t_lst *curr_port = dt->host.ports;
-    print_header();
+    int padding = 20 * g_scan_types_nb; // TO CHECK
+    print_header(padding);
     while (curr_port != NULL)
     {
         int pos_tcp      = 0;
         int pos_udp      = 0;
-        char tcp_buffer[MAX_RESULTS_LEN] = "";
-        char udp_buffer[MAX_RESULTS_LEN] = "";
-        ft_memset(tcp_buffer, 0, MAX_RESULTS_LEN);
-        ft_memset(udp_buffer, 0, MAX_RESULTS_LEN);
+        char *tcp_buffer = mmalloc(sizeof(char) * padding + 1); // TO PROTECT
+        char *udp_buffer = mmalloc(sizeof(char) * padding + 1); // TO PROTECT
+        ft_memset(tcp_buffer, 0, padding);
+        ft_memset(udp_buffer, 0, padding);
         t_port *port = curr_port->content;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
@@ -78,16 +106,17 @@ void            display_conclusions(t_data *dt)
             if (tracker == NULL) // TO PROTECT
                 printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
             if (tracker->scan.scan_type != UDP)
-                pos_tcp += snprintf(tcp_buffer + pos_tcp, sizeof(tcp_buffer) - pos_tcp,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
+                pos_tcp += snprintf(tcp_buffer + pos_tcp, padding + 1 - pos_tcp,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
             else
-                pos_udp += snprintf(udp_buffer, sizeof(udp_buffer),  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
+                pos_udp += snprintf(udp_buffer, padding + 1,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
+            // printf("%s\n", display_service(port, tracker));
         }
         if (pos_tcp != 0)
-            printf("| %5d/tcp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, tcp_buffer, conclusion_string(port->conclusion_tcp));
+            printf("| %5d/tcp | %-*s | %-14s |\n", port->port_id, padding, tcp_buffer, conclusion_string(port->conclusion_tcp));
         if (pos_udp != 0)
-            printf("| %5d/udp | %-*s | %-14s |\n", port->port_id, MAX_RESULTS_LEN, udp_buffer, conclusion_string(port->conclusion_udp)); // conclusion to split in udp and tcp
+            printf("| %5d/udp | %-*s | %-14s |\n", port->port_id, padding, udp_buffer, conclusion_string(port->conclusion_udp));
         curr_port = curr_port->next;
-        print_empty_line();
+        print_empty_line(padding);
     }
-    print_separator_line();
+    print_separator_line(padding);
 }
