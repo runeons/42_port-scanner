@@ -1,4 +1,5 @@
 #include "../includes/ft_nmap.h"
+#include <services_list.h>
 
 void display_host_init(t_host *host)
 {
@@ -41,6 +42,7 @@ static void     print_separator_line(int padding)
     printf("+-----------+");
     for (int i = 0; i <= padding + 1; i++)
         printf("-");
+    printf("+------------------------");
     printf("+----------------+\n");
 }
 
@@ -49,41 +51,35 @@ static void     print_empty_line(int padding)
     printf("|           |");
     for (int i = 0; i <= padding + 1; i++)
         printf(" ");
+    printf("|                        ");
     printf("|                |\n");
 }
 
 static void     print_header(int padding)
 {
     print_separator_line(padding);
-    printf("| %-9s | %-*s | %-14s |\n", "PORT", padding, "RESULTS", "CONCLUSION");
+    printf("| %-9s | %-*s | %-22s | %-14s |\n", "PORT", padding, "RESULTS", "SERVICE", "CONCLUSION");
     print_separator_line(padding);
 }
 
-
-t_service all_services[] =
-{
-    {22,   P_TCP,         "ssh_tcp"},
-    {22,   P_UDP,         "ssh_udp"},
-};
-
-
 char *get_service(int port_id, e_protocol protocol)
 {
-    for (size_t i = 0; i < sizeof(all_services) / sizeof(all_services[0]); i++)
+    for (size_t i = 0; i < (sizeof(all_services) / sizeof(all_services[0])); i++)
     {
         if (all_services[i].port_id == port_id && all_services[i].protocol == protocol)
             return (all_services[i].name);
     }
-    printf(C_B_RED"[TO IMPLEMENT] Service not found"C_RES"\n");
-    return "Unassigned";
+    return "unassigned";
 }
 
-char            *display_service(t_port *port, t_scan_tracker *tracker)
+char            *get_udp_service(int port_id)
 {
-    if (tracker->scan.scan_type != UDP)
-        return (get_service(port->port_id, P_TCP));
-    else
-        return (get_service(port->port_id, P_UDP));
+    return (get_service(port_id, P_UDP));
+}
+
+char            *get_tcp_service(int port_id)
+{
+    return (get_service(port_id, P_TCP));
 }
 
 void            display_conclusions(t_data *dt)
@@ -109,12 +105,11 @@ void            display_conclusions(t_data *dt)
                 pos_tcp += snprintf(tcp_buffer + pos_tcp, padding + 1 - pos_tcp,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
             else
                 pos_udp += snprintf(udp_buffer, padding + 1,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
-            // printf("%s\n", display_service(port, tracker));
         }
         if (pos_tcp != 0)
-            printf("| %5d/tcp | %-*s | %-14s |\n", port->port_id, padding, tcp_buffer, conclusion_string(port->conclusion_tcp));
+            printf("| %5d/tcp | %-*s | %-22s | %-14s |\n", port->port_id, padding, tcp_buffer, get_tcp_service(port->port_id), conclusion_string(port->conclusion_tcp));
         if (pos_udp != 0)
-            printf("| %5d/udp | %-*s | %-14s |\n", port->port_id, padding, udp_buffer, conclusion_string(port->conclusion_udp));
+            printf("| %5d/udp | %-*s | %-22s | %-14s |\n", port->port_id, padding, udp_buffer, get_udp_service(port->port_id), conclusion_string(port->conclusion_udp));
         curr_port = curr_port->next;
         print_empty_line(padding);
     }

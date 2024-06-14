@@ -76,12 +76,6 @@ extern int      g_verbose;               // tmp (verbose -v)
 
 typedef enum
 {
-    P_TCP,
-    P_UDP,
-}       e_protocol;
-
-typedef enum
-{
     T_SEND,
     T_RECV,
     T_CHECK,
@@ -187,13 +181,6 @@ typedef struct  s_scan
     e_response          response;
     e_conclusion        conclusion;
 }               t_scan;
-
-typedef struct  s_service
-{
-    int         port_id;
-    e_protocol  protocol;
-    char        *name;
-}               t_service;
 
 typedef struct s_scan_tracker
 {
