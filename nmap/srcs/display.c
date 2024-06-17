@@ -95,10 +95,23 @@ char            *get_tcp_service(int port_id)
     return (get_service(port_id, P_TCP));
 }
 
+static int      get_results_padding()
+{
+    int tcp_scans_nb    = 0;
+
+    if (g_scan_types_nb == 6)
+        tcp_scans_nb = 5;
+    else
+        tcp_scans_nb = g_scan_types_nb;
+    return (20 * tcp_scans_nb);
+
+}
 void            display_conclusions(t_data *dt)
 {
-    t_lst *curr_port = dt->host.ports;
-    int padding = 20 * g_scan_types_nb; // TO CHECK
+    t_lst *curr_port    = dt->host.ports;
+    int padding         = 0;
+    
+    padding = get_results_padding();
     print_header(padding);
     while (curr_port != NULL)
     {
