@@ -202,20 +202,16 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
         dt->n_ports = 0;
         
         while (*ptr != '\0') {
-            if (my_isspace(*ptr)) {
+            if (my_isspace(*ptr))
                 return ;
-            }
-
             // Parse single integer or range
             int start, end;
             if (ft_isdigit(*ptr)) {
                 start = ft_atoi(ptr);
                 end = start;
 
-                if (start <= 0 || start > 65535 ){
-                    printf("Invalid port number <%d>\n", start);
-                    exit(1);
-                }
+                if (start <= 0 || start > 65535 )
+                    exit_options_error("ft_nmap: Invalid port number <%d>\n", start); // TO TRY OUT
 
                 while (ft_isdigit(*ptr))
                     ptr++;
@@ -225,11 +221,8 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
                         end = ft_atoi(ptr);
                     }
                     else
-                    {
-                        exit_error("Missing end of range\n");
-                    }
+                        exit_options_error("ft_nmap: Missing end of range\n"); // TO TRY OUT
                 }
-
                 for (int i = start; i <= end ; i++) {
                     int dup = 0;
                     for (int ii = 0; ii < dt->n_ports; ii++){
@@ -242,25 +235,18 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
                     if (!dup) {
                         if (dt->n_ports < 1024)
                             dt->arg_ports[dt->n_ports++] = i;
-                        else{
-                            printf("TOO MANY PORTS\n");
-                            exit(1);
-                        }
+                        else
+                            exit_options_error("ft_nmap: too many ports\n"); // TO TRY OUT
                     }
 
                     while (ft_isdigit(*ptr))
                         ptr++;
                 }
             } 
-            else{
-                printf("Invalid token <%c> in port arg\n", *ptr);
-                exit(1);
-            }
-
-            // If there's a comma, move to the next segment
-            if (*ptr == ',') {
+            else
+                exit_options_error("ft_nmap: Invalid token <%c> in port arg\n", *ptr); // TO TRY OUT
+            if (*ptr == ',') // If there's a comma, move to the next segment
                 ptr++;
-            }
         }
     }else{
         dt->n_ports = MAX_PORTS;

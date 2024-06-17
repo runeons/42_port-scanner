@@ -104,7 +104,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
         if (r == 0)
             exit_error("Poll timed out.");
         sniff_packets(dt->sniffer.handle, dt);
-        fprintf(stderr, "WAIT TO JOIN\n");
+        // fprintf(stderr, "WAIT TO JOIN\n");
     }
     for (int i = 0; i < dt->threads; i++)
     {
@@ -148,10 +148,8 @@ int     main(int ac, char **av)
     sa.sa_handler = alarm_handler; // Set the handler function
     sa.sa_flags = 0; // Use default flags
     sigemptyset(&sa.sa_mask); // No signals blocked during handler
-    if (sigaction(SIGALRM, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(EXIT_FAILURE);
-    }
+    if (sigaction(SIGALRM, &sa, NULL) == -1)
+        exit_error_free("ft_nmap: sigaction: %s\n", strerror(errno)); // TO TRY OUT & CLOSE ?
 
     parse_input(&parsed_cmd, ac, av);
 
@@ -161,8 +159,7 @@ int     main(int ac, char **av)
     one_target = ft_lst_size(parsed_cmd.not_options);
 
     if ((!file_input && one_target != 1)  || (file_input && one_target >=1))
-        exit_error("ft_nmap: usage error: You can only supply either a file or a single target address as inputs");
-
+        exit_error_free("ft_nmap: usage error: You can only supply either a file or a single target address as inputs\n");
     interfaces = find_devices();
     debug_interfaces(interfaces);
     numeric_src_ip = get_source_numeric_ip(interfaces);
@@ -172,28 +169,24 @@ int     main(int ac, char **av)
 
     init_data(&dt, &parsed_cmd); // this needs to be done only once
     if (gettimeofday(&dt.init_tv, &dt.tz) != 0)
-        exit_error("ft_nmap: cannot retrieve time\n"); // CLOSE ?
+        exit_error_free("ft_nmap: cannot retrieve time\n"); // TO TRY OUT & CLOSE ?
     if (is_activated_option(parsed_cmd.act_options, 'f'))
     {
         t_option *file_option = get_option(parsed_cmd.act_options, 'f');
         FILE *file = fopen(file_option->param, "r");
         if (!file)
-        {
-            perror("fopen: error");
-            exit(1);
-        }
+            exit_error_free("ft_nmap: fopen: %s\n", strerror(errno));
         char *line[255];
         int err = 0;
-        while ((err = get_next_line(file->_fileno, line)) >= 0){
+        while ((err = get_next_line(file->_fileno, line)) >= 0)
+        {
             if (err == 0 && *line[0] == '\0')
                 break;
             nmap(*line, first_interface_name, numeric_src_ip, &dt);
             hosts_nb++;
         }
-        if (err == -1){
-            fprintf(stderr, "get_next_line: error\n");
-            exit(err);
-        }
+        if (err == -1)
+            exit_error_free("ft_nmap: get_next_line: %s\n", strerror(errno)); // TO TRY OUT
         fclose(file);
     }
     else
