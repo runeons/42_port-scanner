@@ -148,12 +148,18 @@ void    update_port_conclusion(t_port *port, t_scan_tracker *tracker)
     if (tracker->scan.scan_type == UDP)
     {
         if (port->conclusion_udp < tracker->scan.conclusion)
+        {
             port->conclusion_udp = tracker->scan.conclusion;
+            port->udp_reason = tracker->scan.response;                    
+        }
     }
     else
     {
         if (port->conclusion_tcp < tracker->scan.conclusion)
+        {
             port->conclusion_tcp = tracker->scan.conclusion;                    
+            port->tcp_reason = tracker->scan.response;                    
+        }
     }
 }
 

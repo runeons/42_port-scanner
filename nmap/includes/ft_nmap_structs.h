@@ -89,6 +89,8 @@ typedef struct  s_port
     e_conclusion        conclusion_tcp;
     e_conclusion        conclusion_udp;
     t_scan_tracker      *scan_trackers;
+    e_response          tcp_reason;
+    e_response          udp_reason;
 }               t_port;
 
 typedef struct  s_moving_average

@@ -358,6 +358,7 @@ void    init_options_params(t_data *dt)
     option_s(dt);
     option_th(dt);
     // option_i(dt);
+    option_r(dt);
     option_n(dt);
     option_v(dt);
     // option_f(dt);
