@@ -44,7 +44,8 @@ e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
     return NOT_CONCLUDED;
 }
 
-// static t_port *find_tport(t_data *dt, uint16_t dst_port){
+// static t_port *find_tport(t_data *dt, uint16_t dst_port)
+//{
 //     t_lst *curr_port = dt->host.ports;
 //     while (curr_port != NULL)
 //     {
@@ -56,7 +57,8 @@ e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
 //     return NULL;
 // }
 
-static t_scan_tracker *find_tracker_with_id(t_data *dt, int tracker_id, uint16_t dst_port){
+static t_scan_tracker *find_tracker_with_id(t_data *dt, int tracker_id, uint16_t dst_port)
+{
     t_lst *curr_port = dt->host.ports;
     while (curr_port != NULL)
     {
@@ -78,7 +80,8 @@ static t_scan_tracker *find_tracker_with_id(t_data *dt, int tracker_id, uint16_t
 }
 
 
-static t_scan_tracker *find_tracker_from_ports(t_data *dt, uint16_t src_port, uint16_t dst_port){
+static t_scan_tracker *find_tracker_from_ports(t_data *dt, uint16_t src_port, uint16_t dst_port)
+{
     t_lst *curr_port = dt->host.ports;
     while (curr_port != NULL)
     {
@@ -197,7 +200,8 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
     struct udphdr   *udp_hdr  = NULL;
 
     // printf(TEST);
-    switch (response){
+    switch (response)
+    {
         case ICMP_ECHO_OK: case ICMP_UNR_C_NOT_3: case ICMP_UNR_C_3:
         {
             icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
@@ -208,7 +212,8 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
         case TCP_SYN_ACK: case TCP_RST:
         {
             tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
-            if (tcp_hdr){
+            if (tcp_hdr)
+            {
                 t_scan_tracker *tracker = find_tracker_from_ports(dt, htons(tcp_hdr->dest), htons(tcp_hdr->source)); //identification is based on our source port
                 if (tracker)
                     id = tracker->id;
@@ -218,7 +223,8 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
         case UDP_ANY:
         {
             udp_hdr = (struct udphdr *)(task->packet + ETH_H_LEN + sizeof(struct ip));
-                if (udp_hdr){
+                if (udp_hdr)
+                {
                     t_scan_tracker *tracker =  find_tracker_from_ports(dt, htons(udp_hdr->dest), htons(udp_hdr->source));
                     if (tracker)
                         id = tracker->id;
@@ -245,7 +251,8 @@ void    handle_send_task(t_data *dt, t_task *task)
 {
     for (int i = 0; i < NFDS; i++)
     {
-        if (dt->fds[i].fd == task->socket){
+        if (dt->fds[i].fd == task->socket)
+        {
             if (dt->fds[i].revents == 0)
             {
                 enqueue_task(task);
@@ -258,7 +265,8 @@ void    handle_send_task(t_data *dt, t_task *task)
 
             t_packet packet;
 
-            switch (task->scan_type){
+            switch (task->scan_type)
+            {
                 case ICMP:
                     craft_icmp_packet(&packet, task);
                     break;
@@ -279,7 +287,8 @@ void    handle_send_task(t_data *dt, t_task *task)
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
             t_scan_tracker *this_scan_tracker = find_tracker_with_id(dt, task->scan_tracker_id,task->dst_port);
             assert(this_scan_tracker && "couldn't find the scan tracker in handle_send_task");
-            if (this_scan_tracker){
+            if (this_scan_tracker)
+            {
                 gettimeofday(&this_scan_tracker->last_send, NULL);
                 this_scan_tracker->count_sent++;
             }
@@ -296,7 +305,8 @@ void        handle_never_received(t_port *port, t_scan_tracker *tracker)
     update_port_conclusion(port, tracker);
 }
 
-static void handle_check_task(t_data *dt, t_task *task){
+static void handle_check_task(t_data *dt, t_task *task)
+{
     (void) task;
     int tmp_socket = -1;
     int n_done = 0;
@@ -314,9 +324,12 @@ static void handle_check_task(t_data *dt, t_task *task){
             if (tracker == NULL) // TO PROTECT
                 printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
             
-            if (tracker->scan.conclusion == NOT_CONCLUDED){
-                if (tracker->count_sent > 0 && tracker->count_sent < tracker->max_send){
-                    if (deltaT(&tracker->last_send ,&time_now) > (get_moving_average(&dt->host.ma) > 0 ? get_moving_average(&dt->host.ma):5000)){
+            if (tracker->scan.conclusion == NOT_CONCLUDED)
+            {
+                if (tracker->count_sent > 0 && tracker->count_sent < tracker->max_send)
+                {
+                    if (deltaT(&tracker->last_send ,&time_now) > (get_moving_average(&dt->host.ma) > 0 ? get_moving_average(&dt->host.ma):5000))
+                    {
                         //add_value(&dt->host.ma, deltaT(&tracker->last_send ,&time_now));
                         t_task  *send_task = create_task();
                         tmp_socket = select_socket_from_pool(dt, tracker->scan.scan_type, sock_index);

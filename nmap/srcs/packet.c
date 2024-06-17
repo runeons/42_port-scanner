@@ -1,8 +1,8 @@
 #include "../includes/ft_nmap.h"
 
-extern pthread_mutex_t mutex;
+extern pthread_mutex_t  mutex;
 
-static unsigned short checksum(void *packet, int len)
+static unsigned short   checksum(void *packet, int len)
 {
     unsigned short  *tmp;
 	unsigned int    checksum;
@@ -22,13 +22,12 @@ static unsigned short checksum(void *packet, int len)
 	return checksum;
 }
 
-static void    craft_icmp_payload(t_packet *packet)
+static void             craft_icmp_payload(t_packet *packet)
 {
     int i;
 
     i = 0;
     ft_bzero(&packet->packet(icmp), packet->size);
-   
     while (i < ICMP_P_LEN)
     {
 		packet->packet(icmp).payload[i] = 'A';
@@ -40,7 +39,7 @@ static void    craft_icmp_payload(t_packet *packet)
     //pthread_mutex_unlock(&mutex);
 }
 
-void    craft_icmp_packet(t_packet *packet, t_task *task)
+void                    craft_icmp_packet(t_packet *packet, t_task *task)
 {
     packet->type = PACKET_TYPE_ICMP;
     packet->size = sizeof(struct icmp_packet);
@@ -51,15 +50,17 @@ void    craft_icmp_packet(t_packet *packet, t_task *task)
     packet->packet(icmp).h.checksum = checksum(&packet->packet(icmp), packet->size);
 }
 
-struct pseudo_header {
+struct pseudo_header
+{
     uint32_t source_address;
     uint32_t dest_address;
     uint8_t placeholder;
     uint8_t protocol;
     uint16_t size;
-    };
+};
 
-unsigned char dns_query_payload[] = {
+unsigned char dns_query_payload[] =
+{
     0x1a, 0x2b, // Transaction ID
     0x01, 0x00, // Flags (Standard query, recursion desired)
     0x00, 0x01, // Questions (1)
@@ -73,8 +74,8 @@ unsigned char dns_query_payload[] = {
     0x00, 0x01  // Query Class (IN)
 };
 
-
-void construct_udp_packet(t_packet *packet, t_task *task) {
+void                construct_udp_packet(t_packet *packet, t_task *task)
+{
     packet->type = task->scan_type;
     packet->size = sizeof(struct udphdr) + UDP_P_LEN;
     // Clear packet data
@@ -108,7 +109,8 @@ void construct_udp_packet(t_packet *packet, t_task *task) {
     packet->packet(udp).h.check = checksum(pseudo_packet, pseudo_packet_size);;
 }
 
-void construct_tcp_packet(t_packet *packet, t_task *task) {
+void                construct_tcp_packet(t_packet *packet, t_task *task)
+{
     packet->type = task->scan_type;
     packet->size = sizeof(struct tcphdr) + sizeof(packet->packet(tcp).payload);
 
@@ -122,7 +124,8 @@ void construct_tcp_packet(t_packet *packet, t_task *task) {
     //tcph->seq = task->scan_tracker_id; // all the globals need mutex when used in threads;
     //tcph->ack_seq = htonl(task->scan_tracker_id);
     tcph->doff = (sizeof(struct tcphdr)) / 4 + 1; // TCP header size + 1 for the options
-    switch (packet->type) {
+    switch (packet->type)
+    {
         case PACKET_TYPE_ACK:
             tcph->th_flags |= TH_ACK;
             break;
@@ -169,7 +172,7 @@ void construct_tcp_packet(t_packet *packet, t_task *task) {
     //free(pseudo_packet);
 }
 
-void    send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
+void                send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
 {
     int r = 0;
 

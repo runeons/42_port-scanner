@@ -1,6 +1,6 @@
 #include "../includes/ft_nmap.h"
 
-int     resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
+int             resolve_address(t_host *host) // check that dest exists and resolve address if input == hostname
 {
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
@@ -25,7 +25,7 @@ int     resolve_address(t_host *host) // check that dest exists and resolve addr
     return 1;
 }
 
-int     resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
+int             resolve_hostname(t_host *host) // useful only when input_dest is ip address (vs. hostname)
 {
     char    hostname[MAX_HOSTNAME_LEN];
 
@@ -87,7 +87,7 @@ static void     add_port(t_host *host, int port_id, e_scan_type *unique_scans)
     // debug_port(*port);
 }
 
-int            fill_host(t_data *dt, char *curr_arg)
+int             fill_host(t_data *dt, char *curr_arg)
 {
     if (dt)
     {

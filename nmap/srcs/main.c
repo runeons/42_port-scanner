@@ -11,12 +11,16 @@ int g_sent             = 0;
 int g_queued           = 0;
 int g_verbose          = FALSE;
 
-static int get_source_numeric_ip(pcap_if_t *interfaces){
+static int      get_source_numeric_ip(pcap_if_t *interfaces)
+{
     pcap_addr_t *addr;
 
-    for (addr = interfaces->addresses; addr != NULL; addr = addr->next) {
-        if (addr->addr != NULL) {
-            if (addr->addr->sa_family == AF_INET) {
+    for (addr = interfaces->addresses; addr != NULL; addr = addr->next)
+    {
+        if (addr->addr != NULL)
+        {
+            if (addr->addr->sa_family == AF_INET)
+            {
                 struct sockaddr_in *sa = (struct sockaddr_in *)addr->addr;
                 return sa->sin_addr.s_addr;
             }
@@ -25,16 +29,14 @@ static int get_source_numeric_ip(pcap_if_t *interfaces){
     return -1;
 }
 
-static void    close_all_sockets(t_data *dt){
-    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+static void     close_all_sockets(t_data *dt)
+{
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++)
         close(dt->icmp_socket_pool[i]);
-    }
-    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++)
         close(dt->udp_socket_pool[i]);
-    }
-    for (int i = 0; i < SOCKET_POOL_SIZE; i++){
+    for (int i = 0; i < SOCKET_POOL_SIZE; i++)
         close(dt->tcp_socket_pool[i]);
-    }
 }
 
 static void    option_h()
@@ -121,7 +123,8 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
     close_all_sockets(dt);
 }
 
-static void alarm_handler(int signum) {
+static void     alarm_handler(int signum)
+{
     (void) signum;
     alarm(0);
     //struct handler_data *data = info->si_value.sival_ptr;
@@ -133,7 +136,7 @@ static void alarm_handler(int signum) {
     enqueue_task(task);
 }
 
-int     main(int ac, char **av)
+int             main(int ac, char **av)
 {
     t_data              dt;
     int                 file_input;

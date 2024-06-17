@@ -2,7 +2,7 @@
 
 extern pthread_mutex_t mutex;
 
-void    init_handle(t_sniffer *sniffer)
+void        init_handle(t_sniffer *sniffer)
 {
     struct bpf_program  compiled_filter;
     char                err_buf[PCAP_ERRBUF_SIZE];          // 256 from pcap.h
@@ -25,7 +25,7 @@ void    init_handle(t_sniffer *sniffer)
     pcap_freecode(&compiled_filter);
 }
 
-void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
+void        init_sniffer(t_sniffer *sniffer, char *device, char *filter)
 {
     if (!(sniffer->device = ft_strdup(device)))
         exit_error("Malloc failure.");
@@ -33,7 +33,8 @@ void    init_sniffer(t_sniffer *sniffer, char *device, char *filter)
         exit_error("Malloc failure.");
 }
 
-pcap_if_t *find_devices(){
+pcap_if_t   *find_devices()
+{
     pcap_if_t   *interfaces;
     char        err_buf[PCAP_ERRBUF_SIZE];
 
@@ -42,7 +43,7 @@ pcap_if_t *find_devices(){
     return interfaces;
 }
 
-void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
+void        packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
     t_task  *task = create_task();
 
@@ -58,13 +59,12 @@ void    packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_c
     debug_task(*task);
 }
 
-void    sniff_packets(pcap_t *handle, t_data *dt)
+void        sniff_packets(pcap_t *handle, t_data *dt)
 {
     (void)dt;
     printf(C_G_BLUE"[INFO]"C_RES"     Ready to sniff...\n");
-    while (g_remaining_scans > 0){
+    while (g_remaining_scans > 0)
         pcap_dispatch(handle, 0, packet_handler, 0);
-    }
     //debug_queue(*dt);
     // printf(C_G_BLUE"[INFO]"C_RES"     Capture completed\n");
 }
