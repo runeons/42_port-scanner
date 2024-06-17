@@ -138,6 +138,7 @@ typedef struct  s_data
     int                 threads;
     int                 verbose;
     int                 no_dns;
+    int                 reason;
     uint16_t            *first_port;
     uint16_t            *last_port;
     uint16_t            arg_ports[1024];

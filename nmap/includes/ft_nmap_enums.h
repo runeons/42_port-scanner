@@ -5,6 +5,14 @@
 
 typedef enum
 {
+    P_TCP,
+    P_UDP,
+    P_UNKNOWN,
+    P_ICMP,
+}       e_protocol;
+
+typedef enum
+{
     T_SEND,
     T_RECV,
     T_CHECK,

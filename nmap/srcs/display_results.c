@@ -58,7 +58,73 @@ static int      get_results_padding()
 
 }
 
-void            display_conclusions(t_data *dt) // COULD CLEAN
+static e_protocol      get_protocol(t_scan scan)
+{
+    if (scan.scan_type == UDP)
+        return P_UDP;
+    else if (scan.scan_type == UNKNOWN)
+        return P_UNKNOWN;
+    else if (scan.scan_type == ICMP) // TEST
+        return P_ICMP;
+    else
+        return P_TCP;
+}
+
+static void     init_results_buffer(char **tcp_results, char **udp_results, int padding)
+{
+    if (!(*tcp_results = mmalloc(sizeof(char) * padding + 1))) // TO PROTECT
+        exit_error_free("ft_nmap: malloc failure\n");
+    if (!(*udp_results = mmalloc(sizeof(char) * padding + 1))) // TO PROTECT
+        exit_error_free("ft_nmap: malloc failure\n");
+    ft_memset(*tcp_results, 0, padding);
+    ft_memset(*udp_results, 0, padding);
+}
+
+static int          fill_results_buffer(t_scan scan, char **results_buffer, int pos, int padding)
+{
+    return (snprintf(*results_buffer + pos, padding + 1 - pos,  "%s(%s) ", scan_type_string(scan.scan_type), conclusion_string(scan.conclusion)));
+}
+
+static void         print_filled_line(t_port *port, char *results, int padding, e_protocol protocol)
+{
+    if (protocol == P_TCP)
+        printf("| %5d/tcp | %-*s | %-22s | %-14s |\n", port->port_id, padding, results, get_tcp_service(port->port_id), conclusion_string(port->conclusion_tcp));
+    else if (protocol == P_UDP)
+        printf("| %5d/udp | %-*s | %-22s | %-14s |\n", port->port_id, padding, results, get_udp_service(port->port_id), conclusion_string(port->conclusion_tcp));
+    else
+        printf(C_B_RED"[SHOULD NOT APPEAR] unexpected protocol"C_RES"\n");
+}
+
+static void         display_each_protocol(t_lst *curr_port, int padding)
+{
+        int pos_tcp      = 0;
+        int pos_udp      = 0;
+        char *tcp_results;
+        char *udp_results;
+        
+        init_results_buffer(&tcp_results, &udp_results, padding);
+        t_port *port = curr_port->content;
+        for (int i = 0; i < g_scan_types_nb; i++)
+        {
+            if (port == NULL || &(port->scan_trackers[i]) == NULL)
+                exit_error_free("ft_nmap: unexpected memory access\n");
+            t_scan scan = (port->scan_trackers[i]).scan;
+            if (get_protocol(scan) == P_TCP)
+                pos_tcp += fill_results_buffer(scan, &tcp_results, pos_tcp, padding);
+            else if (get_protocol(scan) == P_UDP)
+                pos_udp += fill_results_buffer(scan, &udp_results, pos_udp, padding);
+            else
+                printf(C_B_RED"[SHOULD NOT APPEAR] unexpected protocol"C_RES"\n");
+            // printf(C_B_RED"%s"C_RES"\n", reason_string(scan.response));
+        }
+        if (pos_tcp != 0)
+            print_filled_line(port, tcp_results, padding, P_TCP);
+        if (pos_udp != 0)
+            print_filled_line(port, udp_results, padding, P_UDP);
+        print_empty_line(padding);
+}
+
+void            display_conclusions(t_data *dt)
 {
     t_lst *curr_port    = dt->host.ports;
     int padding         = 0;
@@ -67,30 +133,8 @@ void            display_conclusions(t_data *dt) // COULD CLEAN
     print_header(padding);
     while (curr_port != NULL)
     {
-        int pos_tcp      = 0;
-        int pos_udp      = 0;
-        char *tcp_buffer = mmalloc(sizeof(char) * padding + 1); // TO PROTECT
-        char *udp_buffer = mmalloc(sizeof(char) * padding + 1); // TO PROTECT
-        ft_memset(tcp_buffer, 0, padding);
-        ft_memset(udp_buffer, 0, padding);
-        t_port *port = curr_port->content;
-        for (int i = 0; i < g_scan_types_nb; i++)
-        {
-            t_scan_tracker *tracker = &(port->scan_trackers[i]);
-            if (tracker == NULL) // TO PROTECT
-                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
-            if (tracker->scan.scan_type != UDP)
-                pos_tcp += snprintf(tcp_buffer + pos_tcp, padding + 1 - pos_tcp,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
-            else
-                pos_udp += snprintf(udp_buffer, padding + 1,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
-            // printf(C_B_RED"%s"C_RES"\n", reason_string(tracker->scan.response));
-        }
-        if (pos_tcp != 0)
-            printf("| %5d/tcp | %-*s | %-22s | %-14s |\n", port->port_id, padding, tcp_buffer, get_tcp_service(port->port_id), conclusion_string(port->conclusion_tcp));
-        if (pos_udp != 0)
-            printf("| %5d/udp | %-*s | %-22s | %-14s |\n", port->port_id, padding, udp_buffer, get_udp_service(port->port_id), conclusion_string(port->conclusion_udp));
+        display_each_protocol(curr_port, padding);
         curr_port = curr_port->next;
-        print_empty_line(padding);
     }
     print_separator_line(padding);
 }

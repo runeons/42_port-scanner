@@ -320,6 +320,14 @@ void   option_n(t_data *dt)
         dt->no_dns = FALSE;
 }
 
+void   option_r(t_data *dt)
+{
+    if (is_activated_option(dt->act_options, 'r'))
+        dt->reason = TRUE;
+    else
+        dt->reason = FALSE;
+}
+
 void   option_th(t_data *dt)
 {
     int  threads    = 0;

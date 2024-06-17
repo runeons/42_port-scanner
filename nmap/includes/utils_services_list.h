@@ -1,13 +1,6 @@
 #ifndef UTILS_SERVICES_LIST_H
 # define UTILS_SERVICES_LIST_H
 
-typedef enum
-{
-    P_TCP,
-    P_UDP,
-    P_UNKNOWN,
-}       e_protocol;
-
 typedef struct  s_service
 {
     int         port_id;
