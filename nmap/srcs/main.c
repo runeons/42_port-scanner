@@ -143,6 +143,7 @@ int     main(int ac, char **av)
     char                first_interface_name[255];
     pcap_if_t           *interfaces = NULL;
     struct sigaction    sa;
+    int                 hosts_nb = 0;
     ft_bzero(&sa, sizeof(struct sigaction));
     sa.sa_handler = alarm_handler; // Set the handler function
     sa.sa_flags = 0; // Use default flags
@@ -170,7 +171,8 @@ int     main(int ac, char **av)
     assert( numeric_src_ip != -1 && "numeric src ip is -1");
 
     init_data(&dt, &parsed_cmd); // this needs to be done only once
-
+    if (gettimeofday(&dt.init_tv, &dt.tz) != 0)
+        exit_error("ft_nmap: cannot retrieve time\n"); // CLOSE ?
     if (is_activated_option(parsed_cmd.act_options, 'f'))
     {
         t_option *file_option = get_option(parsed_cmd.act_options, 'f');
@@ -186,6 +188,7 @@ int     main(int ac, char **av)
             if (err == 0 && *line[0] == '\0')
                 break;
             nmap(*line, first_interface_name, numeric_src_ip, &dt);
+            hosts_nb++;
         }
         if (err == -1){
             fprintf(stderr, "get_next_line: error\n");
@@ -196,7 +199,9 @@ int     main(int ac, char **av)
     else
     {
         nmap(parsed_cmd.not_options->content, first_interface_name, numeric_src_ip, &dt);
+        hosts_nb++;
     }
+    display_nmap_end(&dt, hosts_nb);
     free_all_malloc();
     return (0);
 }

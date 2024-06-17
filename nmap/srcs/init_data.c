@@ -130,13 +130,13 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->threads             = THREADS_NB;
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
-    dt->first_port           = NULL;
+    dt->first_port          = NULL;
     dt->last_port           = NULL;
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
     ft_memset(&dt->sniffer, 0, sizeof(dt->sniffer));
     dt->sniffer.handle      = NULL;          
     dt->sniffer.device      = NULL;          
-    dt->sniffer.filter       = NULL;
+    dt->sniffer.filter      = NULL;
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)

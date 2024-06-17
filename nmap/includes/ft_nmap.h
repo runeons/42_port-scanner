@@ -261,12 +261,16 @@ typedef struct  s_data
     uint16_t            arg_ports[1024];
     int                 n_ports;
     e_scan_type         unique_scans[MAX_SCANS];
+    // TIME
+    struct timeval      tz;
+    struct timeval      init_tv;
 }				t_data;
 
 // display.c
 void            display_nmap_init(t_data *dt);
 void            display_host_init(t_host *host);
 void            display_conclusions(t_data *dt);
+void            display_nmap_end(t_data *dt, int hosts_nb);
 
 //  options.c
 void            init_options_params(t_data *dt);
