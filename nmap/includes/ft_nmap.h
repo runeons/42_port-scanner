@@ -19,7 +19,8 @@
 # include <netinet/ip_icmp.h>   // struct icmphdr
 # include "../libft/includes/libft.h"
 # include <pcap.h>
-# include <ft_nmap_data.h>
+# include <ft_nmap_enums.h>
+# include <ft_nmap_structs.h>
 # include <utils_options.h>
 # include <utils_colors.h>
 # include <assert.h>

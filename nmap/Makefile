@@ -32,8 +32,9 @@ HEADER_DIR				=	\
 
 HEADER					=	\
 							ft_nmap.h \
-							ft_nmap_data.h \
-							services_list.h \
+							ft_nmap_enums.h \
+							ft_nmap_structs.h \
+							utils_services_list.h \
 							utils_colors.h \
 							utils_constants.h \
 							utils_options.h \

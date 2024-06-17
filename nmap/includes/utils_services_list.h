@@ -1,5 +1,5 @@
-#ifndef SERVICES_LIST_H
-# define SERVICES_LIST_H
+#ifndef UTILS_SERVICES_LIST_H
+# define UTILS_SERVICES_LIST_H
 
 typedef enum
 {
