@@ -69,6 +69,33 @@ char  *response_string(e_response response)
     }
 }
 
+char  *reason_string(e_response response)
+{
+    switch (response)
+    {
+        case IN_PROGRESS:
+            return "unknown";
+        case TCP_SYN_ACK:
+            return "syn-ack";
+        case TCP_RST:
+            return "reset";
+        case UDP_ANY:
+            return "udp-response";
+        case ICMP_UNR_C_3:
+            return "port-unreach";
+        case ICMP_UNR_C_NOT_3:
+            return "port-unreach-";
+        case NO_RESPONSE:
+            return "no-response";
+        case OTHER:
+            return "unknown-other";
+        case ICMP_ECHO_OK:
+            return "echo-reply";
+        default:
+            return "unknown-invalid";
+    }
+}
+
 char  *conclusion_string(e_conclusion conclusion)
 {
     switch (conclusion)

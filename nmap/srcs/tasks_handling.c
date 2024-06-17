@@ -4,33 +4,39 @@ extern pthread_mutex_t mutex;
 
 t_scan all_scans[] =
 {
-    {SYN,   TCP_SYN_ACK,         OPEN},
-    {SYN,   TCP_RST,             CLOSED},
-    {SYN,   NO_RESPONSE,         FILTERED},
-    {SYN,   ICMP_UNR_C_3,        FILTERED},
-    {SYN,   ICMP_UNR_C_NOT_3,    FILTERED},
-    {ACK,   TCP_RST,             UNFILTERED},
-    {ACK,   NO_RESPONSE,         FILTERED},
-    {ACK,   ICMP_UNR_C_3,        FILTERED},
-    {ACK,   ICMP_UNR_C_NOT_3,    FILTERED},
-    {ICMP,  ICMP_ECHO_OK,        OPEN},             // tmp (initial test only)
-    {ICMP,  NO_RESPONSE,         CLOSED},           // tmp (initial test only)
-    {UDP,   UDP_ANY,             OPEN},
-    {UDP,   NO_RESPONSE,         OPEN_FILTERED},
-    {UDP,   ICMP_UNR_C_3,        CLOSED},
-    {UDP,   ICMP_UNR_C_NOT_3,    FILTERED},
-    {FIN,   NO_RESPONSE,         OPEN_FILTERED},
-    {FIN,   TCP_RST,             CLOSED},
-    {FIN,   ICMP_UNR_C_3,        FILTERED},
-    {FIN,   ICMP_UNR_C_NOT_3,    FILTERED},
-    {NUL,   NO_RESPONSE,         OPEN_FILTERED},
-    {NUL,   TCP_RST,             CLOSED},
-    {NUL,   ICMP_UNR_C_3,        FILTERED},
-    {NUL,   ICMP_UNR_C_NOT_3,    FILTERED},
-    {XMAS,  NO_RESPONSE,         OPEN_FILTERED},
-    {XMAS,  TCP_RST,             CLOSED},
-    {XMAS,  ICMP_UNR_C_3,        FILTERED},
-    {XMAS,  ICMP_UNR_C_NOT_3,    FILTERED},
+    {SYN,   TCP_SYN_ACK,         OPEN          },
+    {SYN,   TCP_RST,             CLOSED        },
+    {SYN,   NO_RESPONSE,         FILTERED      },
+    {SYN,   ICMP_UNR_C_3,        FILTERED      },
+    {SYN,   ICMP_UNR_C_NOT_3,    FILTERED      },
+
+    {ACK,   TCP_RST,             UNFILTERED    },
+    {ACK,   NO_RESPONSE,         FILTERED      },
+    {ACK,   ICMP_UNR_C_3,        FILTERED      },
+    {ACK,   ICMP_UNR_C_NOT_3,    FILTERED      },
+
+    {ICMP,  ICMP_ECHO_OK,        OPEN          },           // tmp (initial test only)
+    {ICMP,  NO_RESPONSE,         CLOSED        },           // tmp (initial test only)
+
+    {UDP,   UDP_ANY,             OPEN          },
+    {UDP,   NO_RESPONSE,         OPEN_FILTERED },
+    {UDP,   ICMP_UNR_C_3,        CLOSED        },
+    {UDP,   ICMP_UNR_C_NOT_3,    FILTERED      },
+
+    {FIN,   NO_RESPONSE,         OPEN_FILTERED },
+    {FIN,   TCP_RST,             CLOSED        },
+    {FIN,   ICMP_UNR_C_3,        FILTERED      },
+    {FIN,   ICMP_UNR_C_NOT_3,    FILTERED      },
+
+    {NUL,   NO_RESPONSE,         OPEN_FILTERED },
+    {NUL,   TCP_RST,             CLOSED        },
+    {NUL,   ICMP_UNR_C_3,        FILTERED      },
+    {NUL,   ICMP_UNR_C_NOT_3,    FILTERED      },
+
+    {XMAS,  NO_RESPONSE,         OPEN_FILTERED },
+    {XMAS,  TCP_RST,             CLOSED        },
+    {XMAS,  ICMP_UNR_C_3,        FILTERED      },
+    {XMAS,  ICMP_UNR_C_NOT_3,    FILTERED      },
 };
 
 e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)

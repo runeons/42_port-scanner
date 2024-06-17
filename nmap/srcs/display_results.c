@@ -83,6 +83,7 @@ void            display_conclusions(t_data *dt) // COULD CLEAN
                 pos_tcp += snprintf(tcp_buffer + pos_tcp, padding + 1 - pos_tcp,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
             else
                 pos_udp += snprintf(udp_buffer, padding + 1,  "%s(%s) ", scan_type_string(tracker->scan.scan_type), conclusion_string(tracker->scan.conclusion));
+            // printf(C_B_RED"%s"C_RES"\n", reason_string(tracker->scan.response));
         }
         if (pos_tcp != 0)
             printf("| %5d/tcp | %-*s | %-22s | %-14s |\n", port->port_id, padding, tcp_buffer, get_tcp_service(port->port_id), conclusion_string(port->conclusion_tcp));

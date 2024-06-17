@@ -104,6 +104,7 @@ void            handle_task(t_data *dt, t_task *task);
 char            *task_type_string(e_task_type task_type);
 char            *scan_type_string(e_scan_type scan_type);
 char            *response_string(e_response response);
+char            *reason_string(e_response response);
 char            *conclusion_string(e_conclusion conclusion);
 
 // utils_time.c
