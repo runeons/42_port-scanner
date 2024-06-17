@@ -9,7 +9,7 @@ t_option allowed_options[] =
     {'p', "port",           1, "NB[-NB]",       NULL, "specify ports to scan"},                                                              // default 1-1024
     {'s', "scan",           1, "S|A|U|F|N|X",   NULL, "specify scans to run: S (SYN) A (ACK) U (UDP) F (FIN) N (NULL) X (XMAS)"},           // default ALL
     {'t', "threads",        1, "NB",            NULL, "specify number of threads to speed scanning up"},                                    // default 4
-    // {'n', "no-dns",         0, "",              NULL, "do not perform DNS lookup"},
+    {'n', "no-dns",         0, "",              NULL, "do not perform DNS lookup"},
     {'v', "verbose",        0, "",              NULL, "display more information while scanning"},
     // {'i', "ip",             1, "IP",            NULL, "specify ipv4 to scan"},
     {'f', "file",           1, "FILE",          NULL, "specify file to get ip list"},

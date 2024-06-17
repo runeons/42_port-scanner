@@ -128,6 +128,7 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     //dt->fds[0].events       = POLLOUT;
     // dt->queue            = NULL;
     dt->threads             = THREADS_NB;
+    dt->no_dns              = FALSE;
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
     dt->first_port          = NULL;

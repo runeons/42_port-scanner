@@ -312,6 +312,14 @@ void   option_v(t_data *dt)
         g_verbose = FALSE;
 }
 
+void   option_n(t_data *dt)
+{
+    if (is_activated_option(dt->act_options, 'n'))
+        dt->no_dns = TRUE;
+    else
+        dt->no_dns = FALSE;
+}
+
 void   option_th(t_data *dt)
 {
     int  threads    = 0;
@@ -342,7 +350,7 @@ void    init_options_params(t_data *dt)
     option_s(dt);
     option_th(dt);
     // option_i(dt);
-    // option_n(dt);
+    option_n(dt);
     option_v(dt);
     // option_f(dt);
 }

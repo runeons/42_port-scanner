@@ -256,6 +256,7 @@ typedef struct  s_data
     t_lst               *act_options;
     int                 threads;
     int                 verbose;
+    int                 no_dns;
     uint16_t            *first_port;
     uint16_t            *last_port;
     uint16_t            arg_ports[1024];
@@ -268,7 +269,7 @@ typedef struct  s_data
 
 // display.c
 void            display_nmap_init(t_data *dt);
-void            display_host_init(t_host *host);
+void            display_host_init(t_host *host, int no_dns);
 void            display_conclusions(t_data *dt);
 void            display_nmap_end(t_data *dt, int hosts_nb);
 

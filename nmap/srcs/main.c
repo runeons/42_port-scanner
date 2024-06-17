@@ -84,7 +84,7 @@ static void    nmap(char *target, char *interface_name, int numeric_src_ip, t_da
         goto clean_ret;
     debug_host(dt->host);
     display_nmap_init(dt);
-    display_host_init(&dt->host);
+    display_host_init(&dt->host, dt->no_dns);
     dt->src_ip = numeric_src_ip;
     init_queue(dt);
     sprintf(filter, "src host %s", dt->host.resolved_address);

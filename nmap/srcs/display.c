@@ -1,13 +1,14 @@
 #include "../includes/ft_nmap.h"
 #include <services_list.h>
 
-void display_host_init(t_host *host)
+void display_host_init(t_host *host, int no_dns)
 {
     
     printf("Nmap scan report for %s (%s)\n", host->input_dest, host->resolved_address);
     //printf("Host is up (0.00035s latency).\n", );
     //printf("Other addresses for google.fr (not scanned): 2a00:1450:4007:819::2003\n", );
-    printf("rDNS record for %s: %s\n", host->resolved_address, host->resolved_hostname);
+    if (no_dns == FALSE)
+        printf("rDNS record for %s: %s\n", host->resolved_address, host->resolved_hostname);
     printf("\n");
 }
 
