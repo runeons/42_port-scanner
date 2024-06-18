@@ -38,7 +38,7 @@ int             resolve_hostname(t_host *host) // useful only when input_dest is
         if (host->resolved_hostname == NULL)
             exit_error_free("malloc failure.\n");
     }
-    return 1;
+    return (1);
 }
 
 static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type, uint16_t dst_port)
@@ -136,6 +136,7 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->sniffer.device      = NULL;          
     dt->sniffer.filter      = NULL;
     dt->hosts_nb            = 0;
+    dt->file                = NULL;
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)

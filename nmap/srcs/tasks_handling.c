@@ -304,7 +304,7 @@ void    handle_send_task(t_data *dt, t_task *task)
             }
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
             t_scan_tracker *this_scan_tracker = find_tracker_with_id(dt, task->scan_tracker_id,task->dst_port);
-            assert(this_scan_tracker && "couldn't find the scan tracker in handle_send_task");
+            assert(this_scan_tracker && "couldn't find the scan tracker in handle_send_task"); // TO DO - close and exit without leaks/still reachable
             if (this_scan_tracker)
             {
                 gettimeofday(&this_scan_tracker->last_send, NULL);

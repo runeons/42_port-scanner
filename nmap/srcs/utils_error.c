@@ -41,6 +41,7 @@ void    exit_error_free_close_all(t_data *dt, const char *msg, ...)
     free_all_malloc();
     (void)dt;
     // close_all_sockets(dt);
+    close_file(&dt->file);
     exit(1);
 }
 

@@ -10,6 +10,16 @@ static void     close_all_sockets(t_data *dt)
         close(dt->tcp_socket_pool[i]);
 }
 
+
+void     close_file(FILE **file)
+{
+    if (file && *file)
+    {
+        fclose(*file);
+        *file = NULL;
+    }
+}
+
 static void     *worker_function(void *dt)
 {
     info(C_THREADS, "Starting new thread\n");
@@ -78,6 +88,7 @@ void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)
     for (int i = 0; i < dt->threads; i++)
     {
         info(C_THREADS, "End thread %d\n", i);
+        printf(TEST);
         pthread_join(workers[i], NULL);
     }
     ending_main_thread(dt);
@@ -92,10 +103,10 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
     int         err = 0;
     t_option    *file_option = get_option(parsed_cmd.act_options, 'f');
 
-    FILE *file = fopen(file_option->param, "r");
-    if (!file)
+    dt->file = fopen(file_option->param, "r");
+    if (!dt->file)
         exit_error_free("fopen: %s\n", strerror(errno));
-    while ((err = get_next_line(file->_fileno, line)) >= 0)
+    while ((err = get_next_line(dt->file->_fileno, line)) >= 0)
     {
         if (err == 0 && *line[0] == '\0')
             break;
@@ -103,5 +114,5 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
     }
     if (err == -1)
         exit_error_free("get_next_line: %s\n", strerror(errno));
-    fclose(file);
+    close_file(&dt->file);
 }
