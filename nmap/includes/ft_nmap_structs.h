@@ -146,9 +146,10 @@ typedef struct  s_data
     uint16_t            arg_ports[1024];
     int                 n_ports;
     e_scan_type         unique_scans[MAX_SCANS];
-    // TIME
+    // STATS
     struct timeval      tz;
     struct timeval      init_tv;
+    int                 hosts_nb;
 }				t_data;
 
 #endif

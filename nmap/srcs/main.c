@@ -136,68 +136,85 @@ static void     alarm_handler(int signum)
     enqueue_task(task);
 }
 
-int             main(int ac, char **av)
+void            find_interface(char *first_interface_name, int *numeric_src_ip)
 {
-    t_data              dt;
-    int                 file_input;
-    int                 one_target;
-    int                 numeric_src_ip;
-    t_parsed_cmd        parsed_cmd;
-    char                first_interface_name[255];
     pcap_if_t           *interfaces = NULL;
-    struct sigaction    sa;
-    int                 hosts_nb = 0;
-    ft_bzero(&sa, sizeof(struct sigaction));
-    sa.sa_handler = alarm_handler; // Set the handler function
-    sa.sa_flags = 0; // Use default flags
-    sigemptyset(&sa.sa_mask); // No signals blocked during handler
-    if (sigaction(SIGALRM, &sa, NULL) == -1)
-        exit_error_free("ft_nmap: sigaction: %s\n", strerror(errno)); // TO TRY OUT & CLOSE ?
 
-    parse_input(&parsed_cmd, ac, av);
+    interfaces = find_devices();
+    debug_interfaces(interfaces);
+    *numeric_src_ip = get_source_numeric_ip(interfaces);
+    ft_strcpy(first_interface_name,  interfaces->name);
+    pcap_freealldevs(interfaces);
+    assert(*numeric_src_ip != -1 && "numeric src ip is -1");
+}
 
-    if (is_activated_option(parsed_cmd.act_options, 'h'))
-        option_h();
+void            check_file_option(t_parsed_cmd parsed_cmd)
+{
+    int file_input;
+    int one_target;
+
     file_input = is_activated_option(parsed_cmd.act_options, 'f');
     one_target = ft_lst_size(parsed_cmd.not_options);
 
     if ((!file_input && one_target != 1)  || (file_input && one_target >=1))
         exit_error_free("ft_nmap: usage error: You can only supply either a file or a single target address as inputs\n");
-    interfaces = find_devices();
-    debug_interfaces(interfaces);
-    numeric_src_ip = get_source_numeric_ip(interfaces);
-    ft_strcpy(first_interface_name,  interfaces->name);
-    pcap_freealldevs(interfaces);
-    assert( numeric_src_ip != -1 && "numeric src ip is -1");
+}
 
-    init_data(&dt, &parsed_cmd); // this needs to be done only once
-    if (gettimeofday(&dt.init_tv, &dt.tz) != 0)
-        exit_error_free("ft_nmap: cannot retrieve time\n"); // TO TRY OUT & CLOSE ?
-    if (is_activated_option(parsed_cmd.act_options, 'f'))
+void            init_signal()
+{
+    struct sigaction    sa;
+
+    ft_bzero(&sa, sizeof(struct sigaction));
+    sa.sa_handler = alarm_handler;  // Set the handler function
+    sa.sa_flags = 0;                // Use default flags
+    sigemptyset(&sa.sa_mask);       // No signals blocked during handler
+    if (sigaction(SIGALRM, &sa, NULL) == -1)
+        exit_error_free("ft_nmap: sigaction: %s\n", strerror(errno)); // TO TRY OUT & CLOSE ?
+}
+
+void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *first_interface_name, int numeric_src_ip)
+{
+    t_option *file_option = get_option(parsed_cmd.act_options, 'f');
+
+    FILE *file = fopen(file_option->param, "r");
+    if (!file)
+        exit_error_free("ft_nmap: fopen: %s\n", strerror(errno));
+    char *line[255];
+    int err = 0;
+    while ((err = get_next_line(file->_fileno, line)) >= 0)
     {
-        t_option *file_option = get_option(parsed_cmd.act_options, 'f');
-        FILE *file = fopen(file_option->param, "r");
-        if (!file)
-            exit_error_free("ft_nmap: fopen: %s\n", strerror(errno));
-        char *line[255];
-        int err = 0;
-        while ((err = get_next_line(file->_fileno, line)) >= 0)
-        {
-            if (err == 0 && *line[0] == '\0')
-                break;
-            nmap(*line, first_interface_name, numeric_src_ip, &dt);
-            hosts_nb++;
-        }
-        if (err == -1)
-            exit_error_free("ft_nmap: get_next_line: %s\n", strerror(errno)); // TO TRY OUT
-        fclose(file);
+        if (err == 0 && *line[0] == '\0')
+            break;
+        nmap(*line, first_interface_name, numeric_src_ip, dt);
+        dt->hosts_nb++;
     }
+    if (err == -1)
+        exit_error_free("ft_nmap: get_next_line: %s\n", strerror(errno)); // TO TRY OUT
+    fclose(file);
+}
+
+int             main(int ac, char **av)
+{
+    t_data              dt;
+    t_parsed_cmd        parsed_cmd;
+    int                 numeric_src_ip;
+    char                first_interface_name[255];
+
+    parse_input(&parsed_cmd, ac, av);
+    init_signal();
+    if (is_activated_option(parsed_cmd.act_options, 'h'))
+        option_h();
+    check_file_option(parsed_cmd);
+    find_interface(first_interface_name, &numeric_src_ip);
+    init_data(&dt, &parsed_cmd);                             // this needs to be done only once
+    if (is_activated_option(parsed_cmd.act_options, 'f'))
+        nmap_multiple_hosts(&dt, parsed_cmd, first_interface_name, numeric_src_ip);
     else
     {
         nmap(parsed_cmd.not_options->content, first_interface_name, numeric_src_ip, &dt);
-        hosts_nb++;
+        dt.hosts_nb++;
     }
-    display_nmap_end(&dt, hosts_nb);
+    display_nmap_end(&dt);
     free_all_malloc();
     return (0);
 }

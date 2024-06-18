@@ -30,7 +30,7 @@
 void            display_nmap_init(t_data *dt);
 void            display_host_init(t_host *host, int no_dns);
 void            display_conclusions(t_data *dt);
-void            display_nmap_end(t_data *dt, int hosts_nb);
+void            display_nmap_end(t_data *dt);
 
 //  options.c
 void            init_options_params(t_data *dt);

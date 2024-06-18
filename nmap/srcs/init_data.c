@@ -139,10 +139,13 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->sniffer.handle      = NULL;          
     dt->sniffer.device      = NULL;          
     dt->sniffer.filter      = NULL;
+    dt->hosts_nb            = 0;
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
     init_data_struct(dt, parsed_cmd);
     init_options_params(dt);
+    if (gettimeofday(&dt->init_tv, &dt->tz) != 0)
+        exit_error_free("ft_nmap: cannot retrieve time\n"); // TO TRY OUT & CLOSE ?
 }
