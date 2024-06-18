@@ -41,7 +41,7 @@ static void    monitor_fds_to_sniff(t_data *dt)
     // fprintf(stderr, "WAIT TO JOIN\n");
 }
 
-static void    ending_main_thread(t_data *dt)
+static void     ending_main_thread(t_data *dt)
 {
     print_info_thread("ENDING MAIN THREAD");
     display_conclusions(dt);
@@ -49,6 +49,17 @@ static void    ending_main_thread(t_data *dt)
     debug_host(dt->host);
     debug_end(*dt);
     pcap_close(dt->sniffer.handle);
+}
+
+static void     nmap_init(t_data *dt, char *interface_name)
+{
+    // debug_host(dt->host);
+    display_nmap_init(dt);
+    display_host_init(&dt->host, dt->no_dns);
+    init_queue(dt);
+    init_sniffer(dt, &dt->sniffer, interface_name);
+    init_handle(&dt->sniffer);
+    alarm(1);
 }
 
 void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
@@ -59,13 +70,7 @@ void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
     dt->src_ip = numeric_src_ip;
     if (!fill_host(dt, target))
         goto clean_ret;
-    // debug_host(dt->host);
-    display_nmap_init(dt);
-    display_host_init(&dt->host, dt->no_dns);
-    init_queue(dt);
-    init_sniffer(dt, &dt->sniffer, interface_name);
-    init_handle(&dt->sniffer);
-    alarm(1);
+    nmap_init(dt, interface_name);
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
     print_info_thread("STARTING MAIN THREAD");
