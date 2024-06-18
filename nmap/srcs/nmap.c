@@ -62,7 +62,7 @@ static void     nmap_init(t_data *dt, char *interface_name)
     alarm(1);
 }
 
-void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
+void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)
 {
     pthread_t   workers[dt->threads];
 
@@ -82,6 +82,7 @@ void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
         pthread_join(workers[i], NULL);
     }
     ending_main_thread(dt);
+    dt->hosts_nb++;
     clean_ret:
     close_all_sockets(dt);
 }
@@ -99,8 +100,7 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
     {
         if (err == 0 && *line[0] == '\0')
             break;
-        nmap(*line, first_interface_name, numeric_src_ip, dt);
-        dt->hosts_nb++;
+        nmap(dt, *line, first_interface_name, numeric_src_ip);
     }
     if (err == -1)
         exit_error_free("ft_nmap: get_next_line: %s\n", strerror(errno)); // TO TRY OUT

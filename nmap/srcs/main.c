@@ -111,10 +111,7 @@ int             main(int ac, char **av)
     if (is_activated_option(parsed_cmd.act_options, 'f'))
         nmap_multiple_hosts(&dt, parsed_cmd, first_interface_name, numeric_src_ip);
     else
-    {
-        nmap(parsed_cmd.not_options->content, first_interface_name, numeric_src_ip, &dt);
-        dt.hosts_nb++;
-    }
+        nmap(&dt, parsed_cmd.not_options->content, first_interface_name, numeric_src_ip);
     display_nmap_end(&dt);
     free_all_malloc();
     return (0);
