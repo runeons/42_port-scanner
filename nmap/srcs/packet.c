@@ -179,7 +179,7 @@ void                send_packet(int socket, t_packet *packet, struct sockaddr_in
     info(C_SOCKET, "Main socket is readable\n");
     if ((r = sendto(socket, &packet->packet(generic), packet->size, 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
     {
-        warning("Packet sending failure: task %d: %s\n", task_id, strerror(errno)); // TO TRY OUT
+        warning("Packet sending failure: task %d: %s\n", task_id, strerror(errno));
         return;
     }
     info(C_SOCKET, "Packet sent (%lu bytes)\n", sizeof(*packet));

@@ -54,7 +54,6 @@ static void     ending_main_thread(t_data *dt)
 static void     nmap_init(t_data *dt, char *interface_name)
 {
     // debug_host(dt->host);
-    display_nmap_init(dt);
     display_host_init(&dt->host, dt->no_dns);
     init_queue(dt);
     init_sniffer(dt, &dt->sniffer, interface_name);
@@ -103,6 +102,6 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
         nmap(dt, *line, first_interface_name, numeric_src_ip);
     }
     if (err == -1)
-        exit_error_free("get_next_line: %s\n", strerror(errno)); // TO TRY OUT
+        exit_error_free("get_next_line: %s\n", strerror(errno));
     fclose(file);
 }

@@ -143,5 +143,5 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     init_data_struct(dt, parsed_cmd);
     init_options_params(dt);
     if (gettimeofday(&dt->init_tv, &dt->tz) != 0)
-        exit_error_free("cannot retrieve time\n"); // TO TRY OUT & CLOSE ?
+        exit_error_free("cannot retrieve time\n");
 }

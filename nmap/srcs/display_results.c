@@ -154,4 +154,5 @@ void            display_conclusions(t_data *dt)
         curr_port = curr_port->next;
     }
     print_separator_line(padding, dt->reason);
+    printf("\n");
 }

@@ -89,7 +89,7 @@ static void     init_signal()
     sa.sa_flags = 0;                // Use default flags
     sigemptyset(&sa.sa_mask);       // No signals blocked during handler
     if (sigaction(SIGALRM, &sa, NULL) == -1)
-        exit_error_free("sigaction: %s\n", strerror(errno)); // TO TRY OUT & CLOSE ?
+        exit_error_free("sigaction: %s\n", strerror(errno));
 }
 
 int             main(int ac, char **av)
@@ -106,6 +106,7 @@ int             main(int ac, char **av)
     check_file_option(parsed_cmd);
     init_interface(first_interface_name, &numeric_src_ip);
     init_data(&dt, &parsed_cmd);                             // this needs to be done only once
+    display_nmap_init(&dt);
     if (is_activated_option(parsed_cmd.act_options, 'f'))
         nmap_multiple_hosts(&dt, parsed_cmd, first_interface_name, numeric_src_ip);
     else

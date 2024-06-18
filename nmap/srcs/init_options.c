@@ -183,7 +183,8 @@ void   option_s(t_data *dt)
     }
 }
 
-static int my_isspace(int c) {
+static int my_isspace(int c)
+{
     return (c == ' ' || // space
             c == '\t' || // horizontal tab
             c == '\n' || // newline
@@ -193,58 +194,65 @@ static int my_isspace(int c) {
 }
 
 //check for duplicated and don't insert them, just warn
-void option_p(t_data *dt){//, int *output, int *output_size) {
+void option_p(t_data *dt) //, int *output, int *output_size)
+{
     int n_dup = 0;
 
-    if (is_activated_option(dt->act_options, 'p')){
+    if (is_activated_option(dt->act_options, 'p'))
+    {
         const char *ptr = get_option(dt->act_options, 'p')->param;
 
         dt->n_ports = 0;
         
-        while (*ptr != '\0') {
+        while (*ptr != '\0')
+        {
             if (my_isspace(*ptr))
                 return ;
             // Parse single integer or range
             int start, end;
-            if (ft_isdigit(*ptr)) {
+            if (ft_isdigit(*ptr))
+            {
                 start = ft_atoi(ptr);
                 end = start;
 
                 if (start <= 0 || start > 65535 )
-                    exit_error_free("Invalid port number <%d>\n", start); // TO TRY OUT
+                    exit_error_free("Invalid port number <%d>..\n", start);
 
                 while (ft_isdigit(*ptr))
                     ptr++;
-                if (*ptr == '-') {
+                if (*ptr == '-')
+                {
                     ptr++;
-                    if (ft_isdigit(*ptr)) {
+                    if (ft_isdigit(*ptr))
                         end = ft_atoi(ptr);
-                    }
                     else
-                        exit_error_free("Missing end of range\n"); // TO TRY OUT
+                        exit_error_free("Missing end of range.\n");
                 }
-                for (int i = start; i <= end ; i++) {
+                for (int i = start; i <= end ; i++)
+                {
                     int dup = 0;
-                    for (int ii = 0; ii < dt->n_ports; ii++){
-                            if (dt->arg_ports[ii] == i){
+                    for (int ii = 0; ii < dt->n_ports; ii++)
+                    {
+                            if (dt->arg_ports[ii] == i)
+                            {
                                 dup = 1;
                                 n_dup++;
                                 break;
                             }
                         }
-                    if (!dup) {
+                    if (!dup)
+                    {
                         if (dt->n_ports < 1024)
                             dt->arg_ports[dt->n_ports++] = i;
                         else
-                            exit_error_free("too many ports\n"); // TO TRY OUT
+                            exit_error_free("too many ports.\n");
                     }
-
                     while (ft_isdigit(*ptr))
                         ptr++;
                 }
             } 
             else
-                exit_error_free("Invalid token <%c> in port arg\n", *ptr); // TO TRY OUT
+                exit_error_free("Invalid token <%c> in port arg.\n", *ptr);
             if (*ptr == ',') // If there's a comma, move to the next segment
                 ptr++;
         }
