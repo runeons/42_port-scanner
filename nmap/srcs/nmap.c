@@ -34,9 +34,9 @@ static void    monitor_fds_to_sniff(t_data *dt)
     printf(C_G_BLUE"[INFO]"C_RES"     Waiting on poll()...\n");
     r = poll(dt->fds, NFDS, POLL_TIMEOUT);
     if (r < 0)
-        exit_error("Poll failure.");
+        exit_error_free("Poll failure.\n");
     if (r == 0)
-        exit_error("Poll timed out.");
+        exit_error_free("Poll timed out.\n");
     sniff_packets(dt->sniffer.handle, dt);
     // fprintf(stderr, "WAIT TO JOIN\n");
 }
@@ -95,7 +95,7 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
 
     FILE *file = fopen(file_option->param, "r");
     if (!file)
-        exit_error_free("ft_nmap: fopen: %s\n", strerror(errno));
+        exit_error_free("fopen: %s\n", strerror(errno));
     while ((err = get_next_line(file->_fileno, line)) >= 0)
     {
         if (err == 0 && *line[0] == '\0')
@@ -103,6 +103,6 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
         nmap(dt, *line, first_interface_name, numeric_src_ip);
     }
     if (err == -1)
-        exit_error_free("ft_nmap: get_next_line: %s\n", strerror(errno)); // TO TRY OUT
+        exit_error_free("get_next_line: %s\n", strerror(errno)); // TO TRY OUT
     fclose(file);
 }

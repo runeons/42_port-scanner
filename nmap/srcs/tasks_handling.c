@@ -273,7 +273,7 @@ void    handle_send_task(t_data *dt, t_task *task)
             }
 
             if (!(dt->fds[i].revents & POLLOUT))
-                exit_error_close_socket("Poll unexpected result", task->socket);
+                exit_error_free_close_one(task->socket, "Poll unexpected result\n");
 
             t_packet packet;
 
@@ -293,7 +293,7 @@ void    handle_send_task(t_data *dt, t_task *task)
                     construct_udp_packet(&packet, task);
                     break;
                 default:
-                    warning("Unknown SCAN");
+                    warning("Unknown SCAN.\n");
                     continue;
             }
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);

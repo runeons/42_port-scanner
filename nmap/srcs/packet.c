@@ -180,7 +180,7 @@ void                send_packet(int socket, t_packet *packet, struct sockaddr_in
     if ((r = sendto(socket, &packet->packet(generic), packet->size, 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
     {
         printf("sendto:: %s\n", strerror(errno));
-        warning_int("Packet sending failure.", task_id);
+        warning("Packet sending failure : task %d.\n", task_id); // TO TRY OUT
         return;
     }
     print_info_int("Packet sent (bytes):", sizeof(*packet));

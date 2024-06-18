@@ -52,7 +52,7 @@ t_task    *create_task()
 
     task = mmalloc(sizeof(t_task));
     if (task == NULL)
-        exit_error("ft_nmap: malloc failure.");
+        exit_error_free("malloc failure.\n");
     task->scan_tracker_id   = 0;
     task->task_type         = T_EMPTY;
     task->src_port          = 0;

@@ -43,7 +43,7 @@ void            display_nmap_end(t_data *dt)
     int                 time = 0;
 
     if (gettimeofday(&end_tv, &tz) != 0)
-        exit_error("ft_nmap: cannot retrieve time\n"); // CLOSE ?
+        exit_error_free("cannot retrieve time.\n");
     time = (end_tv.tv_sec - dt->init_tv.tv_sec) * 1000000 + end_tv.tv_usec - dt->init_tv.tv_usec;
     printf("Nmap done: %d hosts scanned in %.2f seconds\n", dt->hosts_nb, (float)time / 1000000);
 }

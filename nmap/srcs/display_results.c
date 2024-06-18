@@ -82,9 +82,9 @@ static e_protocol      get_protocol(t_scan scan)
 static void     init_results_buffer(char **tcp_results, char **udp_results, int padding)
 {
     if (!(*tcp_results = mmalloc(sizeof(char) * padding + 1)))
-        exit_error_free("ft_nmap: malloc failure\n");
+        exit_error_free("malloc failure.\n");
     if (!(*udp_results = mmalloc(sizeof(char) * padding + 1)))
-        exit_error_free("ft_nmap: malloc failure\n");
+        exit_error_free("malloc failure.\n");
     ft_memset(*tcp_results, 0, padding);
     ft_memset(*udp_results, 0, padding);
 }
@@ -125,7 +125,7 @@ static void         display_each_protocol(t_lst *curr_port, int padding, int rea
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             if (port == NULL || &(port->scan_trackers[i]) == NULL)
-                exit_error_free("ft_nmap: unexpected memory access\n");
+                exit_error_free("unexpected memory access.\n");
             t_scan scan = (port->scan_trackers[i]).scan;
             if (get_protocol(scan) == P_TCP)
                 pos_tcp += fill_results_buffer(scan, &tcp_results, pos_tcp, padding);

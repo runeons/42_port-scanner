@@ -11,17 +11,17 @@ void        init_handle(t_sniffer *sniffer)
 
     if (pcap_lookupnet(sniffer->device, &net_mask, &dev_mask, err_buf) == -1) // get network mask needed for the filter
     {
-        warning_str("No network mask for device:", sniffer->device);
+        warning("No network mask for device %s\n.", sniffer->device);
         net_mask = 0;
         dev_mask = 0;
     }
     debug_net_mask(net_mask, dev_mask);
     if ((sniffer->handle = pcap_open_live(sniffer->device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
-        exit_error_str("Opening device:", err_buf);
+        exit_error_free("Opening device: %s\n", err_buf); // TO TRY OUT
     if (pcap_compile(sniffer->handle, &compiled_filter, sniffer->filter, 0, net_mask) == -1)
-        exit_error_str("Parsing filter:", pcap_geterr(sniffer->handle));
+        exit_error_free("Parsing filter: %s\n", pcap_geterr(sniffer->handle));
     if (pcap_setfilter(sniffer->handle, &compiled_filter) == -1)
-        exit_error_str("Compiling filter:", pcap_geterr(sniffer->handle));
+        exit_error_free("Compiling filter: %s\n", pcap_geterr(sniffer->handle));
     pcap_freecode(&compiled_filter);
 }
 
@@ -31,9 +31,9 @@ void        init_sniffer(t_data *dt, t_sniffer *sniffer, char *device)
 
     sprintf(filter, "src host %s", dt->host.resolved_address);
     if (!(sniffer->device = ft_strdup(device)))
-        exit_error("Malloc failure.");
+        exit_error_free("malloc failure.\n");
     if (!(sniffer->filter = ft_strdup(filter)))
-        exit_error("Malloc failure.");
+        exit_error_free("malloc failure.\n");
 }
 
 pcap_if_t   *find_devices()
@@ -42,7 +42,7 @@ pcap_if_t   *find_devices()
     char        err_buf[PCAP_ERRBUF_SIZE];
 
     if (pcap_findalldevs(&interfaces, err_buf) == -1)
-        exit_error_str("Finding devices", err_buf);
+        exit_error_free("Finding devices %s\n", err_buf);
     return interfaces;
 }
 

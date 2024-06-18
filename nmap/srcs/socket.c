@@ -14,7 +14,7 @@ int             select_socket_from_pool(t_data *dt, e_scan_type scan_type, int i
             //printf("TCP INDEX: %d\n", (TCP_INDEX * SOCKET_POOL_SIZE) + (index % SOCKET_POOL_SIZE));
             return dt->fds[(TCP_INDEX * SOCKET_POOL_SIZE) + (index % SOCKET_POOL_SIZE)].fd;
         default:
-            warning("Invalid scan_type in select_socket_from_pool\n");
+            warning("Invalid scan_type in select_socket_from_pool.\n");
             break;
     }
     return -1;
@@ -28,9 +28,9 @@ static void     init_socket_pool(int pool[], int protocol)
     {
         pool[i]  = socket(AF_INET, SOCK_RAW, protocol);
         if (pool[i] < 0)
-            exit_error("ft_nmap: socket error: Check that you have the correct rights.\n");
+            exit_error_free("socket error: Check that you have the correct rights.\n");
         if (setsockopt(pool[i], IPPROTO_IP, IP_TTL, &optval, sizeof(optval)) < 0)
-            exit_error_close(pool[i], "ft_nmap: socket error in setting option: Exiting program.%s\n");
+            exit_error_free_close_one(pool[i], "socket error in setting option: Exiting program.\n");
     }
 }
 

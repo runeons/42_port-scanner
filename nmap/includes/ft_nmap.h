@@ -68,13 +68,10 @@ void            print_info_task(char *msg, int n);
 void            print_info_thread(char *msg);
 
 // utils_error.c
-void            exit_error(char *msg);
 void            exit_error_free(const char *msg, ...);
-void            exit_error_str(char *msg, char *error);
-void            exit_error_close_socket(char *msg, int socket);
-void            warning(char *msg);
-void            warning_str(char *msg, char *error);
-void            warning_int(char *msg, int nb);
+void            exit_error_free_close_all(t_data *dt, const char *msg, ...);
+void            exit_error_free_close_one(int socket, const char *msg, ...);
+void            warning(const char *msg, ...);
 
 // sniffer.c
 void            init_handle(t_sniffer *sniffer);

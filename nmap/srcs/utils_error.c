@@ -1,47 +1,47 @@
 #include "../includes/ft_nmap.h"
 
+// add file closure when applicable
 void exit_error_free(const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);
-    dprintf(2, C_G_RED"[ERROR] "C_RES"");
+    dprintf(2, C_G_RED"[ERROR] "C_RES"ft_nmap : ");
     vfprintf(stderr, msg, args);
     va_end(args);
     free_all_malloc();
     exit(1);
 }
 
-void exit_error(char *msg)
+void exit_error_free_close_all(t_data *dt, const char *msg, ...)
 {
-    printf(C_G_RED"[ERROR]"C_RES" %s\n", msg);
-    exit(1);
-}
-
-void exit_error_str(char *msg, char *error)
-{
-    printf(C_G_RED"[ERROR]"C_RES" %s %s\n", msg, error);
-    exit(1);
-}
-
-void exit_error_close_socket(char *msg, int socket)
-{
-    printf(C_G_RED"[ERROR]"C_RES" %s\n", msg);
-    close(socket);
+    va_list args;
+    va_start(args, msg);
+    dprintf(2, C_G_RED"[ERROR] "C_RES"ft_nmap : ");
+    vfprintf(stderr, msg, args);
+    va_end(args);
     free_all_malloc();
+    (void)dt;
+    // close_all_sockets(dt);
     exit(1);
 }
 
-void warning(char *msg)
+void exit_error_free_close_one(int socket, const char *msg, ...)
 {
-    printf(C_G_MAGENTA"[WARNING]"C_RES" %s\n", msg);
+    va_list args;
+    va_start(args, msg);
+    dprintf(2, C_G_RED"[ERROR] "C_RES"ft_nmap : ");
+    vfprintf(stderr, msg, args);
+    va_end(args);
+    free_all_malloc();
+    close(socket);
+    exit(1);
 }
 
-void warning_str(char *msg, char *error)
+void warning(const char *msg, ...)
 {
-    printf(C_G_MAGENTA"[WARNING]"C_RES" %s %s\n", msg, error);
-}
-
-void warning_int(char *msg, int nb)
-{
-    printf(C_G_MAGENTA"[WARNING]"C_RES" %s %d\n", msg, nb);
+    va_list args;
+    va_start(args, msg);
+    dprintf(2, C_G_MAGENTA"[WARNING] "C_RES"");
+    vfprintf(stderr, msg, args);
+    va_end(args);
 }

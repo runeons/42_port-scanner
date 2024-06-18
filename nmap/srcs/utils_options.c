@@ -1,4 +1,5 @@
 #include "../includes/utils_options.h"
+#include "../includes/utils_colors.h"
 
 // > ft_nmap [--help] [--ports [NUMBER/RANGED]] --ip IP_ADDRESS [--speedup [NUMBER]] [--scan [TYPE]]
 // > ft_nmap [--help] [--ports [NUMBER/RANGED]] --file FILE [--speedup [NUMBER]] [--scan [TYPE]]
@@ -20,6 +21,7 @@ void exit_options_error(const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);
+    dprintf(2, C_G_RED"[ERROR] "C_RES"ft_nmap : ");
     vfprintf(stderr, msg, args);
     va_end(args);
     free_all_malloc();
@@ -191,7 +193,7 @@ static t_option *check_option(char **av, int i)
         return (res);
     else if (ft_strlen(av[i]) > 2 && (res = is_allowed_option_long(av[i])) != NULL)
         return (res);
-    exit_options_error("ft_nmap: error in pattern near %s\n", av[i]);
+    exit_options_error("error in pattern near %s\n", av[i]);
     return (NULL);
 }
 
@@ -210,10 +212,10 @@ t_parsed_cmd   parse_options(int ac, char **av)
             if (res->need_param)
             {
                 if (++i == ac)
-                    exit_options_error("ft_nmap: option '%s' requires an argument\nTry 'traceroute --help' for more information.\n", res->name);
+                    exit_options_error("option '%s' requires an argument\nTry 'ft_nmap --help' for more information.\n", res->name);
                 res->param = ft_strdup(av[i]);
                 if (res->param == NULL)
-                    exit_options_error("ft_nmap: malloc failure.\n");
+                    exit_options_error("malloc failure.\n");
             }
             ft_lst_add_node_back(&act_options, ft_lst_create_node(res));
         }

@@ -22,11 +22,11 @@ static int      get_source_numeric_ip(pcap_if_t *interfaces)
             if (addr->addr->sa_family == AF_INET)
             {
                 struct sockaddr_in *sa = (struct sockaddr_in *)addr->addr;
-                return sa->sin_addr.s_addr;
+                return (sa->sin_addr.s_addr);
             }
         }
     }
-    return -1;
+    return (-1);
 }
 
 static void    option_h()
@@ -47,10 +47,8 @@ static void    parse_input(t_parsed_cmd *parsed_cmd, int ac, char **av)
 
 static void     alarm_handler(int signum)
 {
-    (void) signum;
+    (void)signum;
     alarm(0);
-    //struct handler_data *data = info->si_value.sival_ptr;
-    //fprintf(stderr, "Alarm signal received! %d\n", signum);
     t_task  *task = create_task();
 
     task->scan_tracker_id   = 0; // TO DO
@@ -79,7 +77,7 @@ static void     check_file_option(t_parsed_cmd parsed_cmd)
     one_target = ft_lst_size(parsed_cmd.not_options);
 
     if ((!file_input && one_target != 1)  || (file_input && one_target >=1))
-        exit_error_free("ft_nmap: usage error: You can only supply either a file or a single target address as inputs\n");
+        exit_error_free("usage error: You can only supply either a file or a single target address as inputs\n");
 }
 
 static void     init_signal()
@@ -91,7 +89,7 @@ static void     init_signal()
     sa.sa_flags = 0;                // Use default flags
     sigemptyset(&sa.sa_mask);       // No signals blocked during handler
     if (sigaction(SIGALRM, &sa, NULL) == -1)
-        exit_error_free("ft_nmap: sigaction: %s\n", strerror(errno)); // TO TRY OUT & CLOSE ?
+        exit_error_free("sigaction: %s\n", strerror(errno)); // TO TRY OUT & CLOSE ?
 }
 
 int             main(int ac, char **av)

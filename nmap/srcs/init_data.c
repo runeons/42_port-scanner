@@ -6,10 +6,8 @@ int             resolve_address(t_host *host) // check that dest exists and reso
     struct addrinfo     *tmp;
     int s = 1;
 
-    if ((s = getaddrinfo(host->input_dest, NULL, NULL, &resolved_add)) != 0){
-        fprintf(stderr, "ft_nmap: unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
-        return 0;
-    }
+    if ((s = getaddrinfo(host->input_dest, NULL, NULL, &resolved_add)) != 0)
+        exit_error_free("unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
     // debug_addrinfo(*resolved_add);
     tmp = resolved_add;
     while (tmp != NULL)
@@ -17,7 +15,7 @@ int             resolve_address(t_host *host) // check that dest exists and reso
         if ((struct sockaddr_in *)tmp->ai_addr)
             host->resolved_address = ft_strdup(inet_ntoa(((struct sockaddr_in *)tmp->ai_addr)->sin_addr));
         if (host->resolved_address == NULL)
-            exit_error("ft_nmap: malloc failure.\n");
+            exit_error_free("malloc failure.\n");
         tmp = tmp->ai_next;
         break; // useful if many
     }
@@ -30,19 +28,15 @@ int             resolve_hostname(t_host *host) // useful only when input_dest is
     char    hostname[MAX_HOSTNAME_LEN];
 
     ft_bzero(hostname, MAX_HOSTNAME_LEN);
-    if (inet_pton(AF_INET, host->resolved_address, &(host->target_address.sin_addr)) <= 0){
-        fprintf(stderr, "ft_nmap: address error: Invalid IPv4 address <%s>.\n", host->input_dest);
-        return 0;
-    }
-    if (getnameinfo((struct sockaddr*)&(host->target_address), sizeof(host->target_address), hostname, sizeof(hostname), NULL, 0, 0) != 0){
-        fprintf(stderr, "ft_nmap: address error: The hostname could not be resolved <%s>.\n",  host->input_dest);
-        return 0;
-    }
+    if (inet_pton(AF_INET, host->resolved_address, &(host->target_address.sin_addr)) <= 0)
+        exit_error_free("address error: Invalid IPv4 address <%s>.\n", host->input_dest);
+    if (getnameinfo((struct sockaddr*)&(host->target_address), sizeof(host->target_address), hostname, sizeof(hostname), NULL, 0, 0) != 0)
+        exit_error_free("address error: The hostname could not be resolved <%s>.\n", host->input_dest);
     else
     {
         host->resolved_hostname = ft_strdup(hostname);
         if (host->resolved_hostname == NULL)
-            exit_error("ft_nmap: malloc failure.\n");
+            exit_error_free("malloc failure.\n");
     }
     return 1;
 }
@@ -66,12 +60,12 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans)
 
     port = mmalloc(sizeof(t_port));
     if (port == NULL)
-        exit_error("ft_nmap: malloc failure.");
+        exit_error_free("malloc failure.\n");
     port->port_id           = port_id;
     port->conclusion_udp        = NOT_CONCLUDED;
     port->conclusion_tcp        = NOT_CONCLUDED;
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
-        exit_error("ft_nmap: malloc failure.");
+        exit_error_free("malloc failure.\n");
     for (int i = 0; i < g_scan_types_nb; i++)
         init_scan_tracker(&port->scan_trackers[i], unique_scans[i], port->port_id);
     // debug_scan_tracker(port->scan_trackers[0]);
@@ -150,5 +144,5 @@ void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
     init_data_struct(dt, parsed_cmd);
     init_options_params(dt);
     if (gettimeofday(&dt->init_tv, &dt->tz) != 0)
-        exit_error_free("ft_nmap: cannot retrieve time\n"); // TO TRY OUT & CLOSE ?
+        exit_error_free("cannot retrieve time\n"); // TO TRY OUT & CLOSE ?
 }
