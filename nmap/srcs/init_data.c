@@ -138,6 +138,7 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->hosts_nb            = 0;
     dt->file                = NULL;
     dt->max_retries         = 0;
+    dt->probes_delay        = 0;
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)

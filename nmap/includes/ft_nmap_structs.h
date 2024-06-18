@@ -148,6 +148,7 @@ typedef struct  s_data
     e_scan_type         unique_scans[MAX_SCANS];
     FILE                *file;
     int                 max_retries;
+    int                 probes_delay;
     // STATS
     struct timeval      tz;
     struct timeval      init_tv;

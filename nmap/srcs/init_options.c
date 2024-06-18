@@ -384,6 +384,30 @@ void   option_m(t_data *dt)
         dt->max_retries = MAX_SEND;
 }
 
+void   option_d(t_data *dt)
+{
+    int  probes_delay   = 0;
+    char *param     = NULL;
+
+    if (is_activated_option(dt->act_options, 'm'))
+    {
+        param = ft_strdup(get_option(dt->act_options, 'm')->param);
+        if (param == NULL)
+            exit_error_free("malloc failure.\n");
+        if (ft_isstrnum(param) == 0)
+            exit_error_free("invalid value: (`%s' near `%s')\n", param, param);
+        probes_delay = ft_atoi(param);
+        if (probes_delay <= 0)
+            exit_error_free("option value too small: %d\n", probes_delay);
+        else if (probes_delay > 50)
+            exit_error_free("option value too big: %d\n", probes_delay);
+        else
+            dt->probes_delay = probes_delay;
+    }
+    else
+        dt->probes_delay = PROBES_DELAY;
+}
+
 void    init_options_params(t_data *dt)
 {
     option_p(dt);
@@ -394,5 +418,6 @@ void    init_options_params(t_data *dt)
     option_n(dt);
     option_v(dt);
     option_m(dt);
+    option_d(dt);
     // option_f(dt);
 }

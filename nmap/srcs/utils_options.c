@@ -16,6 +16,7 @@ t_option allowed_options[] =
     {'m', "max-retries",    1, "NB",            NULL, "caps number of port scan probe retransmissions"},
     // {'i', "ip",             1, "IP",            NULL, "specify ipv4 to scan"},
     {'f', "file",           1, "FILE",          NULL, "specify file to get ip list"},
+    {'d', "scan-delay",     1, "NB",            NULL, "adjust delay between probes in seconds"},
 };
 
 void exit_options_error(const char *msg, ...)
