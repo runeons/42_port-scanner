@@ -11,11 +11,13 @@
 # define SOCKETS_NB             1               // tmp - 1 for now
 # define MAX_HOSTNAME_LEN       128
 # define MAX_RESULTS_LEN        128
-// VERBOSE ACTIVATION
+// DEBUG ACTIVATION
 # define DEBUG_PARSING          0
 # define DEBUG_STRUCT           0
 # define DEBUG_NET              0
 # define DEBUG_QUEUE            0
+# define DEBUG_END              0
+// VERBOSE ACTIVATION
 # define V_THREADS              0
 # define V_TASKS                0
 # define V_SOCKET               0

@@ -150,7 +150,7 @@ void    debug_queue()
 
 void    debug_end(t_data dt)
 {
-    if (dt.host.input_dest)
+    if (DEBUG_END == 1 && dt.host.input_dest)
     {
         printf(C_G_GRAY"[DEBUG] ft_nmap done: 1 IP address (%s)"C_RES"\n", dt.host.input_dest);
             printf("        total_queued        %d\n", g_queued);
