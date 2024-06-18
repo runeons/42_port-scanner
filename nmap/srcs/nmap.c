@@ -12,17 +12,17 @@ static void     close_all_sockets(t_data *dt)
 
 static void     *worker_function(void *dt)
 {
-    print_info_thread("STARTING NEW THREAD");
+    info(C_THREADS, "Starting new thread\n");
     while (g_remaining_scans > 0)
     {
         //debug_queue();
         t_task *task = dequeue_task();
         if (task == NULL)
             continue;
-        print_info_task("Dequeued task", task->scan_tracker_id);
+        info(C_TASKS, "Dequeued task %d\n", task->scan_tracker_id);
         handle_task((t_data *)dt, task);
     }
-    print_info_thread("WORKER RETURN");
+    info(C_THREADS, "Worker return\n");
     pcap_breakloop(((t_data *)dt)->sniffer.handle);
     return (NULL);
 }
@@ -31,7 +31,7 @@ static void    monitor_fds_to_sniff(t_data *dt)
 {
     int         r = 0;
 
-    printf(C_G_BLUE"[INFO]"C_RES"     Waiting on poll()...\n");
+    info(C_GENERIC, "Waiting on poll()...\n");
     r = poll(dt->fds, NFDS, POLL_TIMEOUT);
     if (r < 0)
         exit_error_free("Poll failure.\n");
@@ -43,7 +43,7 @@ static void    monitor_fds_to_sniff(t_data *dt)
 
 static void     ending_main_thread(t_data *dt)
 {
-    print_info_thread("ENDING MAIN THREAD");
+    info(C_THREADS, "Ending main thread\n");
     display_conclusions(dt);
     alarm(0);
     debug_host(dt->host);
@@ -73,12 +73,12 @@ void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)
     nmap_init(dt, interface_name);
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
-    print_info_thread("STARTING MAIN THREAD");
+    info(C_THREADS, "Starting main thread\n");
     while (g_remaining_scans > 0)
         monitor_fds_to_sniff(dt);
     for (int i = 0; i < dt->threads; i++)
     {
-        print_info_task("END THREAD", i);
+        info(C_THREADS, "End thread %d\n", i);
         pthread_join(workers[i], NULL);
     }
     ending_main_thread(dt);

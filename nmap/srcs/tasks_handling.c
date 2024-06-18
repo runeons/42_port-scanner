@@ -46,7 +46,7 @@ e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
         if (all_scans[i].scan_type == scan_type && all_scans[i].response == response)
             return (all_scans[i].conclusion);
     }
-    printf(C_B_RED"[TO IMPLEMENT] Cannot conclude scan result from response"C_RES"\n");
+    important_warning("cannot conclude scan result from response.\n");
     return NOT_CONCLUDED;
 }
 
@@ -69,13 +69,15 @@ static t_scan_tracker *find_tracker_with_id(t_data *dt, int tracker_id, uint16_t
     while (curr_port != NULL)
     {
         t_port *port = curr_port->content;
+        if (port == NULL)
+            exit_error_free("unexpected memory access. Quiting program.\n");
         if (port->port_id != dst_port)
             goto next_port;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
-            if (tracker == NULL) // TO PROTECT
-                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            if (tracker == NULL)
+                exit_error_free("unexpected memory access. Quiting program.\n");
             if (tracker->id == tracker_id)
                 return tracker;
         }
@@ -92,13 +94,15 @@ static t_scan_tracker *find_tracker_from_ports(t_data *dt, uint16_t src_port, ui
     while (curr_port != NULL)
     {
         t_port *port = curr_port->content;
+        if (port == NULL)
+            exit_error_free("unexpected memory access. Quiting program.\n");
         if (port->port_id != dst_port)
             goto next_port;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
-            if (tracker == NULL) // TO PROTECT
-                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            if (tracker == NULL)
+                exit_error_free("unexpected memory access. Quiting program.\n");
             if (tracker->src_port == src_port)
                 return tracker;
         }
@@ -171,12 +175,14 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
     while (curr_port != NULL)
     {
         t_port *port = curr_port->content;
+        if (port == NULL)
+            exit_error_free("unexpected memory access. Quiting program.\n");
 
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]);
-            if (tracker == NULL) // TO PROTECT
-                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            if (tracker == NULL)
+                exit_error_free("unexpected memory access. Quiting program.\n");
             if (tracker->id == scan_tracker_id)
             {
                 tracker->scan.response = response;
@@ -188,7 +194,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
                 }
                 else
                 {
-                    printf(C_B_CYAN"[TO IMPLEMENT] - NOT CONCLUDED -> RESEND OR IGNORE / INCREMENT COUNTER"C_RES"\n");
+                    important_warning("[TO IMPLEMENT] - NOT CONCLUDED -> RESEND OR IGNORE / INCREMENT COUNTER.\n");
                     decr_remaining_scans(1); // remove when all scans are implemented (now, avoid infinite looping)
                 }
                 gettimeofday(&recv_time, NULL);
@@ -201,7 +207,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
         }
         curr_port = curr_port->next;
     }
-    printf(C_B_RED"[SHOULD NOT APPEAR] scan_tracker_id not found"C_RES"\n");
+    important_warning("scan_tracker_id not found.\n");
 }
 
 int     extract_response_id(t_data *dt, t_task *task, e_response response)
@@ -244,7 +250,7 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
             break;
         }
         default:
-            printf(C_B_CYAN"[TO IMPLEMENT] - response != ICMP_ECHO_OK"C_RES"\n");
+            important_warning("[TO IMPLEMENT] - response != ICMP_ECHO_OK.\n");
     }
     return id;
 }
@@ -268,7 +274,7 @@ void    handle_send_task(t_data *dt, t_task *task)
             if (dt->fds[i].revents == 0)
             {
                 enqueue_task(task);
-                printf(C_B_RED"[REQUEUED] %d No event detected for this socket"C_RES"\n", task->scan_tracker_id);
+                warning("[REQUEUED] scan %d: No event detected for this socket.\n", task->scan_tracker_id);
                 continue;
             }
 
@@ -330,11 +336,13 @@ static void handle_check_task(t_data *dt, t_task *task)
     while (curr_port != NULL)
     {
         t_port *port = curr_port->content;
+        if (port == NULL)
+            exit_error_free("unexpected memory access. Quiting program.\n");
         for (int i = 0; i < g_scan_types_nb; i++, sock_index++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]);
-            if (tracker == NULL) // TO PROTECT
-                printf(C_B_RED"[SHOULD NOT APPEAR] Empty tracker"C_RES"\n");
+            if (tracker == NULL)
+                exit_error_free("unexpected memory access. Quiting program.\n");
             
             if (tracker->scan.conclusion == NOT_CONCLUDED)
             {

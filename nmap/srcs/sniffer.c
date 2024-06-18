@@ -65,9 +65,9 @@ void        packet_handler(u_char *args, const struct pcap_pkthdr *header, const
 void        sniff_packets(pcap_t *handle, t_data *dt)
 {
     (void)dt;
-    printf(C_G_BLUE"[INFO]"C_RES"     Ready to sniff...\n");
+    info(C_SNIFFER, "Ready to sniff...\n");
     while (g_remaining_scans > 0)
         pcap_dispatch(handle, 0, packet_handler, 0);
     //debug_queue(*dt);
-    // printf(C_G_BLUE"[INFO]"C_RES"     Capture completed\n");
+    info(C_SNIFFER, "Capture completed\n");
 }

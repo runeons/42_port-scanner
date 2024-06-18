@@ -176,14 +176,13 @@ void                send_packet(int socket, t_packet *packet, struct sockaddr_in
 {
     int r = 0;
 
-    // print_info("Main socket is readable");
+    info(C_SOCKET, "Main socket is readable\n");
     if ((r = sendto(socket, &packet->packet(generic), packet->size, 0, (struct sockaddr *)target_address, sizeof(*target_address))) < 0)
     {
-        printf("sendto:: %s\n", strerror(errno));
-        warning("Packet sending failure : task %d.\n", task_id); // TO TRY OUT
+        warning("Packet sending failure: task %d: %s\n", task_id, strerror(errno)); // TO TRY OUT
         return;
     }
-    print_info_int("Packet sent (bytes):", sizeof(*packet));
+    info(C_SOCKET, "Packet sent (%lu bytes)\n", sizeof(*packet));
     //pthread_mutex_lock(&mutex);
     g_sent++;
     //pthread_mutex_unlock(&mutex);

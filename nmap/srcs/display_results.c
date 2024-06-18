@@ -101,7 +101,7 @@ static void         print_filled_line(t_port *port, char *results, int padding, 
     else if (protocol == P_UDP)
         printf("| %5d/udp | %-*s | %-22s | %-14s ", port->port_id, padding, results, get_udp_service(port->port_id), conclusion_string(port->conclusion_udp));
     else
-        printf(C_B_RED"[SHOULD NOT APPEAR] unexpected protocol"C_RES);
+        important_warning("unexpected protocol.\n");
     if (reason == TRUE)
     {
         if (protocol == P_TCP)
@@ -125,14 +125,14 @@ static void         display_each_protocol(t_lst *curr_port, int padding, int rea
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             if (port == NULL || &(port->scan_trackers[i]) == NULL)
-                exit_error_free("unexpected memory access.\n");
+                exit_error_free("unexpected memory access. Quiting program.\n");
             t_scan scan = (port->scan_trackers[i]).scan;
             if (get_protocol(scan) == P_TCP)
                 pos_tcp += fill_results_buffer(scan, &tcp_results, pos_tcp, padding);
             else if (get_protocol(scan) == P_UDP)
                 pos_udp += fill_results_buffer(scan, &udp_results, pos_udp, padding);
             else
-                printf(C_B_RED"[SHOULD NOT APPEAR] unexpected protocol"C_RES"\n");
+                important_warning("unexpected protocol.\n");
         }
         if (pos_tcp != 0)
             print_filled_line(port, tcp_results, padding, P_TCP, reason);

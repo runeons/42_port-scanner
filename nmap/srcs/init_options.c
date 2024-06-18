@@ -255,9 +255,9 @@ void option_p(t_data *dt){//, int *output, int *output_size) {
     }
     dt->first_port = &dt->arg_ports[0];
     dt->last_port = &dt->arg_ports[dt->n_ports - 1];
-
+    
     if (n_dup > 0)
-        printf("Warning: duplicate ports detected\n");
+        warning("duplicate ports detected.\n"); // NOT TAKEN INTO ACCOUNT
 }
 
 // void   option_p(t_data *dt)

@@ -12,7 +12,7 @@ void    enqueue_task(t_task *task)
 {
     pthread_mutex_lock(&mutex);
     ft_lst_add_node_back(&g_queue, ft_lst_create_node(task));
-    print_info_task("Enqueued task", task->scan_tracker_id);
+    info(C_TASKS, "Enqueued task %d\n", task->scan_tracker_id);
     g_queued++;
     pthread_mutex_unlock(&mutex);
 }
@@ -50,8 +50,7 @@ t_task    *create_task()
 {
     t_task *task = NULL;
 
-    task = mmalloc(sizeof(t_task));
-    if (task == NULL)
+    if (!(task = mmalloc(sizeof(t_task))))
         exit_error_free("malloc failure.\n");
     task->scan_tracker_id   = 0;
     task->task_type         = T_EMPTY;
@@ -63,7 +62,7 @@ t_task    *create_task()
     task->args              = NULL;
     task->header            = NULL;
     task->packet            = NULL;
-    ft_memset(&(task->target_address), 0, sizeof(struct sockaddr_in)); //why not use a pointer ? 
+    ft_memset(&(task->target_address), 0, sizeof(struct sockaddr_in)); //why not use a pointer ? TO REPLY
     return task;
 }
 
@@ -75,10 +74,14 @@ void init_queue(t_data *dt)
 
     while (curr_port != NULL)
     {
-        t_port *port = (t_port *)curr_port->content; // TO PROTECT
+        t_port *port = (t_port *)curr_port->content;
+        if (port == NULL)
+            exit_error_free("unexpected memory access. Quiting program.\n");
         for (int i = 0; i < g_scan_types_nb; i++, sock_index++)
         {
-            t_scan_tracker  *curr_tracker = &(port->scan_trackers[i]); // TO PROTECT
+            t_scan_tracker  *curr_tracker = &(port->scan_trackers[i]);
+            if (curr_tracker == NULL)
+                exit_error_free("unexpected memory access. Quiting program.\n");
             t_task          *task = create_task();
             tmp_socket = select_socket_from_pool(dt, curr_tracker->scan.scan_type, sock_index);
 

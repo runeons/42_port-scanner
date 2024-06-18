@@ -11,12 +11,16 @@
 # define SOCKETS_NB             1               // tmp - 1 for now
 # define MAX_HOSTNAME_LEN       128
 # define MAX_RESULTS_LEN        128
-// DEBUG && VERBOSE
+// VERBOSE ACTIVATION
 # define DEBUG_PARSING          0
 # define DEBUG_STRUCT           0
 # define DEBUG_NET              0
 # define DEBUG_QUEUE            0
-# define VERBOSE_THREAD         0
+# define V_THREADS              0
+# define V_TASKS                0
+# define V_SOCKET               0
+# define V_GENERIC              0
+# define V_SNIFFER              0
 // DEFAULTS OPTIONS VALUES
 # define THREADS_NB             1
 # define FIRST_PORT             1

@@ -61,16 +61,12 @@ void            debug_host(t_host host);
 void            debug_queue();
 void            debug_end(t_data dt);
 
-// utils_print.c
-void            print_info(char *msg);
-void            print_info_int(char *msg, int n);
-void            print_info_task(char *msg, int n);
-void            print_info_thread(char *msg);
-
 // utils_error.c
+void            info(char *color, const char *msg, ...);
 void            exit_error_free(const char *msg, ...);
 void            exit_error_free_close_all(t_data *dt, const char *msg, ...);
 void            exit_error_free_close_one(int socket, const char *msg, ...);
+void            important_warning(const char *msg, ...);
 void            warning(const char *msg, ...);
 
 // sniffer.c

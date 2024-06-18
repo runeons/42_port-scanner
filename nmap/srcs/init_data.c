@@ -58,8 +58,7 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans)
 {
     t_port  *port = NULL;
 
-    port = mmalloc(sizeof(t_port));
-    if (port == NULL)
+    if (!(port = mmalloc(sizeof(t_port))))
         exit_error_free("malloc failure.\n");
     port->port_id           = port_id;
     port->conclusion_udp        = NOT_CONCLUDED;
