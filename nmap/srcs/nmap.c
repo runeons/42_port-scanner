@@ -88,7 +88,6 @@ void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)
     for (int i = 0; i < dt->threads; i++)
     {
         info(C_THREADS, "End thread %d\n", i);
-        printf(TEST);
         pthread_join(workers[i], NULL);
     }
     ending_main_thread(dt);

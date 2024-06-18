@@ -147,6 +147,7 @@ typedef struct  s_data
     int                 n_ports;
     e_scan_type         unique_scans[MAX_SCANS];
     FILE                *file;
+    int                 max_retries;
     // STATS
     struct timeval      tz;
     struct timeval      init_tv;

@@ -41,20 +41,20 @@ int             resolve_hostname(t_host *host) // useful only when input_dest is
     return (1);
 }
 
-static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type, uint16_t dst_port)
+static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type scan_type, uint16_t dst_port, int max_retries)
 {
     scan_tracker->id                  = g_scan_tracker_id++;
     scan_tracker->scan.scan_type      = scan_type;
     scan_tracker->scan.response       = IN_PROGRESS;
     scan_tracker->scan.conclusion     = NOT_CONCLUDED; 
     scan_tracker->count_sent          = 0;
-    scan_tracker->max_send            = MAX_SEND;
+    scan_tracker->max_send            = max_retries;
     scan_tracker->dst_port            = dst_port;
     scan_tracker->src_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
     gettimeofday(&scan_tracker->last_send, NULL);
 }
 
-static t_port    *create_port(int port_id, e_scan_type *unique_scans)
+static t_port    *create_port(int port_id, e_scan_type *unique_scans, int max_retries)
 {
     t_port  *port = NULL;
 
@@ -66,16 +66,16 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans)
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
         exit_error_free("malloc failure.\n");
     for (int i = 0; i < g_scan_types_nb; i++)
-        init_scan_tracker(&port->scan_trackers[i], unique_scans[i], port->port_id);
+        init_scan_tracker(&port->scan_trackers[i], unique_scans[i], port->port_id, max_retries);
     // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
 
-static void     add_port(t_host *host, int port_id, e_scan_type *unique_scans)
+static void     add_port(t_host *host, int port_id, e_scan_type *unique_scans, int max_retries)
 {
     t_port *port;
 
-    port = create_port(port_id, unique_scans);
+    port = create_port(port_id, unique_scans, max_retries);
     ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
     // debug_port(*port);
 }
@@ -93,7 +93,7 @@ int             fill_host(t_data *dt, char *curr_arg)
         if (!resolve_hostname(&dt->host))
             return (0);
         for (uint16_t *port_id = dt->first_port; port_id <= dt->last_port; port_id++)
-            add_port(&dt->host, *port_id, dt->unique_scans);
+            add_port(&dt->host, *port_id, dt->unique_scans, dt->max_retries);
     }
     return (1);
 }
@@ -108,7 +108,7 @@ void            init_host(t_host *host)
     host->target_address.sin_port           = 0;
     host->target_address.sin_addr.s_addr    = INADDR_ANY;
     host->ports                             = NULL;
-    host->approx_rtt_upper_bound            =  5000;  // 5 seconds
+    host->approx_rtt_upper_bound            = 5000;  // 5 seconds
     ft_bzero(&host->ma, sizeof(t_mavg));
 }
 
@@ -137,6 +137,7 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->sniffer.filter      = NULL;
     dt->hosts_nb            = 0;
     dt->file                = NULL;
+    dt->max_retries         = 0;
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)

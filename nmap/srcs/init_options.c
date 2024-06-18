@@ -360,6 +360,30 @@ void   option_th(t_data *dt)
         dt->threads = THREADS_NB;
 }
 
+void   option_m(t_data *dt)
+{
+    int  max_retries   = 0;
+    char *param     = NULL;
+
+    if (is_activated_option(dt->act_options, 'm'))
+    {
+        param = ft_strdup(get_option(dt->act_options, 'm')->param);
+        if (param == NULL)
+            exit_error_free("malloc failure.\n");
+        if (ft_isstrnum(param) == 0)
+            exit_error_free("invalid value: (`%s' near `%s')\n", param, param);
+        max_retries = ft_atoi(param);
+        if (max_retries <= 0)
+            exit_error_free("option value too small: %d\n", max_retries);
+        else if (max_retries > 50)
+            exit_error_free("option value too big: %d\n", max_retries);
+        else
+            dt->max_retries = max_retries;
+    }
+    else
+        dt->max_retries = MAX_SEND;
+}
+
 void    init_options_params(t_data *dt)
 {
     option_p(dt);
@@ -369,5 +393,6 @@ void    init_options_params(t_data *dt)
     option_r(dt);
     option_n(dt);
     option_v(dt);
+    option_m(dt);
     // option_f(dt);
 }

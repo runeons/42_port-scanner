@@ -6,7 +6,6 @@
 # define FALSE                  0
 # define MAX_SCANS              7
 # define MAX_PORTS              1024
-# define MAX_SEND               3
 # define SCAN_CHARS             "SAUFNXI"       // I = tmp (initial test only)
 # define SOCKETS_NB             1               // tmp - 1 for now
 # define MAX_HOSTNAME_LEN       128
@@ -30,6 +29,7 @@
 # define MIN_PORT               1
 # define MAX_PORT               65535
 # define MAX_PORT_RANGE         1024
+# define MAX_SEND               3
 // POLL
 # define SOCKET_POOL_SIZE       10
 # define NFDS                   3 * SOCKET_POOL_SIZE
