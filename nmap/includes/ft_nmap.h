@@ -78,7 +78,7 @@ void            warning_int(char *msg, int nb);
 
 // sniffer.c
 void            init_handle(t_sniffer *sniffer);
-void            init_sniffer(t_sniffer *sniffer, char *device, char *filter);
+void            init_sniffer(t_data *dt, t_sniffer *sniffer, char *device);
 pcap_if_t       *find_devices();
 void            packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 void            sniff_packets(pcap_t *handle, t_data *dt);

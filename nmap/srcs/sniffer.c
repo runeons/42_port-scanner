@@ -25,8 +25,11 @@ void        init_handle(t_sniffer *sniffer)
     pcap_freecode(&compiled_filter);
 }
 
-void        init_sniffer(t_sniffer *sniffer, char *device, char *filter)
+void        init_sniffer(t_data *dt, t_sniffer *sniffer, char *device)
 {
+    char    filter[sizeof("src host xxx.xxx.xxx.xxx")];
+
+    sprintf(filter, "src host %s", dt->host.resolved_address);
     if (!(sniffer->device = ft_strdup(device)))
         exit_error("Malloc failure.");
     if (!(sniffer->filter = ft_strdup(filter)))

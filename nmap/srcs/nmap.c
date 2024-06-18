@@ -24,56 +24,59 @@ static void     *worker_function(void *dt)
     }
     print_info_thread("WORKER RETURN");
     pcap_breakloop(((t_data *)dt)->sniffer.handle);
-    return NULL;
+    return (NULL);
 }
 
-void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
+static void    monitor_fds_to_sniff(t_data *dt)
 {
-    char        filter[sizeof("src host xxx.xxx.xxx.xxx")];
     int         r = 0;
-    pthread_t   workers[dt->threads];
 
-    init_socket(dt);
-    dt->host.ports = NULL;
-    dt->host.approx_rtt_upper_bound =  5000;  // 5 seconds
-    ft_bzero(&dt->host.ma, sizeof(t_mavg));
-    if (!fill_host(dt, target))
-        goto clean_ret;
-    debug_host(dt->host);
-    display_nmap_init(dt);
-    display_host_init(&dt->host, dt->no_dns);
-    dt->src_ip = numeric_src_ip;
-    init_queue(dt);
-    sprintf(filter, "src host %s", dt->host.resolved_address);
-    init_sniffer(&dt->sniffer, interface_name, filter);
-    init_handle(&dt->sniffer);
+    printf(C_G_BLUE"[INFO]"C_RES"     Waiting on poll()...\n");
+    r = poll(dt->fds, NFDS, POLL_TIMEOUT);
+    if (r < 0)
+        exit_error("Poll failure.");
+    if (r == 0)
+        exit_error("Poll timed out.");
+    sniff_packets(dt->sniffer.handle, dt);
+    // fprintf(stderr, "WAIT TO JOIN\n");
+}
 
-    alarm(1);
-    for (int i = 0; i < dt->threads; i++)
-        pthread_create(&workers[i], NULL, worker_function, dt);
-    print_info_thread("STARTING MAIN THREAD");
-    while (g_remaining_scans > 0)
-    {
-        printf(C_G_BLUE"[INFO]"C_RES"     Waiting on poll()...\n");
-        r = poll(dt->fds, NFDS, POLL_TIMEOUT);
-        if (r < 0)
-            exit_error("Poll failure.");
-        if (r == 0)
-            exit_error("Poll timed out.");
-        sniff_packets(dt->sniffer.handle, dt);
-        // fprintf(stderr, "WAIT TO JOIN\n");
-    }
-    for (int i = 0; i < dt->threads; i++)
-    {
-        print_info_task("END THREAD", i);
-        pthread_join(workers[i], NULL);
-    }
+static void    ending_main_thread(t_data *dt)
+{
     print_info_thread("ENDING MAIN THREAD");
     display_conclusions(dt);
     alarm(0);
     debug_host(dt->host);
     debug_end(*dt);
     pcap_close(dt->sniffer.handle);
+}
+
+void    nmap(char *target, char *interface_name, int numeric_src_ip, t_data *dt)
+{
+    pthread_t   workers[dt->threads];
+
+    init_socket(dt);
+    dt->src_ip = numeric_src_ip;
+    if (!fill_host(dt, target))
+        goto clean_ret;
+    // debug_host(dt->host);
+    display_nmap_init(dt);
+    display_host_init(&dt->host, dt->no_dns);
+    init_queue(dt);
+    init_sniffer(dt, &dt->sniffer, interface_name);
+    init_handle(&dt->sniffer);
+    alarm(1);
+    for (int i = 0; i < dt->threads; i++)
+        pthread_create(&workers[i], NULL, worker_function, dt);
+    print_info_thread("STARTING MAIN THREAD");
+    while (g_remaining_scans > 0)
+        monitor_fds_to_sniff(dt);
+    for (int i = 0; i < dt->threads; i++)
+    {
+        print_info_task("END THREAD", i);
+        pthread_join(workers[i], NULL);
+    }
+    ending_main_thread(dt);
     clean_ret:
     close_all_sockets(dt);
 }

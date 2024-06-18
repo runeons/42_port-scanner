@@ -91,15 +91,18 @@ int             fill_host(t_data *dt, char *curr_arg)
 {
     if (dt)
     {
+        dt->host.ports = NULL;
+        dt->host.approx_rtt_upper_bound = 5000;  // 5 seconds
+        ft_bzero(&dt->host.ma, sizeof(t_mavg));
         dt->host.input_dest = curr_arg;
         if (!resolve_address(&dt->host))
-            return 0;
+            return (0);
         if (!resolve_hostname(&dt->host))
-            return 0;
+            return (0);
         for (uint16_t *port_id = dt->first_port; port_id <= dt->last_port; port_id++)
             add_port(&dt->host, *port_id, dt->unique_scans);
     }
-    return 1;
+    return (1);
 }
 
 void            init_host(t_host *host)
