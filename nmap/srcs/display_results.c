@@ -59,11 +59,11 @@ static int      get_results_padding()
 {
     int tcp_scans_nb    = 0;
 
-    if (g_scan_types_nb == 6)
-        tcp_scans_nb = 5;
+    if (g_scan_types_nb == MAX_SCANS)
+        tcp_scans_nb = MAX_SCANS - 1;
     else
         tcp_scans_nb = g_scan_types_nb;
-    return (20 * tcp_scans_nb);
+    return (19 * tcp_scans_nb);
 
 }
 
@@ -73,8 +73,8 @@ static e_protocol      get_protocol(t_scan scan)
         return P_UDP;
     else if (scan.scan_type == UNKNOWN)
         return P_UNKNOWN;
-    else if (scan.scan_type == ICMP) // TEST
-        return P_ICMP;
+    // else if (scan.scan_type == ICMP) // tmp initial test only
+    //     return P_ICMP;
     else
         return P_TCP;
 }

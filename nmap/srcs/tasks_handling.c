@@ -15,8 +15,8 @@ t_scan all_scans[] =
     {ACK,   ICMP_UNR_C_3,        FILTERED      },
     {ACK,   ICMP_UNR_C_NOT_3,    FILTERED      },
 
-    {ICMP,  ICMP_ECHO_OK,        OPEN          },           // tmp (initial test only)
-    {ICMP,  NO_RESPONSE,         CLOSED        },           // tmp (initial test only)
+    // {ICMP,  ICMP_ECHO_OK,        OPEN          },           // tmp (initial test only)
+    // {ICMP,  NO_RESPONSE,         CLOSED        },           // tmp (initial test only)
 
     {UDP,   UDP_ANY,             OPEN          },
     {UDP,   NO_RESPONSE,         OPEN_FILTERED },
@@ -261,6 +261,7 @@ void    handle_recv_task(t_data *dt, t_task *task)
 
     response = determine_response_type(dt, task);
     task->scan_tracker_id = extract_response_id(dt, task, response);
+    // printf(C_G_RED"[T_RECV] response: %s [%d]"C_RES"\n", response_string(response), task->scan_tracker_id);
     update_scan_tracker(dt, task->scan_tracker_id, response);
     // debug_task(*task);
 }
@@ -285,9 +286,9 @@ void    handle_send_task(t_data *dt, t_task *task)
 
             switch (task->scan_type)
             {
-                case ICMP:
-                    craft_icmp_packet(&packet, task);
-                    break;
+                // case ICMP:
+                //     craft_icmp_packet(&packet, task);
+                //     break;
                 case SYN:
                 case ACK:
                 case FIN:

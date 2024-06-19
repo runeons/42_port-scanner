@@ -124,8 +124,8 @@ e_scan_type char_to_scan_type(char c)
             return NUL;
         case 'X':
             return XMAS;
-        case 'I':
-            return ICMP;
+        // case 'I':
+        //     return ICMP;
         default:
             return UNKNOWN;
     }

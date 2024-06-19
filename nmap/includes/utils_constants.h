@@ -4,9 +4,11 @@
 // GENERAL
 # define TRUE                   1
 # define FALSE                  0
-# define MAX_SCANS              7               // I tmp
+// # define MAX_SCANS              7
+# define MAX_SCANS              6
 # define MAX_PORTS              1024
-# define SCAN_CHARS             "SAUFNXI"       // I = tmp (initial test only)
+// # define SCAN_CHARS             "SAUFNXI"
+# define SCAN_CHARS             "SAUFNX"
 # define SOCKETS_NB             1               // tmp - 1 for now
 # define MAX_HOSTNAME_LEN       128
 // DEBUG ACTIVATION
@@ -42,10 +44,8 @@
 # define ICMP_H_LEN             8               // sizeof(struct icmphdr)
 # define ICMP_P_LEN             56
 # define TCP_P_LEN              4
-# define UDP_P_LEN              29              //based on nmap
-// PACKET FLAGS
-# define ICMP_ECHO_REPLY        0               // tmp (initial test only)
+# define UDP_P_LEN              29              // based on nmap
 // WINDOW
-#define WINDOW_SIZE 5
+# define WINDOW_SIZE            5
 
 #endif

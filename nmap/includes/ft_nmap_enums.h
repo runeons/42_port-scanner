@@ -21,7 +21,7 @@ typedef enum
 
 typedef enum
 {
-    ICMP,               // tmp (initial test only)
+    // ICMP,               // tmp (initial test only)
     SYN,
     ACK,
     UDP,
@@ -56,7 +56,7 @@ typedef enum
 
 typedef enum
 {
-    PACKET_TYPE_ICMP = ICMP,
+    // PACKET_TYPE_ICMP = ICMP,
     PACKET_TYPE_SYN = SYN,
     PACKET_TYPE_ACK = ACK,
     PACKET_TYPE_UDP = UDP,

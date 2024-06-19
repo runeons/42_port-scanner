@@ -22,33 +22,33 @@ static unsigned short   checksum(void *packet, int len)
 	return checksum;
 }
 
-static void             craft_icmp_payload(t_packet *packet)
-{
-    int i;
+// static void             craft_icmp_payload(t_packet *packet)
+// {
+//     int i;
 
-    i = 0;
-    ft_bzero(&packet->packet(icmp), packet->size);
-    while (i < ICMP_P_LEN)
-    {
-		packet->packet(icmp).payload[i] = 'A';
-        i++;
-    }
-    packet->packet(icmp).payload[ICMP_P_LEN - 1] = '\0';
-    //pthread_mutex_lock(&mutex);
-    g_sequence++;
-    //pthread_mutex_unlock(&mutex);
-}
+//     i = 0;
+//     ft_bzero(&packet->packet(icmp), packet->size);
+//     while (i < ICMP_P_LEN)
+//     {
+// 		packet->packet(icmp).payload[i] = 'A';
+//         i++;
+//     }
+//     packet->packet(icmp).payload[ICMP_P_LEN - 1] = '\0';
+//     //pthread_mutex_lock(&mutex);
+//     g_sequence++;
+//     //pthread_mutex_unlock(&mutex);
+// }
 
-void                    craft_icmp_packet(t_packet *packet, t_task *task)
-{
-    packet->type = PACKET_TYPE_ICMP;
-    packet->size = sizeof(struct icmp_packet);
-    craft_icmp_payload(packet);
-    packet->packet(icmp).h.type = ICMP_ECHO;
-    packet->packet(icmp).h.un.echo.id = task->scan_tracker_id;
-    packet->packet(icmp).h.un.echo.sequence = g_sequence;
-    packet->packet(icmp).h.checksum = checksum(&packet->packet(icmp), packet->size);
-}
+// void                    craft_icmp_packet(t_packet *packet, t_task *task)
+// {
+//     packet->type = PACKET_TYPE_ICMP;
+//     packet->size = sizeof(struct icmp_packet);
+//     craft_icmp_payload(packet);
+//     packet->packet(icmp).h.type = ICMP_ECHO;
+//     packet->packet(icmp).h.un.echo.id = task->scan_tracker_id;
+//     packet->packet(icmp).h.un.echo.sequence = g_sequence;
+//     packet->packet(icmp).h.checksum = checksum(&packet->packet(icmp), packet->size);
+// }
 
 struct pseudo_header
 {
