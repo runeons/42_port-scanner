@@ -60,13 +60,15 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans, int max_re
 
     if (!(port = mmalloc(sizeof(t_port))))
         exit_error_free("malloc failure.\n");
-    port->port_id           = port_id;
+    port->port_id               = port_id;
     port->conclusion_udp        = NOT_CONCLUDED;
     port->conclusion_tcp        = NOT_CONCLUDED;
     if (!(port->scan_trackers = mmalloc(sizeof(t_scan_tracker) * g_scan_types_nb)))
         exit_error_free("malloc failure.\n");
     for (int i = 0; i < g_scan_types_nb; i++)
         init_scan_tracker(&port->scan_trackers[i], unique_scans[i], port->port_id, max_retries);
+    port->tcp_reason            = IN_PROGRESS;
+    port->udp_reason            = IN_PROGRESS;
     // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
@@ -103,12 +105,13 @@ void            init_host(t_host *host)
     host->input_dest                        = "";
     host->resolved_address                  = NULL;
     host->resolved_hostname                 = "";
+    host->dst_port                          = 0;
+    host->approx_rtt_upper_bound            = 5000;  // 5 seconds
+    host->ports                             = NULL;
     ft_memset(&(host->target_address), 0, sizeof(struct sockaddr_in));
     host->target_address.sin_family         = AF_INET;
     host->target_address.sin_port           = 0;
     host->target_address.sin_addr.s_addr    = INADDR_ANY;
-    host->ports                             = NULL;
-    host->approx_rtt_upper_bound            = 5000;  // 5 seconds
     ft_bzero(&host->ma, sizeof(t_mavg));
 }
 
