@@ -68,7 +68,7 @@ static void     nmap_init(t_data *dt, char *interface_name)
     init_queue(dt);
     init_sniffer(dt, &dt->sniffer, interface_name);
     init_handle(&dt->sniffer);
-    alarm(1);
+    alarm(dt->probes_delay);
 }
 
 void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)

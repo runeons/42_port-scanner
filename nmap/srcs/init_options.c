@@ -389,9 +389,9 @@ void   option_d(t_data *dt)
     int  probes_delay   = 0;
     char *param     = NULL;
 
-    if (is_activated_option(dt->act_options, 'm'))
+    if (is_activated_option(dt->act_options, 'd'))
     {
-        param = ft_strdup(get_option(dt->act_options, 'm')->param);
+        param = ft_strdup(get_option(dt->act_options, 'd')->param);
         if (param == NULL)
             exit_error_free("malloc failure.\n");
         if (ft_isstrnum(param) == 0)
