@@ -76,7 +76,7 @@ typedef struct  s_scan_tracker
     int                 id;
     t_scan              scan;
     int                 count_sent;
-    int                 max_send;
+    int                 max_retries;
     uint16_t            dst_port;
     uint16_t            src_port;
     struct timeval      last_send;
@@ -124,7 +124,7 @@ typedef struct  s_sniffer
 typedef struct  s_data
 {
     // SOCKET
-    int                 icmp_socket_pool[SOCKET_POOL_SIZE];
+    // int                 icmp_socket_pool[SOCKET_POOL_SIZE];
     int                 udp_socket_pool[SOCKET_POOL_SIZE];
     int                 tcp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;

@@ -31,7 +31,7 @@ void    exit_error_free(const char *msg, ...)
     exit(1);
 }
 
-void    exit_error_free_close_all(t_data *dt, const char *msg, ...)
+void    exit_error_full_free(t_data *dt, const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);
@@ -39,8 +39,9 @@ void    exit_error_free_close_all(t_data *dt, const char *msg, ...)
     vfprintf(stderr, msg, args);
     va_end(args);
     free_all_malloc();
-    (void)dt;
-    // close_all_sockets(dt);
+    // (void)dt;
+    pcap_close(dt->sniffer.handle);
+    close_all_sockets(dt);
     close_file(&dt->file);
     exit(1);
 }

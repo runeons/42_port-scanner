@@ -261,7 +261,7 @@ void    handle_recv_task(t_data *dt, t_task *task)
 
     response = determine_response_type(dt, task);
     task->scan_tracker_id = extract_response_id(dt, task, response);
-    // printf(C_G_RED"[T_RECV] response: %s [%d]"C_RES"\n", response_string(response), task->scan_tracker_id);
+    // dprintf(2, C_G_RED"[T_RECV] response: %s [%d]"C_RES"\n", response_string(response), task->scan_tracker_id);
     update_scan_tracker(dt, task->scan_tracker_id, response);
     // debug_task(*task);
 }
@@ -347,7 +347,7 @@ static void handle_check_task(t_data *dt, t_task *task)
             
             if (tracker->scan.conclusion == NOT_CONCLUDED)
             {
-                if (tracker->count_sent > 0 && tracker->count_sent < tracker->max_send)
+                if (tracker->count_sent > 0 && tracker->count_sent < tracker->max_retries)
                 {
                     if (deltaT(&tracker->last_send ,&time_now) > (get_moving_average(&dt->host.ma) > 0 ? get_moving_average(&dt->host.ma):5000))
                     {

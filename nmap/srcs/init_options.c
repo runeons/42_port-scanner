@@ -381,7 +381,7 @@ void   option_m(t_data *dt)
             dt->max_retries = max_retries;
     }
     else
-        dt->max_retries = MAX_SEND;
+        dt->max_retries = MAX_RETRIES;
 }
 
 void   option_d(t_data *dt)

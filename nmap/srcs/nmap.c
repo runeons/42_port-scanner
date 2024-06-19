@@ -1,9 +1,9 @@
 #include "../includes/ft_nmap.h"
 
-static void     close_all_sockets(t_data *dt)
+void     close_all_sockets(t_data *dt)
 {
-    for (int i = 0; i < SOCKET_POOL_SIZE; i++)
-        close(dt->icmp_socket_pool[i]);
+    // for (int i = 0; i < SOCKET_POOL_SIZE; i++)
+    //     close(dt->icmp_socket_pool[i]);
     for (int i = 0; i < SOCKET_POOL_SIZE; i++)
         close(dt->udp_socket_pool[i]);
     for (int i = 0; i < SOCKET_POOL_SIZE; i++)
@@ -45,7 +45,7 @@ static void    monitor_fds_to_sniff(t_data *dt)
     info(C_GENERIC, "Waiting on poll()...\n");
     r = poll(dt->fds, NFDS, POLL_TIMEOUT);
     if (r < 0)
-        exit_error_free("Poll failure.\n");
+        exit_error_full_free(dt, "Poll failure.\n");
     if (r == 0)
         exit_error_free("Poll timed out.\n");
     sniff_packets(dt->sniffer.handle, dt);

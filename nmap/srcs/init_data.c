@@ -48,7 +48,7 @@ static void      init_scan_tracker(t_scan_tracker *scan_tracker, e_scan_type sca
     scan_tracker->scan.response       = IN_PROGRESS;
     scan_tracker->scan.conclusion     = NOT_CONCLUDED; 
     scan_tracker->count_sent          = 0;
-    scan_tracker->max_send            = max_retries;
+    scan_tracker->max_retries         = max_retries;
     scan_tracker->dst_port            = dst_port;
     scan_tracker->src_port            = ((getpid() + g_sequence++) & 0xffff) | 0x8000;
     gettimeofday(&scan_tracker->last_send, NULL);
@@ -132,6 +132,8 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->last_port           = NULL;
     ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
     ft_memset(&dt->sniffer, 0, sizeof(dt->sniffer));
+    // ft_memset(&dt->tcp_socket_pool, 0, SOCKET_POOL_SIZE);
+    // ft_memset(&dt->udp_socket_pool, 0, SOCKET_POOL_SIZE);
     dt->sniffer.handle      = NULL;          
     dt->sniffer.device      = NULL;          
     dt->sniffer.filter      = NULL;

@@ -96,7 +96,7 @@ void    debug_scan_tracker(t_scan_tracker scan_tracker)
     {
         printf(C_G_RED"[DEBUG] scan_tracker"C_RES"\n");
         printf("        count_sent  %d\n", scan_tracker.count_sent);
-        printf("        max_send    %d\n", scan_tracker.max_send);
+        printf("        max_retries    %d\n", scan_tracker.max_retries);
         debug_scan(scan_tracker.scan);
         printf(C_G_RED"-------"C_RES"\n");
     }
