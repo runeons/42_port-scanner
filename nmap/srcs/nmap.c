@@ -25,11 +25,12 @@ static void     *worker_function(void *dt)
     info(C_THREADS, "Starting new thread\n");
     while (g_remaining_scans > 0)
     {
-        //debug_queue();
+        debug_queue();
         t_task *task = dequeue_task();
         if (task == NULL)
             continue;
         info(C_TASKS, "Dequeued task %d\n", task->scan_tracker_id);
+        debug_task(*task);
         handle_task((t_data *)dt, task);
     }
     info(C_THREADS, "Worker return\n");

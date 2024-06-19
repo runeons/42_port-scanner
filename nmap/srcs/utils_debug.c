@@ -39,7 +39,7 @@ void    debug_net_mask(bpf_u_int32 net_mask, bpf_u_int32 dev_mask)
 
 void    debug_addrinfo(struct addrinfo ai)
 {
-    if (DEBUG_STRUCT == 1)
+    if (DEBUG_NET == 1)
     {
         printf(C_G_GRAY"[DEBUG] addrinfo"C_RES"\n");
         printf("        ai_family       %d\n", ai.ai_family);
@@ -51,7 +51,7 @@ void    debug_addrinfo(struct addrinfo ai)
 
 void    debug_sockaddr_in(struct sockaddr_in addr)
 {
-    if (DEBUG_STRUCT == 1)
+    if (DEBUG_NET == 1)
     {
         printf(C_G_GRAY"[DEBUG] sockaddr_in"C_RES"\n");
         printf("        sin_family          %d\n", addr.sin_family);
@@ -143,8 +143,11 @@ void    debug_queue()
 {
     if (DEBUG_QUEUE == 1)
     {
-        printf(C_G_GREEN"[DEBUG] g_queue %d"C_RES"\n", ft_lst_size(g_queue));
-        printf(C_G_GREEN"-------"C_RES"\n");
+        if (ft_lst_size(g_queue) != 0)
+        {
+            printf(C_G_GREEN"[DEBUG] g_queue %d"C_RES"\n", ft_lst_size(g_queue));
+            printf(C_G_GREEN"-------"C_RES"\n");
+        }
     }
 }
 
