@@ -30,7 +30,7 @@
 # define MIN_PORT               1
 # define MAX_PORT               65535
 # define MAX_PORT_RANGE         1024
-# define MAX_RETRIES            1
+# define MAX_RETRIES            3
 # define PROBES_DELAY           1
 // POLL
 # define SOCKET_POOL_SIZE       10

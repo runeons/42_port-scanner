@@ -114,33 +114,44 @@ void            init_host(t_host *host)
 
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
-    dt->act_options         = parsed_cmd->act_options;
-    dt->src_port            = (getpid() & 0xffff) | 0x8000; // base port 
+    // SOCKET
+    // ft_memset(&dt->udp_socket_pool, 0, sizeof(dt->udp_socket_pool));
+    // ft_memset(&dt->tcp_socket_pool, 0, sizeof(dt->tcp_socket_pool));
     ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
-    dt->src_address.sin_family        = AF_INET;
-    dt->src_address.sin_addr.s_addr   = INADDR_ANY;
-    dt->src_address.sin_port          = htons(dt->src_port);
+    dt->src_address.sin_family          = AF_INET;
+    dt->src_address.sin_addr.s_addr     = INADDR_ANY;
+    dt->src_address.sin_port            = htons(dt->src_port);
+    dt->src_port                        = (getpid() & 0xffff) | 0x8000; // base port 
+    dt->src_ip                          = 0;
     ft_memset(dt->fds, 0, sizeof(dt->fds));
-    //dt->fds[0].events       = POLLOUT;
-    // dt->queue            = NULL;
-    dt->threads             = THREADS_NB;
-    dt->no_dns              = FALSE;
-    dt->reason              = FALSE;
+    // dt->fds[0].events       = POLLOUT; // really needed?
+    // SCANS
+    dt->queue            = NULL;
     ft_memset(&dt->host, 0, sizeof(dt->host));
     init_host(&dt->host);
-    dt->first_port          = NULL;
-    dt->last_port           = NULL;
-    ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
     ft_memset(&dt->sniffer, 0, sizeof(dt->sniffer));
-    // ft_memset(&dt->tcp_socket_pool, 0, SOCKET_POOL_SIZE);
-    // ft_memset(&dt->udp_socket_pool, 0, SOCKET_POOL_SIZE);
     dt->sniffer.handle      = NULL;          
     dt->sniffer.device      = NULL;          
     dt->sniffer.filter      = NULL;
-    dt->hosts_nb            = 0;
+    // OPTIONS
+    dt->act_options         = parsed_cmd->act_options;
+    dt->threads             = THREADS_NB;
+    dt->verbose             = 0;
+    dt->no_dns              = FALSE;
+    dt->reason              = FALSE;
+    dt->first_port          = NULL;
+    dt->last_port           = NULL;
+    ft_memset(&dt->arg_ports, 0, sizeof(dt->arg_ports));
+    dt->n_ports             = 0;
+    ft_memset(&dt->unique_scans, 0, sizeof(dt->unique_scans));
     dt->file                = NULL;
     dt->max_retries         = 0;
     dt->probes_delay        = 0;
+    // STATS
+    ft_memset(&dt->tz, 0, sizeof(dt->tz));
+    ft_memset(&dt->init_tv, 0, sizeof(dt->init_tv));
+    dt->hosts_nb            = 0;
+
 }
 
 void            init_data(t_data *dt, t_parsed_cmd *parsed_cmd)
