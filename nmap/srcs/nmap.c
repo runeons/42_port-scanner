@@ -104,6 +104,7 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
     t_option    *file_option = get_option(parsed_cmd.act_options, 'f');
 
     dt->file = fopen(file_option->param, "r");
+    // dt->file = NULL;
     if (!dt->file)
         exit_error_free("fopen: %s\n", strerror(errno));
     while ((err = get_next_line(dt->file->_fileno, line)) >= 0)

@@ -27,6 +27,7 @@ static void     display_current_daytime()
                 tm_info->tm_min,
                 tm_info->tm_zone);
     printf("%s\n", buffer);
+    // free(tm_info);
 }
 
 void            display_nmap_init(t_data *dt)
