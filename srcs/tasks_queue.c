@@ -76,12 +76,12 @@ void init_queue(t_data *dt)
     {
         t_port *port = (t_port *)curr_port->content;
         if (port == NULL)
-            exit_error_free("unexpected memory access. Quiting program.\n");
+            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
         for (int i = 0; i < g_scan_types_nb; i++, sock_index++)
         {
             t_scan_tracker  *curr_tracker = &(port->scan_trackers[i]);
             if (curr_tracker == NULL)
-                exit_error_free("unexpected memory access. Quiting program.\n");
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
             t_task          *task = create_task();
             tmp_socket = select_socket_from_pool(dt, curr_tracker->scan.scan_type, sock_index);
 

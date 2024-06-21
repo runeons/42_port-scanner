@@ -70,14 +70,14 @@ static t_scan_tracker *find_tracker_with_id(t_data *dt, int tracker_id, uint16_t
     {
         t_port *port = curr_port->content;
         if (port == NULL)
-            exit_error_free("unexpected memory access. Quiting program.\n");
+            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
         if (port->port_id != dst_port)
             goto next_port;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
             if (tracker == NULL)
-                exit_error_free("unexpected memory access. Quiting program.\n");
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
             if (tracker->id == tracker_id)
                 return tracker;
         }
@@ -95,14 +95,14 @@ static t_scan_tracker *find_tracker_from_ports(t_data *dt, uint16_t src_port, ui
     {
         t_port *port = curr_port->content;
         if (port == NULL)
-            exit_error_free("unexpected memory access. Quiting program.\n");
+            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
         if (port->port_id != dst_port)
             goto next_port;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
             if (tracker == NULL)
-                exit_error_free("unexpected memory access. Quiting program.\n");
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
             if (tracker->src_port == src_port)
                 return tracker;
         }
@@ -176,13 +176,12 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
     {
         t_port *port = curr_port->content;
         if (port == NULL)
-            exit_error_free("unexpected memory access. Quiting program.\n");
-
+            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]);
             if (tracker == NULL)
-                exit_error_free("unexpected memory access. Quiting program.\n");
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
             if (tracker->id == scan_tracker_id)
             {
                 tracker->scan.response = response;
@@ -278,9 +277,8 @@ void    handle_send_task(t_data *dt, t_task *task)
                 warning("[REQUEUED] scan %d: No event detected for this socket.\n", task->scan_tracker_id);
                 continue;
             }
-
             if (!(dt->fds[i].revents & POLLOUT))
-                exit_error_free_close_one(task->socket, "Poll unexpected result\n");
+                exit_error_full_free(dt, "Poll unexpected result\n"); // MEMORY
 
             t_packet packet;
 
@@ -305,12 +303,10 @@ void    handle_send_task(t_data *dt, t_task *task)
             }
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
             t_scan_tracker *this_scan_tracker = find_tracker_with_id(dt, task->scan_tracker_id,task->dst_port);
-            assert(this_scan_tracker && "couldn't find the scan tracker in handle_send_task"); // TO DO - close and exit without leaks/still reachable
-            if (this_scan_tracker)
-            {
-                gettimeofday(&this_scan_tracker->last_send, NULL);
-                this_scan_tracker->count_sent++;
-            }
+            if (!this_scan_tracker)
+                exit_error_full_free(dt, "Memory task access failure. Quiting program.\n"); // MEMORY
+            gettimeofday(&this_scan_tracker->last_send, NULL);
+            this_scan_tracker->count_sent++;
         }
     }
 }
@@ -338,12 +334,12 @@ static void handle_check_task(t_data *dt, t_task *task)
     {
         t_port *port = curr_port->content;
         if (port == NULL)
-            exit_error_free("unexpected memory access. Quiting program.\n");
+            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
         for (int i = 0; i < g_scan_types_nb; i++, sock_index++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]);
             if (tracker == NULL)
-                exit_error_free("unexpected memory access. Quiting program.\n");
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
             
             if (tracker->scan.conclusion == NOT_CONCLUDED)
             {

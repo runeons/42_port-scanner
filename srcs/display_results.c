@@ -79,12 +79,12 @@ static e_protocol      get_protocol(t_scan scan)
         return P_TCP;
 }
 
-static void     init_results_buffer(char **tcp_results, char **udp_results, int padding)
+static void     init_results_buffer(t_data *dt, char **tcp_results, char **udp_results, int padding)
 {
     if (!(*tcp_results = mmalloc(sizeof(char) * padding + 1)))
-        exit_error_free("malloc failure.\n");
+        exit_error_full_free(dt, "malloc failure.\n");
     if (!(*udp_results = mmalloc(sizeof(char) * padding + 1)))
-        exit_error_free("malloc failure.\n");
+        exit_error_full_free(dt, "malloc failure.\n");
     ft_memset(*tcp_results, 0, padding);
     ft_memset(*udp_results, 0, padding);
 }
@@ -113,19 +113,19 @@ static void         print_filled_line(t_port *port, char *results, int padding, 
         printf("|\n");
 }
 
-static void         display_each_protocol(t_lst *curr_port, int padding, int reason)
+static void         display_each_protocol(t_data *dt, t_lst *curr_port, int padding, int reason)
 {
         int pos_tcp      = 0;
         int pos_udp      = 0;
         char *tcp_results;
         char *udp_results;
         
-        init_results_buffer(&tcp_results, &udp_results, padding);
+        init_results_buffer(dt, &tcp_results, &udp_results, padding);
         t_port *port = curr_port->content;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             if (port == NULL || &(port->scan_trackers[i]) == NULL)
-                exit_error_free("unexpected memory access. Quiting program.\n");
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
             t_scan scan = (port->scan_trackers[i]).scan;
             if (get_protocol(scan) == P_TCP)
                 pos_tcp += fill_results_buffer(scan, &tcp_results, pos_tcp, padding);
@@ -150,7 +150,7 @@ void            display_conclusions(t_data *dt)
     print_header(padding, dt->reason);
     while (curr_port != NULL)
     {
-        display_each_protocol(curr_port, padding, dt->reason);
+        display_each_protocol(dt, curr_port, padding, dt->reason);
         curr_port = curr_port->next;
     }
     print_separator_line(padding, dt->reason);

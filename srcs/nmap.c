@@ -47,9 +47,8 @@ static void    monitor_fds_to_sniff(t_data *dt)
     if (r < 0)
         exit_error_full_free(dt, "Poll failure.\n");
     if (r == 0)
-        exit_error_free("Poll timed out.\n");
+        exit_error_full_free(dt, "Poll timed out.\n");
     sniff_packets(dt->sniffer.handle, dt);
-    // fprintf(stderr, "WAIT TO JOIN\n");
 }
 
 static void     ending_main_thread(t_data *dt)
@@ -105,11 +104,8 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
     t_option    *file_option = get_option(parsed_cmd.act_options, 'f');
 
     dt->file = fopen(file_option->param, "r");
-    // dt->file = NULL;
     if (!dt->file)
-        exit_error_free("fopen: %s\n", strerror(errno));
-    // exit_error_full_free(dt, "EXIT FULL FREE TEST\n");
-    // exit_error_free("EXIT FREE TEST\n");
+        exit_error_full_free(dt, "fopen: %s\n", strerror(errno));
     while ((err = get_next_line(dt->file->_fileno, line)) >= 0)
     {
         if (err == 0 && *line[0] == '\0')
@@ -117,6 +113,6 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
         nmap(dt, *line, first_interface_name, numeric_src_ip);
     }
     if (err == -1)
-        exit_error_free("get_next_line: %s\n", strerror(errno));
+        exit_error_full_free(dt, "get_next_line: %s\n", strerror(errno));
     close_file(&dt->file);
 }

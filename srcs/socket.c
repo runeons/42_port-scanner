@@ -20,7 +20,7 @@ int             select_socket_from_pool(t_data *dt, e_scan_type scan_type, int i
     return -1;
 }
 
-static void     init_socket_pool(int pool[], int protocol)
+static void     init_socket_pool(t_data *dt, int pool[], int protocol)
 {
     int optval = 64; // TTL_VALUE for IP_TTL socket
 
@@ -28,17 +28,17 @@ static void     init_socket_pool(int pool[], int protocol)
     {
         pool[i]  = socket(AF_INET, SOCK_RAW, protocol);
         if (pool[i] < 0)
-            exit_error_free("socket error: Check that you have the correct rights.\n");
+            exit_error_full_free(dt, "socket error: Check that you have the correct rights.\n");
         if (setsockopt(pool[i], IPPROTO_IP, IP_TTL, &optval, sizeof(optval)) < 0)
-            exit_error_free_close_one(pool[i], "socket error in setting option: Exiting program.\n");
+            exit_error_full_free(dt, "socket error in setting option: Exiting program.\n");
     }
 }
 
 void            init_socket(t_data *dt)
 {
     // init_socket_pool(dt->icmp_socket_pool, IPPROTO_ICMP);
-    init_socket_pool(dt->udp_socket_pool, IPPROTO_UDP);
-    init_socket_pool(dt->tcp_socket_pool, IPPROTO_TCP);
+    init_socket_pool(dt, dt->udp_socket_pool, IPPROTO_UDP);
+    init_socket_pool(dt, dt->tcp_socket_pool, IPPROTO_TCP);
 
     // for (int i = 0; i < SOCKET_POOL_SIZE; i++)
     // {
