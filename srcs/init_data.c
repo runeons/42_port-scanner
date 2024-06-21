@@ -15,7 +15,10 @@ int             resolve_address(t_host *host) // check that dest exists and reso
         if ((struct sockaddr_in *)tmp->ai_addr)
             host->resolved_address = ft_strdup(inet_ntoa(((struct sockaddr_in *)tmp->ai_addr)->sin_addr));
         if (host->resolved_address == NULL)
+        {
+            freeaddrinfo(resolved_add);
             exit_error_free("malloc failure.\n");
+        }
         tmp = tmp->ai_next;
         break; // useful if many
     }
