@@ -121,8 +121,8 @@ void            init_host(t_host *host)
 static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
 {
     // SOCKET
-    // ft_memset(&dt->udp_socket_pool, 0, sizeof(dt->udp_socket_pool));
-    // ft_memset(&dt->tcp_socket_pool, 0, sizeof(dt->tcp_socket_pool));
+    ft_memset(&dt->udp_socket_pool, 0, sizeof(dt->udp_socket_pool));
+    ft_memset(&dt->tcp_socket_pool, 0, sizeof(dt->tcp_socket_pool));
     ft_memset(&(dt->src_address),  0, sizeof(struct sockaddr_in));
     dt->src_address.sin_family          = AF_INET;
     dt->src_address.sin_addr.s_addr     = INADDR_ANY;

@@ -21,7 +21,6 @@ void        init_handle(t_sniffer *sniffer)
     if ((sniffer->handle = pcap_open_live(sniffer->device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
     {
         warning("pcap opening device error %s\n", err_buf);
-        pcap_close(sniffer->handle);
         exit_error_free("pcap opening device error.\n");
     }
     if (pcap_compile(sniffer->handle, &compiled_filter, sniffer->filter, 0, net_mask) == -1)
@@ -29,6 +28,7 @@ void        init_handle(t_sniffer *sniffer)
         warning("pcap filter %s\n", pcap_geterr(sniffer->handle));
         pcap_freecode(&compiled_filter);
         pcap_close(sniffer->handle);
+        sniffer->handle = NULL;
         exit_error_free("pcap filter compilation error.\n");
     }
     if (pcap_setfilter(sniffer->handle, &compiled_filter) == -1)

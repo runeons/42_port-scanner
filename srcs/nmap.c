@@ -60,6 +60,7 @@ static void     ending_main_thread(t_data *dt)
     debug_host(dt->host);
     debug_end(*dt);
     pcap_close(dt->sniffer.handle);
+    dt->sniffer.handle = NULL;
 }
 
 static void     nmap_init(t_data *dt, char *interface_name)
@@ -107,6 +108,8 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
     // dt->file = NULL;
     if (!dt->file)
         exit_error_free("fopen: %s\n", strerror(errno));
+    // exit_error_full_free(dt, "EXIT FULL FREE TEST\n");
+    // exit_error_free("EXIT FREE TEST\n");
     while ((err = get_next_line(dt->file->_fileno, line)) >= 0)
     {
         if (err == 0 && *line[0] == '\0')
