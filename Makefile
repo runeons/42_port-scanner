@@ -58,10 +58,12 @@ SRCS_LIST					=	\
 							tasks_handling.c \
 							tasks_queue.c \
 							utils_debug.c \
+							utils_close.c \
 							utils_enum.c \
 							utils_error.c \
 							utils_options.c \
 							utils_time.c \
+							utils_warning.c \
 
 SRCS					=	$(addprefix $(SRCS_DIR), $(SRCS_LIST))
 

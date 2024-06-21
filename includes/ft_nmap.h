@@ -32,8 +32,6 @@ void            display_host_init(t_host *host, int no_dns);
 void            display_conclusions(t_data *dt);
 void            display_nmap_end(t_data *dt);
 // nmap.h
-void            close_file(FILE **file);
-void            close_all_sockets(t_data *dt);
 void            nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip);
 void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *first_interface_name, int numeric_src_ip);
 //  options.c
@@ -64,10 +62,14 @@ void            debug_queue();
 void            debug_end(t_data dt);
 
 // utils_error.c
-void            info(char *color, const char *msg, ...);
 void            exit_error_free(const char *msg, ...);
 void            exit_error_full_free(t_data *dt, const char *msg, ...);
-void            exit_error_free_close_one(int socket, const char *msg, ...);
+// utils_close.c
+void            close_handle(t_sniffer *sniffer);
+void            close_file(FILE **file);
+void            close_all_sockets(t_data *dt);
+// utils_warning.c
+void            info(char *color, const char *msg, ...);
 void            important_warning(const char *msg, ...);
 void            warning(const char *msg, ...);
 

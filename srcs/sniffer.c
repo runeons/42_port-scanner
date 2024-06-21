@@ -27,15 +27,14 @@ void        init_handle(t_sniffer *sniffer)
     {
         warning("pcap filter %s\n", pcap_geterr(sniffer->handle));
         pcap_freecode(&compiled_filter);
-        pcap_close(sniffer->handle);
-        sniffer->handle = NULL;
+        close_handle(sniffer);
         exit_error_free("pcap filter compilation error.\n");
     }
     if (pcap_setfilter(sniffer->handle, &compiled_filter) == -1)
     {
         warning("pcap filter %s\n", pcap_geterr(sniffer->handle));
         pcap_freecode(&compiled_filter);
-        pcap_close(sniffer->handle);
+        close_handle(sniffer);
         exit_error_free("pcap filter setting error.\n");
     }
     pcap_freecode(&compiled_filter);
