@@ -215,16 +215,47 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
     struct icmp     *icmp_hdr = NULL;
     struct tcphdr   *tcp_hdr  = NULL;
     struct udphdr   *udp_hdr  = NULL;
+    struct ip       *inner_ip_hdr = NULL;
 
-    // printf(TEST);
     switch (response)
     {
-        case ICMP_ECHO_OK: case ICMP_UNR_C_NOT_3: case ICMP_UNR_C_3:
+        case ICMP_ECHO_OK:
         {
             icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
             if (icmp_hdr)
                 id = icmp_hdr->icmp_id;
             break;            
+        }
+        case ICMP_UNR_C_NOT_3: case ICMP_UNR_C_3: // Assuming this constant represents ICMP errors
+        {
+            icmp_hdr = (struct icmp *)(task->packet + ETH_H_LEN + sizeof(struct ip));
+            if (icmp_hdr)
+            {
+                inner_ip_hdr = (struct ip *)((char *)icmp_hdr + 8);
+
+                if (inner_ip_hdr->ip_p == IPPROTO_TCP) {
+                    // TCP Protocol
+                    tcp_hdr = (struct tcphdr *)((u_char *)inner_ip_hdr + (inner_ip_hdr->ip_hl * 4));
+                    int src_port = ntohs(tcp_hdr->source);
+                    int dst_port = ntohs(tcp_hdr->dest);
+                    //printf("Encapsulated Source Port (TCP): %d, DST Port: %d\n", src_port, dst_port);
+                    t_scan_tracker *tracker = find_tracker_from_ports(dt, src_port, dst_port); 
+                    if (tracker)
+                        id = tracker->id;
+                } else if (inner_ip_hdr->ip_p == IPPROTO_UDP) {
+                    // UDP Protocol
+                    udp_hdr = (struct udphdr *)((u_char *)inner_ip_hdr + (inner_ip_hdr->ip_hl * 4));
+                    int src_port = ntohs(udp_hdr->uh_sport);
+                    int dst_port = ntohs(udp_hdr->uh_dport);
+                    //printf("Encapsulated Source Port (UDP): %d, DST Port: %d\n", src_port, dst_port);
+                    t_scan_tracker *tracker = find_tracker_from_ports(dt, src_port, dst_port); 
+                    if (tracker)
+                        id = tracker->id;
+                } else {
+                    printf("Unsupported encapsulated transport layer protocol: %d\n", inner_ip_hdr->ip_p);
+                }
+            }
+            break;
         }
         case TCP_SYN_ACK: case TCP_RST:
         {

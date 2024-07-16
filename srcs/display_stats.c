@@ -14,9 +14,9 @@ static void     display_current_daytime()
 {
     struct timeval  tv;
     struct tm       *tm_info;
-    char            buffer[32];
+    char            buffer[34];
 
-    ft_memset(buffer, 0, 32);
+    ft_memset(buffer, 0, 34);
     gettimeofday(&tv, NULL);
     tm_info = localtime(&tv.tv_sec); // bonus function only
     snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d %s",

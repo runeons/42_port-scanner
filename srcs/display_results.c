@@ -124,7 +124,7 @@ static void         display_each_protocol(t_data *dt, t_lst *curr_port, int padd
         t_port *port = curr_port->content;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
-            if (port == NULL || &(port->scan_trackers[i]) == NULL)
+            if (port == NULL) //|| &(port->scan_trackers[i]) == NULL)
                 exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
             t_scan scan = (port->scan_trackers[i]).scan;
             if (get_protocol(scan) == P_TCP)

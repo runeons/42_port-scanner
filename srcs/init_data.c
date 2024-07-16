@@ -72,7 +72,6 @@ static t_port    *create_port(int port_id, e_scan_type *unique_scans, int max_re
         init_scan_tracker(&port->scan_trackers[i], unique_scans[i], port->port_id, max_retries);
     port->tcp_reason            = IN_PROGRESS;
     port->udp_reason            = IN_PROGRESS;
-    // debug_scan_tracker(port->scan_trackers[0]);
     return port;
 }
 
