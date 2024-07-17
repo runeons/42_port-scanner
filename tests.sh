@@ -12,7 +12,7 @@ run_test()
     echo -e "${GREEN}------------------------------------------------------------------------------------------${RES}"
     echo -e "${GREEN}nmap   : sudo nmap $target -p $port -s$scan${RES}"
     sudo nmap $target -p $port -s$scan
-    echo -e "${GREEN}ft_nmap: sudo ./ft_nmap $target -p $port -s$scan${RES}"
+    echo -e "${GREEN}ft_nmap: sudo ./ft_nmap $target -p $port -s $scan${RES}"
     sudo ./ft_nmap $target -p $port -s $scan
     echo -e "${GREEN}Expected: $expected${RES}"
     echo -e "${GREEN}------------------------------------------------------------------------------------------${RES}"
@@ -26,8 +26,9 @@ declare -a tests=(
 
     # "8.8.8.8, 53, U, open"
     # "sapin.fr, 161, U, closed"          # ICMP_UNREACH_3 implemented
-    "127.0.0.1, 60011, U, closed"       # long and wrong - should receive response
-    "freebsd.org, 44444, U, filtered"   # long and wrong - should receive response
+    "127.0.0.1, 60011, U, closed"         # long and wrong - should receive response
+    "127.0.0.1, 60011, S, closed"         # long and wrong - should receive response
+    # "freebsd.org, 44444, U, closed"     # used to be filtered in june but OK closed now
 
     # "127.0.0.1, 22, F, open|filtered"
     # "google.fr, 443, F, closed"
