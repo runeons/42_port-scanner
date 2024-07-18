@@ -5,8 +5,11 @@ int             resolve_address(t_host *host) // check that dest exists and reso
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
     int s = 1;
+    struct addrinfo     hints;
 
-    if ((s = getaddrinfo(host->input_dest, NULL, NULL, &resolved_add)) != 0)
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;       // IPv4 only
+    if ((s = getaddrinfo(host->input_dest, NULL, &hints, &resolved_add)) != 0)
         exit_error_free("unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
     // debug_addrinfo(*resolved_add);
     tmp = resolved_add;
@@ -152,6 +155,7 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->file                = NULL;
     dt->max_retries         = 0;
     dt->probes_delay        = 0;
+    dt->target_is_localhost = 0;
     // STATS
     ft_memset(&dt->tz, 0, sizeof(dt->tz));
     ft_memset(&dt->init_tv, 0, sizeof(dt->init_tv));

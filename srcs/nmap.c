@@ -60,6 +60,8 @@ void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)
     dt->src_ip = numeric_src_ip;
     if (!fill_host(dt, target))
         goto clean_ret;
+    if (ft_strcmp(dt->host.resolved_hostname, "localhost") == 0)
+        dt->target_is_localhost = 1;
     nmap_init(dt, interface_name);
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);

@@ -39,12 +39,19 @@ t_scan all_scans[] =
     {XMAS,  ICMP_UNR_C_NOT_3,    FILTERED      },
 };
 
-e_conclusion get_scan_conclusion(e_scan_type scan_type, e_response response)
+e_conclusion get_scan_conclusion(uint8_t target_is_localhost, e_scan_type scan_type, e_response response)
 {
     for (size_t i = 0; i < sizeof(all_scans) / sizeof(all_scans[0]); i++)
     {
-        if (all_scans[i].scan_type == scan_type && all_scans[i].response == response)
+        if (all_scans[i].scan_type == scan_type && all_scans[i].response == response){
+            if (target_is_localhost && all_scans[i].conclusion == OPEN_FILTERED )
+                return CLOSED;
+            if (target_is_localhost && all_scans[i].conclusion == UNFILTERED)
+                return OPEN;
+            if (target_is_localhost && all_scans[i].conclusion == FILTERED)
+                return CLOSED;
             return (all_scans[i].conclusion);
+        }
     }
     important_warning("cannot conclude scan result from response.\n");
     return NOT_CONCLUDED;
@@ -185,7 +192,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
             if (tracker->id == scan_tracker_id)
             {
                 tracker->scan.response = response;
-                tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, response);
+                tracker->scan.conclusion = get_scan_conclusion(dt->target_is_localhost, tracker->scan.scan_type, response);
                 update_port_conclusion(port, tracker);
                 if (tracker->scan.conclusion != NOT_CONCLUDED)
                 {
@@ -342,12 +349,12 @@ void    handle_send_task(t_data *dt, t_task *task)
     }
 }
 
-void        handle_never_received(t_port *port, t_scan_tracker *tracker)
+void        handle_never_received(uint8_t target_is_localhost, t_port *port, t_scan_tracker *tracker)
 {
     // printf(TEST);
     tracker->scan.response = NO_RESPONSE;
     debug_scan(tracker->scan);
-    tracker->scan.conclusion = get_scan_conclusion(tracker->scan.scan_type, tracker->scan.response);
+    tracker->scan.conclusion = get_scan_conclusion(target_is_localhost, tracker->scan.scan_type, tracker->scan.response);
     update_port_conclusion(port, tracker);
 }
 
@@ -387,7 +394,7 @@ static void handle_check_task(t_data *dt, t_task *task)
                 }
                 else
                 {
-                    handle_never_received(port, tracker);
+                    handle_never_received(dt->target_is_localhost, port, tracker);
                     n_done++;
                 }
             }

@@ -149,6 +149,7 @@ typedef struct  s_data
     FILE                *file;
     int                 max_retries;
     int                 probes_delay;
+    uint8_t             target_is_localhost;
     // STATS
     struct timeval      tz;
     struct timeval      init_tv;
