@@ -44,11 +44,10 @@ e_conclusion get_scan_conclusion(uint8_t target_is_localhost, e_scan_type scan_t
     for (size_t i = 0; i < sizeof(all_scans) / sizeof(all_scans[0]); i++)
     {
         if (all_scans[i].scan_type == scan_type && all_scans[i].response == response){
-            if (target_is_localhost && all_scans[i].conclusion == OPEN_FILTERED )
-                return CLOSED;
             if (target_is_localhost && all_scans[i].conclusion == UNFILTERED)
                 return OPEN;
-            if (target_is_localhost && all_scans[i].conclusion == FILTERED)
+            if (target_is_localhost && \
+            (all_scans[i].conclusion == FILTERED || all_scans[i].conclusion == OPEN_FILTERED))
                 return CLOSED;
             return (all_scans[i].conclusion);
         }
