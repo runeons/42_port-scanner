@@ -41,14 +41,15 @@ t_scan all_scans[] =
 
 e_conclusion get_scan_conclusion(uint8_t target_is_localhost, e_scan_type scan_type, e_response response)
 {
+    (void) target_is_localhost;
     for (size_t i = 0; i < sizeof(all_scans) / sizeof(all_scans[0]); i++)
     {
         if (all_scans[i].scan_type == scan_type && all_scans[i].response == response){
-            if (target_is_localhost && all_scans[i].conclusion == UNFILTERED)
-                return OPEN;
-            if (target_is_localhost && \
-            (all_scans[i].conclusion == FILTERED || all_scans[i].conclusion == OPEN_FILTERED))
-                return CLOSED;
+            // if (target_is_localhost && all_scans[i].conclusion == UNFILTERED)
+            //     return OPEN;
+            // if (target_is_localhost &&
+            // (all_scans[i].conclusion == FILTERED || all_scans[i].conclusion == OPEN_FILTERED))
+            //     return OPEN;
             return (all_scans[i].conclusion);
         }
     }
@@ -286,6 +287,7 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
             break;
         }
         default:
+            printf("%d\n", response);
             important_warning("[TO IMPLEMENT] - response != ICMP_ECHO_OK.\n");
     }
     return id;
@@ -296,6 +298,8 @@ void    handle_recv_task(t_data *dt, t_task *task)
     e_response      response;
 
     response = determine_response_type(dt, task);
+    if (response == OTHER)
+        return ;
     task->scan_tracker_id = extract_response_id(dt, task, response);
     // dprintf(2, C_G_RED"[T_RECV] response: %s [%d]"C_RES"\n", response_string(response), task->scan_tracker_id);
     update_scan_tracker(dt, task->scan_tracker_id, response);

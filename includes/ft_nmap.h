@@ -32,8 +32,8 @@ void            display_host_init(t_host *host, int no_dns);
 void            display_conclusions(t_data *dt);
 void            display_nmap_end(t_data *dt);
 // nmap.h
-void            nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip);
-void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *first_interface_name, int numeric_src_ip);
+void            nmap(t_data *dt, char *target);
+void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd);
 //  options.c
 void            init_options_params(t_data *dt);
 //  socket.c

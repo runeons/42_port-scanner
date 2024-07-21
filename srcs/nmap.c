@@ -52,16 +52,65 @@ static void     nmap_init(t_data *dt, char *interface_name)
     alarm(dt->probes_delay);
 }
 
-void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)
+static int      get_source_numeric_ip(pcap_if_t *interfaces)
 {
+    pcap_addr_t *addr;
+
+    for (addr = interfaces->addresses; addr != NULL; addr = addr->next)
+    {
+        if (addr->addr != NULL)
+        {
+            if (addr->addr->sa_family == AF_INET)
+            {
+                struct sockaddr_in *sa = (struct sockaddr_in *)addr->addr;
+                return (sa->sin_addr.s_addr);
+            }
+        }
+    }
+    return (-1);
+}
+
+static pcap_if_t    *lookup_loopback(pcap_if_t *interfaces){
+    pcap_if_t   *tmp;
+
+    for (tmp = interfaces; tmp; tmp = tmp->next)
+        if (strcmp(tmp->name, "lo") == 0)
+            return tmp;
+    return NULL;
+}
+
+static void     init_interface(uint8_t target_is_localhost, char *first_interface_name, int *numeric_src_ip)
+{
+    pcap_if_t           *interfaces = NULL;
+    pcap_if_t           *select_interface = NULL;
+
+    interfaces = find_devices();
+    debug_interfaces(interfaces);
+    if (!target_is_localhost)
+        select_interface = interfaces;
+    else
+        select_interface = lookup_loopback(interfaces);
+    assert(select_interface && "selected interface is NULL");
+    *numeric_src_ip = get_source_numeric_ip(select_interface);
+    ft_strcpy(first_interface_name,  select_interface->name);
+    printf("%s\n", select_interface->name);
+    pcap_freealldevs(interfaces);
+    assert(*numeric_src_ip != -1 && "numeric src ip is -1");
+}
+
+void    nmap(t_data *dt, char *target)
+{
+    int         numeric_src_ip;
+    char        interface_name[255];
     pthread_t   workers[dt->threads];
 
     init_socket(dt);
-    dt->src_ip = numeric_src_ip;
     if (!fill_host(dt, target))
         goto clean_ret;
     if (ft_strcmp(dt->host.resolved_hostname, "localhost") == 0)
         dt->target_is_localhost = 1;
+    init_interface(dt->target_is_localhost, interface_name, &numeric_src_ip);
+    dt->src_ip = numeric_src_ip;
     nmap_init(dt, interface_name);
     for (int i = 0; i < dt->threads; i++)
         pthread_create(&workers[i], NULL, worker_function, dt);
@@ -79,7 +128,7 @@ void    nmap(t_data *dt, char *target, char *interface_name, int numeric_src_ip)
     close_all_sockets(dt);
 }
 
-void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *first_interface_name, int numeric_src_ip)
+void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd)
 {
     char        *line[255];
     int         err = 0;
@@ -92,7 +141,7 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd, char *f
     {
         if (err == 0 && *line[0] == '\0')
             break;
-        nmap(dt, *line, first_interface_name, numeric_src_ip);
+        nmap(dt, *line);
     }
     if (err == -1)
         exit_error_full_free(dt, "get_next_line: %s\n", strerror(errno));
