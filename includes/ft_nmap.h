@@ -7,7 +7,6 @@
 # include <string.h>
 # include <signal.h>
 # include <sys/time.h>
-// # include <sys/socket.h>
 # include <arpa/inet.h>         // inet_ntoa
 # include <netdb.h>             // addrinfo
 # include <sys/poll.h>
@@ -15,7 +14,6 @@
 # include <netinet/ip.h>
 # include <netinet/tcp.h>
 # include <netinet/udp.h>
-// # include <netinet/udp.h>
 # include <netinet/ip_icmp.h>   // struct icmphdr
 # include "../libft/includes/libft.h"
 # include <pcap.h>
@@ -37,7 +35,6 @@ void            nmap_multiple_hosts(t_data *dt, t_parsed_cmd parsed_cmd);
 //  options.c
 void            init_options_params(t_data *dt);
 //  socket.c
-//void            bind_socket_to_src_port(t_data *dt, int src_port);
 void            init_socket(t_data *dt);
 int             select_socket_from_pool(t_data *dt, e_scan_type scan_type, int index);
 

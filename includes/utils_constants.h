@@ -4,12 +4,9 @@
 // GENERAL
 # define TRUE                   1
 # define FALSE                  0
-// # define MAX_SCANS              7
 # define MAX_SCANS              6
 # define MAX_PORTS              1024
-// # define SCAN_CHARS             "SAUFNXI"
 # define SCAN_CHARS             "SAUFNX"
-// # define SOCKETS_NB             1               // tmp - 1 for now
 # define MAX_HOSTNAME_LEN       128
 // DEBUG ACTIVATION
 # define DEBUG_PARSING          0
@@ -34,7 +31,7 @@
 # define PROBES_DELAY           1
 // POLL
 # define SOCKET_POOL_SIZE       10
-# define NFDS                   3 * SOCKET_POOL_SIZE // TO DO to change to 2 ? hostname cannot be resolved
+# define NFDS                   3 * SOCKET_POOL_SIZE
 # define POLL_TIMEOUT           5 * 60 * 1000   // 5 minutes
 // PCAP
 # define PROMISCUOUS            1

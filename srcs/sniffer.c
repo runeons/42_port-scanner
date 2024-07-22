@@ -12,7 +12,6 @@ void        init_handle(t_sniffer *sniffer)
     ft_memset(err_buf, 0, PCAP_ERRBUF_SIZE);
     if (pcap_lookupnet(sniffer->device, &net_mask, &dev_mask, err_buf) == -1) // get network mask needed for the filter
     {
-        warning("No network mask for device %s\n.", sniffer->device);
         net_mask = 0;
         dev_mask = 0;
     }
@@ -20,19 +19,16 @@ void        init_handle(t_sniffer *sniffer)
     sniffer->handle = NULL;
     if ((sniffer->handle = pcap_open_live(sniffer->device, BUFSIZ, PROMISCUOUS, 1000, err_buf)) == NULL)  // sniff device until error and store it in err_buf
     {
-        warning("pcap opening device error %s\n", err_buf);
         exit_error_free("pcap opening device error.\n");
     }
     if (pcap_compile(sniffer->handle, &compiled_filter, sniffer->filter, 0, net_mask) == -1)
     {
-        warning("pcap filter %s\n", pcap_geterr(sniffer->handle));
         pcap_freecode(&compiled_filter);
         close_handle(sniffer);
         exit_error_free("pcap filter compilation error.\n");
     }
     if (pcap_setfilter(sniffer->handle, &compiled_filter) == -1)
     {
-        warning("pcap filter %s\n", pcap_geterr(sniffer->handle));
         pcap_freecode(&compiled_filter);
         close_handle(sniffer);
         exit_error_free("pcap filter setting error.\n");

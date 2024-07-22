@@ -9,7 +9,6 @@ int             select_socket_from_pool(t_data *dt, e_scan_type scan_type, int i
         case SYN:case ACK:case FIN:case NUL:case XMAS:
             return dt->fds[(TCP_INDEX * SOCKET_POOL_SIZE) + (index % SOCKET_POOL_SIZE)].fd;
         default:
-            warning("Invalid scan_type in select_socket_from_pool.\n");
             break;
     }
     return -1;

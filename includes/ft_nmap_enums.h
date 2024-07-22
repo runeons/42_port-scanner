@@ -21,14 +21,13 @@ typedef enum
 
 typedef enum
 {
-    // ICMP,               // tmp (initial test only)
     SYN,
     ACK,
     UDP,
     FIN,
     NUL,
     XMAS,
-    UNKNOWN,            // tmp (may not use it)
+    UNKNOWN,
 }       e_scan_type;
 
 typedef enum
@@ -40,7 +39,7 @@ typedef enum
     ICMP_UNR_C_3,       // type 3 unreachable | code 3
     ICMP_UNR_C_NOT_3,   // type 3 unreachable | code 1, 2, 9, 10, 13
     NO_RESPONSE,
-    OTHER,              // tmp (may not use it)
+    OTHER,             
     ICMP_ECHO_OK,
 }       e_response;
 
@@ -56,7 +55,6 @@ typedef enum
 
 typedef enum
 {
-    // PACKET_TYPE_ICMP = ICMP,
     PACKET_TYPE_SYN = SYN,
     PACKET_TYPE_ACK = ACK,
     PACKET_TYPE_UDP = UDP,

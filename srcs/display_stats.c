@@ -16,7 +16,7 @@ static void     display_current_daytime()
 
     ft_memset(buffer, 0, 34);
     gettimeofday(&tv, NULL);
-    tm_info = localtime(&tv.tv_sec); // bonus function only
+    tm_info = localtime(&tv.tv_sec);
     snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d %s",
                 tm_info->tm_year + 1900,
                 tm_info->tm_mon + 1,
@@ -25,7 +25,6 @@ static void     display_current_daytime()
                 tm_info->tm_min,
                 tm_info->tm_zone);
     printf("%s\n", buffer);
-    // free(tm_info);
 }
 
 void            display_nmap_init(t_data *dt)

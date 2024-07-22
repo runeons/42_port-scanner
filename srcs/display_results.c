@@ -98,8 +98,6 @@ static void         print_filled_line(t_port *port, char *results, int padding, 
         printf("| %5d/tcp | %-*s | %-22s | %-14s ", port->port_id, padding, results, get_tcp_service(port->port_id), conclusion_string(port->conclusion_tcp));
     else if (protocol == P_UDP)
         printf("| %5d/udp | %-*s | %-22s | %-14s ", port->port_id, padding, results, get_udp_service(port->port_id), conclusion_string(port->conclusion_udp));
-    else
-        important_warning("unexpected protocol.\n");
     if (reason == TRUE)
     {
         if (protocol == P_TCP)
@@ -129,8 +127,6 @@ static void         display_each_protocol(t_data *dt, t_lst *curr_port, int padd
                 pos_tcp += fill_results_buffer(scan, &tcp_results, pos_tcp, padding);
             else if (get_protocol(scan) == P_UDP)
                 pos_udp += fill_results_buffer(scan, &udp_results, pos_udp, padding);
-            else
-                important_warning("unexpected protocol.\n");
         }
         if (pos_tcp != 0)
             print_filled_line(port, tcp_results, padding, P_TCP, reason);

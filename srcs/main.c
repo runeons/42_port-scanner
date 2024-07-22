@@ -33,7 +33,7 @@ static void     alarm_handler(int signum)
     alarm(0);
     t_task  *task = create_task();
 
-    task->scan_tracker_id   = 0; // TO DO
+    task->scan_tracker_id   = 0;
     task->task_type         = T_CHECK;
     enqueue_task(task);
 }
