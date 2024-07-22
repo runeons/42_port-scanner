@@ -9,41 +9,56 @@ run_test()
     local scan=$3
     local expected=$4
 
-    echo -e "${GREEN}------------------------------------------------------------------------------------------${RES}"
-    echo -e "${GREEN}nmap   : sudo nmap $target -p $port -s$scan${RES}"
-    sudo nmap $target -p $port -s$scan
-    echo -e "${GREEN}ft_nmap: sudo ./ft_nmap $target -p $port -s $scan${RES}"
-    sudo ./ft_nmap $target -p $port -s $scan
-    echo -e "${GREEN}Expected: $expected${RES}"
-    echo -e "${GREEN}------------------------------------------------------------------------------------------${RES}"
+    local nmap_result=$(sudo nmap $target -p $port -s$scan -Pn)
+    local nmap_conclusion=$(echo "$nmap_result" | grep "^$port" | awk '{print $2}')
+    local ft_nmap_result=$(sudo ./ft_nmap $target -p $port -s $scan)
+    local ft_nmap_conclusion=$(echo "$ft_nmap_result" | grep "| *$port/" | awk '{print $(NF-1)}')
+    echo "${target} -p ${port} -s ${scan}"
+    if [ "$nmap_conclusion" == "$ft_nmap_conclusion" ]; then
+        echo -e "          ${GREEN}OK${RES} $nmap_conclusion"
+    else
+        echo -e "          ${RED}KO${RES} $ft_nmap_conclusion (expected $nmap_conclusion)"
+    fi
     echo
+    # echo "${nmap_result}"
+    # echo "${ft_nmap_result}"
 }
 
 declare -a tests=(
-    # "1.1.1.1, 53, S, open"
-    # "sapin.fr, 23, S, closed"
-    # "1.1.1.125, 53, S, filtered" # long but OK
 
-    # "8.8.8.8, 53, U, open"
-    # "sapin.fr, 161, U, closed"          # ICMP_UNREACH_3 implemented
-    "127.0.0.1, 60011, U, closed"         # long and wrong - should receive response
-    "127.0.0.1, 60011, S, closed"         # long and wrong - should receive response
-    # "freebsd.org, 44444, U, closed"     # used to be filtered in june but OK closed now
+    #open
+    "1.1.1.1, 53, S" # open (expected filtered)
+    "8.8.8.8, 53, U"
 
-    # "127.0.0.1, 22, F, open|filtered"
-    # "google.fr, 443, F, closed"
+    #closed
+    "sapin.fr, 23, S"
+    "sapin.fr, 161, U"
+    "localhost, 60011, U"
+    "127.0.0.1, 60011, U"
+    "127.0.0.1, 60011, S"
+    "freebsd.org, 44444, U"
+    "google.fr, 443, F"
+    "google.fr, 443, N"
+    "google.fr, 443, X"
 
-    # "sapin.fr, 3389, A, unfiltered"
+    #open|filtered
+    "127.0.0.1, 22, F"  #closed (expected open|filtered)
+    "127.0.0.1, 22, N"  #closed (expected open|filtered)
+    "127.0.0.1, 22, X"  #closed (expected open|filtered)
 
-    # "127.0.0.1, 22, N, open|filtered"
-    # "google.fr, 443, N, closed"
+    #unfiltered
+    "sapin.fr, 3389, A"
 
-    # "127.0.0.1, 22, X, open|filtered"
-    # "google.fr, 443, X, closed"
+    #filtered
+    "1.1.1.125, 53, S"
 
+    #localhost exhaustive tests
+    "127.0.0.1, 22, S"              #open # got closed
+    "localhost, 22, U"              #closed
+    "127.0.0.1, 22, A"              #unfiltered # got filtered
 )
 
 for test in "${tests[@]}"; do
     IFS=',' read -r target port scan expected <<< "$test"
-    run_test $target $port $scan $expected
+    run_test $target $port $scan
 done

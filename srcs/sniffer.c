@@ -42,13 +42,14 @@ void        init_handle(t_sniffer *sniffer)
 
 void        init_sniffer(t_data *dt, t_sniffer *sniffer, char *device)
 {
-    char    filter[sizeof("src host xxx.xxx.xxx.xxx")];
-
-    sprintf(filter, "src host %s", dt->host.resolved_address);
+    // char    filter[sizeof("src host xxx.xxx.xxx.xxx")];
+    // char    filter[sizeof("src host xxx.xxx.xxx.xxx")];
+    (void)dt;
+    // sprintf(filter, "src host %s", dt->host.resolved_address);
     if (!(sniffer->device = ft_strdup(device)))
         exit_error_free("malloc failure.\n");
-    if (!(sniffer->filter = ft_strdup(filter)))
-        exit_error_free("malloc failure.\n");
+    // if (!(sniffer->filter = ft_strdup(filter)))
+        // exit_error_free("malloc failure.\n");
 }
 
 pcap_if_t   *find_devices()
