@@ -8,7 +8,6 @@ t_option allowed_options[] =
     {'s', "scan",           1, "S|A|U|F|N|X",   NULL, "specify scans to run: S (SYN) A (ACK) U (UDP) F (FIN) N (NULL) X (XMAS)"},           // default ALL
     {'t', "threads",        1, "NB",            NULL, "specify number of threads to speed scanning up"},                                    // default 4
     {'n', "no-dns",         0, "",              NULL, "do not perform DNS lookup"},
-    {'v', "verbose",        0, "",              NULL, "display more information while scanning"},
     {'r', "reason",         0, "",              NULL, "display the reason a port is in a particular state"},
     {'m', "max-retries",    1, "NB",            NULL, "caps number of port scan probe retransmissions"},
     {'f', "file",           1, "FILE",          NULL, "specify file to get ip list"},

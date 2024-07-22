@@ -7,7 +7,8 @@ int             resolve_address(t_host *host) // check that dest exists and reso
     int s = 1;
     struct addrinfo     hints;
 
-    memset(&hints, 0, sizeof(hints));
+    ft_bzero(&hints, sizeof(hints));
+    ft_bzero(resolved_add, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;       // IPv4 only
     if ((s = getaddrinfo(host->input_dest, NULL, &hints, &resolved_add)) != 0)
         exit_error_free("unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
