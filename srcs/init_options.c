@@ -116,7 +116,7 @@ void option_p(t_data *dt)
                 end = start;
 
                 if (start <= 0 || start > 65535 )
-                    exit_error_free("Invalid port number <%d>..\n", start);
+                    exit_error_free("Invalid port number <%d>.\n", start);
 
                 while (ft_isdigit(*ptr))
                     ptr++;
