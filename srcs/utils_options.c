@@ -1,9 +1,6 @@
 #include "../includes/utils_options.h"
 #include "../includes/utils_colors.h"
 
-// > ft_nmap [--help] [--ports [NUMBER/RANGED]] --ip IP_ADDRESS [--speedup [NUMBER]] [--scan [TYPE]]
-// > ft_nmap [--help] [--ports [NUMBER/RANGED]] --file FILE [--speedup [NUMBER]] [--scan [TYPE]]
-
 t_option allowed_options[] =
 {
     {'h', "help",           0, "",              NULL, "give this help list"},
@@ -14,7 +11,6 @@ t_option allowed_options[] =
     {'v', "verbose",        0, "",              NULL, "display more information while scanning"},
     {'r', "reason",         0, "",              NULL, "display the reason a port is in a particular state"},
     {'m', "max-retries",    1, "NB",            NULL, "caps number of port scan probe retransmissions"},
-    // {'i', "ip",             1, "IP",            NULL, "specify ipv4 to scan"},
     {'f', "file",           1, "FILE",          NULL, "specify file to get ip list"},
     {'d', "scan-delay",     1, "NB",            NULL, "adjust delay between probes in seconds"},
 };

@@ -18,7 +18,6 @@ void    exit_error_full_free(t_data *dt, const char *msg, ...)
     dprintf(2, C_G_RED"[ERROR] "C_RES"ft_nmap : ");
     vfprintf(stderr, msg, args);
     va_end(args);
-    // TO DO close all opened threads, example if we exit in monitor_fds_to_sniff
     close_all_sockets(dt);
     close_handle(&dt->sniffer);
     close_file(&dt->file);

@@ -26,8 +26,6 @@ e_scan_type char_to_scan_type(char c)
             return NUL;
         case 'X':
             return XMAS;
-        // case 'I':
-        //     return ICMP;
         default:
             return UNKNOWN;
     }
@@ -96,7 +94,7 @@ static int my_isspace(int c)
 }
 
 //check for duplicated and don't insert them, just warn
-void option_p(t_data *dt) //, int *output, int *output_size)
+void option_p(t_data *dt)
 {
     int n_dup = 0;
 
@@ -167,52 +165,8 @@ void option_p(t_data *dt) //, int *output, int *output_size)
     dt->last_port = &dt->arg_ports[dt->n_ports - 1];
     
     if (n_dup > 0)
-        warning("duplicate ports detected.\n"); // NOT TAKEN INTO ACCOUNT
+        warning("duplicate ports detected.\n");
 }
-
-// void   option_p(t_data *dt)
-// {
-//     char    *param     = NULL;
-//     char    **tmp      = NULL;
-//     int     first_port = FIRST_PORT;
-//     int     last_port  = LAST_PORT;
-//     //int     n_ports    = 0;
-
-//     if (is_activated_option(dt->act_options, 'p'))
-//     {
-//         param = ft_strdup(get_option(dt->act_options, 'p')->param);
-//         printf("Port Input: %s\n", param);
-//         if (param == NULL)
-//             exit_error_free("malloc failure.\n");
-//         tmp = ft_split(param, '-');
-//         for 
-//         if (tmp == NULL)
-//             exit_error_free("malloc failure.\n");
-//         if (ft_tablen(tmp) != 1 && ft_tablen(tmp) != 2)
-//             exit_error_free("invalid ports range.\n");
-//         for (int i = 0; tmp && tmp[i]; i++)
-//             if (ft_isstrnum(tmp[i]) == 0)
-//                 exit_error_free("invalid port value '%s'\n", tmp[i]);
-//         first_port = ft_atoi(tmp[0]);
-//         if (first_port < MIN_PORT || first_port > MAX_PORT)
-//             exit_error_free("port value out of range: %d\n", first_port);
-//         if (tmp[1])
-//         {
-//             last_port = ft_atoi(tmp[1]);
-//             if (last_port < MIN_PORT || last_port > MAX_PORT)
-//                 exit_error_free("port value out of range: %d\n", last_port);
-//         }
-//         else
-//             last_port = first_port;
-//         if (first_port > last_port)
-//             exit_error_free("port range not ordered.\n");
-//         if ((last_port - first_port) >= MAX_PORT_RANGE)
-//             exit_error_free("port range too high (max 1024).\n");
-//         dt->first_port = first_port;
-//         dt->last_port = last_port;
-//     }
-//     exit(0);
-// }
 
 void   option_v(t_data *dt)
 {
@@ -315,11 +269,9 @@ void    init_options_params(t_data *dt)
     option_p(dt);
     option_s(dt);
     option_th(dt);
-    // option_i(dt);
     option_r(dt);
     option_n(dt);
     option_v(dt);
     option_m(dt);
     option_d(dt);
-    // option_f(dt);
 }

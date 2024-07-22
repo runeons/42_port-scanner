@@ -42,14 +42,9 @@ void        init_handle(t_sniffer *sniffer)
 
 void        init_sniffer(t_data *dt, t_sniffer *sniffer, char *device)
 {
-    // char    filter[sizeof("src host xxx.xxx.xxx.xxx")];
-    // char    filter[sizeof("src host xxx.xxx.xxx.xxx")];
     (void)dt;
-    // sprintf(filter, "src host %s", dt->host.resolved_address);
     if (!(sniffer->device = ft_strdup(device)))
         exit_error_free("malloc failure.\n");
-    // if (!(sniffer->filter = ft_strdup(filter)))
-        // exit_error_free("malloc failure.\n");
 }
 
 pcap_if_t   *find_devices()
@@ -72,9 +67,7 @@ void        packet_handler(u_char *args, const struct pcap_pkthdr *header, const
     task->header            = (struct pcap_pkthdr *)header;
     task->packet            = (u_char *)packet;
     enqueue_task(task);
-    //pthread_mutex_lock(&mutex);
     g_retrieved++;
-    //pthread_mutex_unlock(&mutex);
     debug_task(*task);
 }
 
@@ -84,6 +77,5 @@ void        sniff_packets(pcap_t *handle, t_data *dt)
     info(C_SNIFFER, "Ready to sniff...\n");
     while (g_remaining_scans > 0)
         pcap_dispatch(handle, 0, packet_handler, 0);
-    //debug_queue(*dt);
     info(C_SNIFFER, "Capture completed\n");
 }

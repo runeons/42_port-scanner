@@ -44,7 +44,6 @@ static void     ending_main_thread(t_data *dt)
 
 static void     nmap_init(t_data *dt, char *interface_name)
 {
-    // debug_host(dt->host);
     display_host_init(&dt->host, dt->no_dns);
     init_queue(dt);
     init_sniffer(dt, &dt->sniffer, interface_name);
@@ -93,7 +92,6 @@ static void     init_interface(uint8_t target_is_localhost, char *first_interfac
     assert(select_interface && "selected interface is NULL");
     *numeric_src_ip = get_source_numeric_ip(select_interface);
     ft_strcpy(first_interface_name,  select_interface->name);
-    printf("%s\n", select_interface->name);
     pcap_freealldevs(interfaces);
     assert(*numeric_src_ip != -1 && "numeric src ip is -1");
 }
