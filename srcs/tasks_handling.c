@@ -144,8 +144,8 @@ e_response determine_response_type(t_data *dt, t_task *task)
         {
             if (icmp_hdr->icmp_code == 3)
             {
-                // printf(C_G_RED"[QUICK DEBUG] ip_hdr->ip_src: %s"C_RES"\n", inet_ntoa(ip_hdr->ip_src));
-                // printf(C_G_RED"[QUICK DEBUG] dt->host.target_address: %s"C_RES"\n", inet_ntoa(dt->host.target_address.sin_addr));
+                // printf(C_G_YELLOW"[QUICK DEBUG] ip_hdr->ip_src: %s"C_RES"\n", inet_ntoa(ip_hdr->ip_src));
+                // printf(C_G_YELLOW"[QUICK DEBUG] dt->host.target_address: %s"C_RES"\n", inet_ntoa(dt->host.target_address.sin_addr));
                 if (ip_hdr->ip_src.s_addr != dt->host.target_address.sin_addr.s_addr)
                     return ICMP_UNR_C_NOT_3;
                 return ICMP_UNR_C_3;
@@ -245,6 +245,10 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
             if (icmp_hdr)
             {
                 inner_ip_hdr = (struct ip *)((char *)icmp_hdr + 8);
+                // printf(C_G_RED"[QUICK DEBUG] ip_hdr->ip_src: %s"C_RES"\n", inet_ntoa(inner_ip_hdr->ip_dst));
+                // printf(C_G_RED"[QUICK DEBUG] dt->host.target_address: %s"C_RES"\n", inet_ntoa(dt->host.target_address.sin_addr));
+                if (inner_ip_hdr->ip_dst.s_addr != dt->host.target_address.sin_addr.s_addr)
+                    return -1;
                 if (inner_ip_hdr->ip_p == IPPROTO_TCP) {
                     // TCP Protocol
                     tcp_hdr = (struct tcphdr *)((u_char *)inner_ip_hdr + (inner_ip_hdr->ip_hl * 4));
