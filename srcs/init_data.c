@@ -15,7 +15,7 @@ int             resolve_address(t_host *host) // check that dest exists and reso
     {
         if ((s = getaddrinfo(host->input_dest, NULL, &hints, &resolved_add)) == 0)
             break;
-        warning("Attempt %d: getaddrinfo failed for host '%s': %s\n", attempts + 1, host->input_dest, gai_strerror(s));
+        // warning("Attempt %d: getaddrinfo failed for host '%s': %s\n", attempts + 1, host->input_dest, gai_strerror(s));
         attempts++;
         sleep(1);
     }

@@ -300,7 +300,7 @@ void    handle_send_task(t_data *dt, t_task *task)
             if (dt->fds[i].revents == 0)
             {
                 enqueue_task(task);
-                warning("[REQUEUED] scan %d: No event detected for this socket.\n", task->scan_tracker_id);
+                // warning("[REQUEUED] scan %d: No event detected for this socket.\n", task->scan_tracker_id);
                 continue;
             }
             if (!(dt->fds[i].revents & POLLOUT))
