@@ -44,7 +44,7 @@ e_conclusion get_scan_conclusion(uint8_t target_is_localhost, e_scan_type scan_t
         if (all_scans[i].scan_type == scan_type && all_scans[i].response == response)
             return (all_scans[i].conclusion);
     }
-    important_warning("cannot conclude scan result from response.\n");
+    // important_warning("cannot conclude scan result from response.\n");
     return NOT_CONCLUDED;
 }
 
@@ -185,15 +185,8 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
                 tracker->scan.response = response;
                 tracker->scan.conclusion = get_scan_conclusion(dt->target_is_localhost, tracker->scan.scan_type, response);
                 update_port_conclusion(port, tracker);
-                if (tracker->scan.conclusion != NOT_CONCLUDED)
-                {
-                    decr_remaining_scans(1);
-                }
-                else
-                {
-                    important_warning("[TO IMPLEMENT] - NOT CONCLUDED -> RESEND OR IGNORE / INCREMENT COUNTER.\n");
-                    decr_remaining_scans(1);
-                }
+                decr_remaining_scans(1);
+
                 gettimeofday(&recv_time, NULL);
                 add_value(&dt->host.ma, deltaT(&tracker->last_send, &recv_time));
                 return;
@@ -274,8 +267,7 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
             break;
         }
         default:
-            printf("%d\n", response);
-            important_warning("[TO IMPLEMENT] - response != ICMP_ECHO_OK.\n");
+            break;
     }
     return id;
 }
@@ -321,7 +313,7 @@ void    handle_send_task(t_data *dt, t_task *task)
                     construct_udp_packet(&packet, task);
                     break;
                 default:
-                    warning("Unknown SCAN.\n");
+                    // warning("Unknown SCAN.\n");
                     continue;
             }
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);

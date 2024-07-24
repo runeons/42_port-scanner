@@ -14,7 +14,7 @@ int             select_socket_from_pool(t_data *dt, e_scan_type scan_type, int i
             //printf("TCP INDEX: %d\n", (TCP_INDEX * SOCKET_POOL_SIZE) + (index % SOCKET_POOL_SIZE));
             return dt->fds[(TCP_INDEX * SOCKET_POOL_SIZE) + (index % SOCKET_POOL_SIZE)].fd;
         default:
-            warning("Invalid scan_type in select_socket_from_pool.\n");
+            // warning("Invalid scan_type in select_socket_from_pool.\n");
             break;
     }
     return -1;
