@@ -4,14 +4,27 @@ int             resolve_address(t_host *host) // check that dest exists and reso
 {
     struct addrinfo     *resolved_add;
     struct addrinfo     *tmp;
-    int s = 1;
+    int s               = 1;
+    int attempts        = 0;
+    int max_attempts    = 3;
     struct addrinfo     hints;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;       // IPv4 only
-    if ((s = getaddrinfo(host->input_dest, NULL, &hints, &resolved_add)) != 0)
-        exit_error_free("unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
-    // debug_addrinfo(*resolved_add);
+    while (attempts < max_attempts)
+    {
+        if ((s = getaddrinfo(host->input_dest, NULL, &hints, &resolved_add)) == 0)
+            break;
+        warning("Attempt %d: getaddrinfo failed for host '%s': %s\n", attempts + 1, host->input_dest, gai_strerror(s));
+        attempts++;
+        sleep(1);
+    }
+    if (s != 0)
+    {
+        warning("Failed to resolve host <%s>  %s\n", host->input_dest, gai_strerror(s));
+        return (0);
+    }
+        // exit_error_free("unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
     tmp = resolved_add;
     while (tmp != NULL)
     {

@@ -64,6 +64,13 @@ pcap_if_t   *find_devices()
 
 void        packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) // args = last arg of pcap_loop
 {
+    // if (!header)
+    //     printf(C_G_RED"[sniffer: NO HEADER RECEIVED]"C_RES"\n");
+    // if (header)
+    //     printf(C_G_RED"[sniffer: HEADER len]: %u"C_RES"\n", header->len);
+    // if (header && header->len == 0)
+    //     important_warning("RECV EMPTY PACKET HEADER SIZE - SKIP");
+    
     t_task  *task = create_task();
 
     task->scan_tracker_id   = 0; // TO DO
@@ -71,6 +78,7 @@ void        packet_handler(u_char *args, const struct pcap_pkthdr *header, const
     task->args              = args;
     task->header            = (struct pcap_pkthdr *)header;
     task->packet            = (u_char *)packet;
+
     enqueue_task(task);
     //pthread_mutex_lock(&mutex);
     g_retrieved++;

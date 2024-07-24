@@ -93,7 +93,6 @@ static void     init_interface(uint8_t target_is_localhost, char *first_interfac
     assert(select_interface && "selected interface is NULL");
     *numeric_src_ip = get_source_numeric_ip(select_interface);
     ft_strcpy(first_interface_name,  select_interface->name);
-    printf("%s\n", select_interface->name);
     pcap_freealldevs(interfaces);
     assert(*numeric_src_ip != -1 && "numeric src ip is -1");
 }

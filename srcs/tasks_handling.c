@@ -84,7 +84,7 @@ static t_scan_tracker *find_tracker_with_id(t_data *dt, int tracker_id, uint16_t
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
             if (tracker == NULL)
-                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
             if (tracker->id == tracker_id)
                 return tracker;
         }
@@ -102,14 +102,14 @@ static t_scan_tracker *find_tracker_from_ports(t_data *dt, uint16_t src_port, ui
     {
         t_port *port = curr_port->content;
         if (port == NULL)
-            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
+            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
         if (port->port_id != dst_port)
             goto next_port;
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]); //change scan_trackers to be constant size and we can easily access the correct index based on the scan type
             if (tracker == NULL)
-                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
             if (tracker->src_port == src_port)
                 return tracker;
         }
@@ -122,7 +122,13 @@ static t_scan_tracker *find_tracker_from_ports(t_data *dt, uint16_t src_port, ui
 e_response determine_response_type(t_data *dt, t_task *task)
 {
     (void)dt;
+    if (task == NULL || task->header->len < ETH_H_LEN + IP_H_LEN)
+    {
+        important_warning("TASK is TOO SMALL to contain IP HEADER - return OTHER\n");
+        return OTHER;
+    }
     struct ip *ip_hdr = (struct ip *)(task->packet + ETH_H_LEN);
+
     if (ip_hdr->ip_p == IPPROTO_TCP)
     {
         struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + IP_H_LEN);
@@ -189,12 +195,12 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
     {
         t_port *port = curr_port->content;
         if (port == NULL)
-            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
+            exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
         for (int i = 0; i < g_scan_types_nb; i++)
         {
             t_scan_tracker *tracker = &(port->scan_trackers[i]);
             if (tracker == NULL)
-                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n"); // MEMORY
+                exit_error_full_free(dt, "unexpected memory access. Quiting program.\n");
             if (tracker->id == scan_tracker_id)
             {
                 tracker->scan.response = response;
@@ -219,7 +225,7 @@ void    update_scan_tracker(t_data *dt, int scan_tracker_id, e_response response
         }
         curr_port = curr_port->next;
     }
-    important_warning("scan_tracker_id not found.\n");
+    // important_warning("scan_tracker_id not found.\n");
 }
 
 int     extract_response_id(t_data *dt, t_task *task, e_response response)
@@ -304,7 +310,7 @@ int     extract_response_id(t_data *dt, t_task *task, e_response response)
 
 void    handle_recv_task(t_data *dt, t_task *task)
 {
-    e_response      response;
+    e_response      response = OTHER;
 
     response = determine_response_type(dt, task);
     if (response == OTHER)
@@ -328,7 +334,7 @@ void    handle_send_task(t_data *dt, t_task *task)
                 continue;
             }
             if (!(dt->fds[i].revents & POLLOUT))
-                exit_error_full_free(dt, "Poll unexpected result\n"); // MEMORY
+                exit_error_full_free(dt, "Poll unexpected result\n");
 
             t_packet packet;
 
@@ -354,7 +360,8 @@ void    handle_send_task(t_data *dt, t_task *task)
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
             t_scan_tracker *this_scan_tracker = find_tracker_with_id(dt, task->scan_tracker_id,task->dst_port);
             if (!this_scan_tracker)
-                exit_error_full_free(dt, "Memory task access failure. Quiting program.\n"); // MEMORY
+                continue;
+                // exit_error_full_free(dt, "Memory task access failure. Quiting program.\n");
             gettimeofday(&this_scan_tracker->last_send, NULL);
             this_scan_tracker->count_sent++;
         }
@@ -363,7 +370,6 @@ void    handle_send_task(t_data *dt, t_task *task)
 
 void        handle_never_received(uint8_t target_is_localhost, t_port *port, t_scan_tracker *tracker)
 {
-    // printf(TEST);
     tracker->scan.response = NO_RESPONSE;
     debug_scan(tracker->scan);
     tracker->scan.conclusion = get_scan_conclusion(target_is_localhost, tracker->scan.scan_type, tracker->scan.response);
