@@ -306,7 +306,8 @@ void    handle_send_task(t_data *dt, t_task *task)
             send_packet(task->socket, &packet, &task->target_address, task->scan_tracker_id);
             t_scan_tracker *this_scan_tracker = find_tracker_with_id(dt, task->scan_tracker_id,task->dst_port);
             if (!this_scan_tracker)
-                exit_error_full_free(dt, "Memory task access failure. Quiting program.\n");
+                continue;
+                // exit_error_full_free(dt, "Memory task access failure. Quiting program.\n");
             gettimeofday(&this_scan_tracker->last_send, NULL);
             this_scan_tracker->count_sent++;
         }
