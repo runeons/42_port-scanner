@@ -20,14 +20,13 @@ run_test()
         echo -e "          ${RED}KO${RES} $ft_nmap_conclusion (expected $nmap_conclusion)"
     fi
     echo
-    # echo "${nmap_result}"
-    # echo "${ft_nmap_result}"
 }
 
 declare -a tests=(
 
     #open
-    "1.1.1.1, 53, S" # open (expected filtered)
+    "1.1.1.1, 53, S"
+    "1.1.1.1, 53, A"
     "8.8.8.8, 53, U"
 
     #closed
@@ -42,9 +41,9 @@ declare -a tests=(
     "google.fr, 443, X"
 
     #open|filtered
-    "127.0.0.1, 22, F"  #closed (expected open|filtered)
-    "127.0.0.1, 22, N"  #closed (expected open|filtered)
-    "127.0.0.1, 22, X"  #closed (expected open|filtered)
+    "127.0.0.1, 22, F"
+    "127.0.0.1, 22, N"
+    "127.0.0.1, 22, X"
 
     #unfiltered
     "sapin.fr, 3389, A"
@@ -53,9 +52,9 @@ declare -a tests=(
     "1.1.1.125, 53, S"
 
     #localhost exhaustive tests
-    "127.0.0.1, 22, S"              #open # got closed
-    "localhost, 22, U"              #closed
-    "127.0.0.1, 22, A"              #unfiltered # got filtered
+    "127.0.0.1, 22, S"
+    "localhost, 22, U"
+    "127.0.0.1, 22, A"
 )
 
 for test in "${tests[@]}"; do

@@ -64,7 +64,10 @@ void        packet_handler(u_char *args, const struct pcap_pkthdr *header, const
     task->scan_tracker_id   = 0; // TO DO
     task->task_type         = T_RECV;
     task->args              = args;
-    task->header            = (struct pcap_pkthdr *)header;
+    task->header            = mmalloc(sizeof(struct pcap_pkthdr));
+    if (task->header == NULL)
+        exit_error_free("malloc failure.\n");
+    memcpy(task->header, header, sizeof(struct pcap_pkthdr));
     task->packet            = (u_char *)packet;
 
     enqueue_task(task);
