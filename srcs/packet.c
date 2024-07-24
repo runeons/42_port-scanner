@@ -22,34 +22,6 @@ static unsigned short   checksum(void *packet, int len)
 	return checksum;
 }
 
-// static void             craft_icmp_payload(t_packet *packet)
-// {
-//     int i;
-
-//     i = 0;
-//     ft_bzero(&packet->packet(icmp), packet->size);
-//     while (i < ICMP_P_LEN)
-//     {
-// 		packet->packet(icmp).payload[i] = 'A';
-//         i++;
-//     }
-//     packet->packet(icmp).payload[ICMP_P_LEN - 1] = '\0';
-//     //pthread_mutex_lock(&mutex);
-//     g_sequence++;
-//     //pthread_mutex_unlock(&mutex);
-// }
-
-// void                    craft_icmp_packet(t_packet *packet, t_task *task)
-// {
-//     packet->type = PACKET_TYPE_ICMP;
-//     packet->size = sizeof(struct icmp_packet);
-//     craft_icmp_payload(packet);
-//     packet->packet(icmp).h.type = ICMP_ECHO;
-//     packet->packet(icmp).h.un.echo.id = task->scan_tracker_id;
-//     packet->packet(icmp).h.un.echo.sequence = g_sequence;
-//     packet->packet(icmp).h.checksum = checksum(&packet->packet(icmp), packet->size);
-// }
-
 struct pseudo_header
 {
     uint32_t source_address;
@@ -82,10 +54,7 @@ void                construct_udp_packet(t_packet *packet, t_task *task)
     ft_bzero(&packet->packet(udp), packet->size);
 
     for  (int i = 0; i  < UDP_P_LEN; i++)
-    {
 		packet->packet(udp).payload[i] = 'A';
-        //i++;
-    }
     ft_memcpy(packet->packet(udp).payload, dns_query_payload, sizeof(dns_query_payload));
 
     packet->packet(udp).h.source = htons(task->src_port);
@@ -121,8 +90,6 @@ void                construct_tcp_packet(t_packet *packet, t_task *task)
     // TCP header
     tcph->source = htons(task->src_port);
     tcph->dest = htons(task->dst_port);
-    //tcph->seq = task->scan_tracker_id; // all the globals need mutex when used in threads;
-    //tcph->ack_seq = htonl(task->scan_tracker_id);
     tcph->doff = (sizeof(struct tcphdr)) / 4 + 1; // TCP header size + 1 for the options
     switch (packet->type)
     {
@@ -168,8 +135,6 @@ void                construct_tcp_packet(t_packet *packet, t_task *task)
     memcpy(pseudo_packet + sizeof(struct pseudo_header), tcph, packet->size);
 
     tcph->check = checksum(pseudo_packet, pseudo_packet_size);
-
-    //free(pseudo_packet);
 }
 
 void                send_packet(int socket, t_packet *packet, struct sockaddr_in *target_address, int task_id)
@@ -183,7 +148,5 @@ void                send_packet(int socket, t_packet *packet, struct sockaddr_in
         return;
     }
     info(C_SOCKET, "Packet sent (%lu bytes)\n", sizeof(*packet));
-    //pthread_mutex_lock(&mutex);
     g_sent++;
-    //pthread_mutex_unlock(&mutex);
 }

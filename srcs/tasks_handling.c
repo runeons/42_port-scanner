@@ -124,7 +124,7 @@ e_response determine_response_type(t_data *dt, t_task *task)
     (void)dt;
     if (task == NULL || task->header->len < ETH_H_LEN + IP_H_LEN)
     {
-        important_warning("TASK is TOO SMALL to contain IP HEADER - return OTHER\n");
+        // important_warning("TASK is TOO SMALL to contain IP HEADER - return OTHER\n");
         return OTHER;
     }
     struct ip *ip_hdr = (struct ip *)(task->packet + ETH_H_LEN);

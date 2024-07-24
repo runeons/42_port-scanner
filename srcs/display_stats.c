@@ -3,8 +3,6 @@
 void            display_host_init(t_host *host, int no_dns)
 {
     printf("Nmap scan report for %s (%s)\n", host->input_dest, host->resolved_address);
-    //printf("Host is up (0.00035s latency).\n", );
-    //printf("Other addresses for google.fr (not scanned): 2a00:1450:4007:819::2003\n", );
     if (no_dns == FALSE)
         printf("rDNS record for %s: %s\n", host->resolved_address, host->resolved_hostname);
     printf("\n");
@@ -18,7 +16,7 @@ static void     display_current_daytime()
 
     ft_memset(buffer, 0, 34);
     gettimeofday(&tv, NULL);
-    tm_info = localtime(&tv.tv_sec); // bonus function only
+    tm_info = localtime(&tv.tv_sec);
     snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d %s",
                 tm_info->tm_year + 1900,
                 tm_info->tm_mon + 1,
@@ -27,7 +25,7 @@ static void     display_current_daytime()
                 tm_info->tm_min,
                 tm_info->tm_zone);
     printf("%s\n", buffer);
-    // free(tm_info);
+    // free(tm_info); TO CHECK
 }
 
 void            display_nmap_init(t_data *dt)

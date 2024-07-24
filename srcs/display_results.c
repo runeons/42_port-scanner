@@ -73,8 +73,6 @@ static e_protocol      get_protocol(t_scan scan)
         return P_UDP;
     else if (scan.scan_type == UNKNOWN)
         return P_UNKNOWN;
-    // else if (scan.scan_type == ICMP) // tmp initial test only
-    //     return P_ICMP;
     else
         return P_TCP;
 }

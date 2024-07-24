@@ -21,8 +21,6 @@ char  *scan_type_string(e_scan_type scan_type)
 {
     switch (scan_type)
     {
-        // case ICMP:
-        //     return "ICMP";
         case SYN:
             return "SYN";
         case ACK:

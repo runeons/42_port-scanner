@@ -24,7 +24,6 @@ int             resolve_address(t_host *host) // check that dest exists and reso
         warning("Failed to resolve host <%s>  %s\n", host->input_dest, gai_strerror(s));
         return (0);
     }
-        // exit_error_free("unknown host <%s>  %s\n", host->input_dest, gai_strerror(s));
     tmp = resolved_add;
     while (tmp != NULL)
     {
@@ -97,7 +96,6 @@ static void     add_port(t_host *host, int port_id, e_scan_type *unique_scans, i
 
     port = create_port(port_id, unique_scans, max_retries);
     ft_lst_add_node_back(&host->ports, ft_lst_create_node(port));
-    // debug_port(*port);
 }
 
 int             fill_host(t_data *dt, char *curr_arg)
@@ -145,7 +143,6 @@ static void     init_data_struct(t_data *dt, t_parsed_cmd *parsed_cmd)
     dt->src_port                        = (getpid() & 0xffff) | 0x8000; // base port 
     dt->src_ip                          = 0;
     ft_memset(dt->fds, 0, sizeof(dt->fds));
-    // dt->fds[0].events       = POLLOUT; // really needed?
     // SCANS
     dt->queue            = NULL;
     ft_memset(&dt->host, 0, sizeof(dt->host));

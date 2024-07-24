@@ -33,7 +33,7 @@ static void     alarm_handler(int signum)
     alarm(0);
     t_task  *task = create_task();
 
-    task->scan_tracker_id   = 0; // TO DO
+    task->scan_tracker_id   = 0;
     task->task_type         = T_CHECK;
     enqueue_task(task);
 }
@@ -66,15 +66,12 @@ int             main(int ac, char **av)
 {
     t_data              dt;
     t_parsed_cmd        parsed_cmd;
-    // int                 numeric_src_ip;
-    // char                first_interface_name[255];
 
     parse_input(&parsed_cmd, ac, av);
     init_signal();
     if (is_activated_option(parsed_cmd.act_options, 'h'))
         option_h();
     check_file_option(parsed_cmd);
-    //init_interface(first_interface_name, &numeric_src_ip);
     init_data(&dt, &parsed_cmd);                             // this needs to be done only once
     display_nmap_init(&dt);
     if (is_activated_option(parsed_cmd.act_options, 'f'))

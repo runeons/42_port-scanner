@@ -124,7 +124,6 @@ typedef struct  s_sniffer
 typedef struct  s_data
 {
     // SOCKET
-    // int                 icmp_socket_pool[SOCKET_POOL_SIZE];
     int                 udp_socket_pool[SOCKET_POOL_SIZE];
     int                 tcp_socket_pool[SOCKET_POOL_SIZE];
     struct sockaddr_in  src_address;
@@ -133,7 +132,7 @@ typedef struct  s_data
     struct pollfd       fds[NFDS];
     // SCANS
     t_lst               *queue;
-    t_host              host;               // one for now
+    t_host              host;
     t_sniffer           sniffer;
     // OPTIONS
     t_lst               *act_options;
