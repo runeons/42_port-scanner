@@ -87,7 +87,7 @@ void init_queue(t_data *dt)
 
             fill_send_task(task, curr_tracker->id, dt->host.target_address, port->port_id, curr_tracker->scan.scan_type, tmp_socket, dt->src_ip, curr_tracker->src_port);
             enqueue_task(task);
-            debug_task(*task);
+            // debug_task(*task);
             g_remaining_scans++;
         }
         curr_port = curr_port->next;

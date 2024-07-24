@@ -109,7 +109,6 @@ e_response determine_response_type(t_data *dt, t_task *task)
         return OTHER;
     }
     struct ip *ip_hdr = (struct ip *)(task->packet + ETH_H_LEN);
-
     if (ip_hdr->ip_p == IPPROTO_TCP)
     {
         struct tcphdr *tcp_hdr = (struct tcphdr *)(task->packet + ETH_H_LEN + IP_H_LEN);

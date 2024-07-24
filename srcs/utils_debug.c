@@ -75,7 +75,7 @@ void    debug_scan(t_scan scan)
 
 void    debug_task(t_task task)
 {
-    if (DEBUG_STRUCT == 1)
+    if (DEBUG_TASK == 1)
     {
         printf(C_G_YELLOW"[DEBUG] task"C_RES"\n");
         printf("        id                  %d\n", task.scan_tracker_id);
@@ -85,6 +85,38 @@ void    debug_task(t_task task)
             printf("        scan_type           %s\n", scan_type_string(task.scan_type));
             printf("        dst_port            %d\n", task.dst_port);
             printf("        target_address      %s\n", inet_ntoa(task.target_address.sin_addr));
+        }
+        if (task.task_type == T_RECV)
+        {
+            if (task.args)
+            {
+                printf("        args:\n");
+                for (size_t i = 0; i < 16 && i < ft_strlen((char*)task.args); i++)
+                    printf("%02x ", task.args[i]);
+                printf("\n");
+            }
+            else
+                printf("        args: NULL\n");
+
+            if (task.header)
+            {
+                printf("        header:\n");
+                printf("                caplen          %u\n", task.header->caplen);
+                printf("                len             %u\n", task.header->len);
+            }
+            else
+                printf("                header: NULL\n");
+
+            if (task.packet)
+            {
+                printf("        packet: %lu\n                ", sizeof(task.packet));
+                
+                for (size_t i = 0; i < 16 && i < task.header->caplen; i++)
+                    printf("%02x ", task.packet[i]);
+                printf("\n");
+            }
+            else
+                printf("        packet: NULL\n");
         }
         printf(C_G_YELLOW"-------"C_RES"\n");
     }

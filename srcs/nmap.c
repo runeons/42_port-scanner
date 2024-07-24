@@ -10,7 +10,6 @@ static void     *worker_function(void *dt)
         if (task == NULL)
             continue;
         info(C_TASKS, "Dequeued task %d\n", task->scan_tracker_id);
-        debug_task(*task);
         handle_task((t_data *)dt, task);
     }
     info(C_THREADS, "Worker return\n");

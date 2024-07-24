@@ -11,6 +11,7 @@
 // DEBUG ACTIVATION
 # define DEBUG_PARSING          0
 # define DEBUG_STRUCT           0
+# define DEBUG_TASK             0
 # define DEBUG_NET              0
 # define DEBUG_QUEUE            0
 # define DEBUG_END              0
