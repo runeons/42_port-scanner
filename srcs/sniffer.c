@@ -42,15 +42,13 @@ void        packet_handler(u_char *args, const struct pcap_pkthdr *header, const
     task->header            = mmalloc(sizeof(struct pcap_pkthdr));
     if (task->header == NULL)
         exit_error_free("malloc failure.\n");
-
     memcpy(task->header, header, sizeof(struct pcap_pkthdr));
-    if (task->header->len)
+    if (task->header->len <= 0)
         return; 
     task->packet            = mmalloc(task->header->len);
     if (task->packet == NULL)
         exit_error_free("malloc failure.\n");
     memcpy(task->packet, packet, task->header->len);
-
     enqueue_task(task);
     g_retrieved++;
     debug_task(*task);
